@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY frontend/sivanyashop/package*.json ./
-RUN npm ci
+RUN npm install --no-audit --no-fund 
 
 COPY frontend/sivanyashop/ .
 RUN npm run build -- --configuration production
