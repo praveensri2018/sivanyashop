@@ -1,0 +1,52 @@
+/* -> Place this exact file at: src/app/dashboard/dashboard.component.scss */
+
+/* Basic dashboard layout + small typography to match login */
+.dashboard-root {
+  font-size: 0.86rem;
+  line-height: 1.3;
+  padding-top: 2.25rem;
+  padding-bottom: 2.25rem;
+}
+
+/* header */
+.header-row h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* user card */
+.user-card {
+  border-radius: 12px;
+  background: rgba(255,255,255,0.98);
+  box-shadow: 0 6px 20px rgba(16,24,40,0.04);
+  border: 1px solid rgba(16,24,40,0.03);
+}
+
+/* user name / meta */
+.user-name {
+  font-weight: 700;
+  color: #2c2c2c;
+}
+.user-meta { margin-bottom: 0.5rem; }
+
+/* pre block styling */
+.user-json pre {
+  margin: 0;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* empty state */
+.no-data { margin-top: 1rem; }
+
+/* small responsive tweaks */
+@media (max-width: 576px) {
+  .dashboard-root { padding-top: 1.25rem; padding-bottom: 1.25rem; font-size: 0.82rem; }
+  .header-row { gap: 0.5rem; }
+}

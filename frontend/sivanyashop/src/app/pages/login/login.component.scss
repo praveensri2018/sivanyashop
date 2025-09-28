@@ -1,0 +1,218 @@
+/* -> Place this exact file at: src/app/login/login.component.scss */
+/* --- Enhanced stylish SCSS for login component --- */
+
+/* Color palette & variables */
+:root {
+  --bg-1: #ffe8f0; /* soft pink */
+  --bg-2: #fff1c9; /* pale yellow */
+  --accent-1: #ff6b9f; /* vivid pink */
+  --accent-2: #6f42c1; /* deep purple */
+  --cta-grad: linear-gradient(90deg, var(--accent-1) 0%, var(--accent-2) 100%);
+  --glass: rgba(255,255,255,0.72);
+  --glass-strong: rgba(255,255,255,0.9);
+  --muted: #6c757d;
+  --shadow: 0 10px 30px rgba(111,66,193,0.12);
+  --radius: 18px;
+}
+
+/* full-screen hero with layered gradients + subtle texture */
+.login-hero {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  background: radial-gradient(800px 400px at 10% 10%, rgba(255,107,159,0.14), transparent 10%),
+              radial-gradient(700px 350px at 90% 85%, rgba(111,66,193,0.12), transparent 12%),
+              linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  -webkit-font-smoothing: antialiased;
+  font-synthesis: none;
+}
+
+/* decorative SVG behind card */
+.hero-decoration {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: screen;
+}
+
+/* brand header */
+.brand-header {
+  z-index: 30;
+  color: #fff;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.12));
+}
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* center card with glassmorphism + subtle border gradient */
+.login-card {
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.80));
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: var(--shadow);
+  overflow: visible;
+  z-index: 20;
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms;
+  transform-origin: center;
+}
+
+/* card hover/entrance lift (desktop) */
+@media (hover: hover) and (min-width: 768px) {
+  .login-card:hover { transform: translateY(-6px) scale(1.003); box-shadow: 0 20px 50px rgba(111,66,193,0.14); }
+}
+
+/* card body spacing */
+.card-body {
+  position: relative;
+  padding: 2rem;
+}
+
+/* badge styling with gradient stroke text effect */
+.shop-badge {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  padding: 0.28rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  color: var(--accent-2);
+  box-shadow: inset 0 -6px 18px rgba(111,66,193,0.02);
+  z-index: 5;
+}
+
+/* brand accent headings */
+.brand-accent {
+  background: var(--cta-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+
+/* brand name subtle underline */
+.brand-name {
+  position: relative;
+}
+.brand-name::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 40%;
+  bottom: -6px;
+  height: 6px;
+  background: linear-gradient(90deg, rgba(255,107,159,0.15), rgba(111,66,193,0.12));
+  border-radius: 6px;
+}
+
+/* input styles: large, clean, with focus ring */
+.form-control {
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  height: auto;
+  border: 1px solid rgba(16,24,40,0.06);
+  background: rgba(255,255,255,0.95);
+  transition: box-shadow 150ms ease, transform 150ms ease, border-color 150ms;
+}
+.form-control:focus {
+  outline: none;
+  box-shadow: 0 8px 30px rgba(111,66,193,0.09);
+  border-color: rgba(111,66,193,0.18);
+  transform: translateY(-1px);
+}
+
+/* input group toggle button */
+.toggle-btn {
+  border-radius: 10px;
+  border: 1px solid rgba(16,24,40,0.06);
+  padding: 0.6rem 0.9rem;
+  min-width: 78px;
+}
+
+/* CTA button: gradient + subtle motion + arrow */
+.btn-cta {
+  background: var(--cta-grad);
+  
+  border: none;
+  padding: 0.95rem 1.05rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 34px rgba(111,66,193,0.12);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  font-size: 1rem;
+}
+.btn-cta:hover, .btn-cta:focus {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 46px rgba(111,66,193,0.20);
+}
+.btn-cta[disabled], .btn-cta[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* arrow micro animation */
+.cta-arrow {
+  display: inline-block;
+  transform: translateX(0);
+  transition: transform 160ms ease;
+}
+.btn-cta:hover .cta-arrow { transform: translateX(6px); }
+
+/* social buttons */
+.social-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.6rem; }
+.social-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid rgba(16,24,40,0.06);
+  background: rgba(255,255,255,0.98);
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.04);
+  transition: transform 120ms ease;
+}
+.social-btn img { width: 18px; height: 18px; object-fit: contain; display: inline-block; }
+
+/* subtle help & error text */
+.form-text { margin-top: 0.35rem; }
+.text-danger { color: #e03e5b !important; font-weight: 600; }
+
+/* link style */
+.link-unstyled { color: var(--accent-2); text-decoration: none; }
+.link-unstyled:hover { text-decoration: underline; }
+
+/* mobile tweaks */
+@media (max-width: 576px) {
+  .card-body { padding: 1.25rem; }
+  .brand-header { display: none !important; }
+  .hero-decoration { display: none; }
+  .brand-name::after { right: 50%; }
+}
+
+/* ensure host fills container if embedded */
+:host { display: block; height: 100%; }
+
+/* small accessibility helper */
+[role="alert"] { margin-top: 0.25rem; }
+
+/* end of file */
+
+
+ 
