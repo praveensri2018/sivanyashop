@@ -1,0 +1,372 @@
+Example minimal file list
+
+backend/
+  pages/api/
+    auth/login.ts
+    auth/register.ts
+    auth/me.ts
+    referrals/redeem.ts
+    products/index.ts
+    products/[id].ts
+    prices/effective.ts
+    cart/get.ts
+    cart/add-item.ts
+    cart/update-item.ts
+    cart/remove-item.ts
+    checkout/create-order.ts
+    checkout/payment-webhook.ts
+    orders/index.ts
+    orders/[id].ts
+    admin/products.ts
+    admin/prices.ts
+    admin/orders.ts
+    admin/retailers.ts
+    admin/reports/finance.ts
+  lib/
+    db.ts
+    auth.ts
+    price-resolver.ts
+    cart.ts
+    checkout.ts
+    orders.ts
+    settlement.ts
+    retailer.ts
+    financial.ts
+    stock.ts
+    reports.ts
+  middleware/
+    auth.ts
+  utils/
+    validators.ts
+    logger.ts
+    idempotency.ts
+
+
+------------------------------------------------------
+
+
+Top-level places (where to put things)
+
+API routes: backend/pages/api/... (Next.js API routes).
+
+Business logic / services: backend/lib/*.ts (e.g. lib/auth.ts, lib/price-resolver.ts, lib/settlement.ts, lib/orders.ts).
+
+DB helper: backend/lib/db.ts.
+
+Middleware (auth/role/validate): backend/middleware/*.ts.
+
+Utils / validators / logger: backend/utils/*.ts.
+
+Env files: backend/.env.development.local and backend/.env.production.
+
+(Next.js API best-practices and route handlers: Next.js docs + community guides.) 
+Next.js
++1
+
+1 — Auth & User endpoints
+
+Paths (API routes)
+
+POST /api/auth/register — create user (hash password; role default CUSTOMER).
+
+POST /api/auth/login — authenticate; return JWT (HttpOnly cookie recommended) or access token.
+
+GET /api/auth/me — return logged-in user profile (JWT required).
+
+Where: backend/pages/api/auth/register.ts, .../login.ts, .../me.ts.
+
+Service methods (lib/auth.ts)
+
+async createUser(payload: {name, email, password, role?}): Promise<User>
+
+async verifyPassword(email: string, password: string): Promise<User | null>
+
+function signJwt(payload: object): string
+
+function verifyJwt(token: string): {userId, role, iat, exp}
+
+Notes: store password hashed (bcryptjs). Use HttpOnly cookie or Authorization Bearer; include refresh tokens if needed. (JWT best practices.) 
+supertokens.com
+
+2 — Referral endpoints
+
+POST /api/referrals/redeem — redeem referral code on signup or profile; link Customer→Retailer (insert into CustomerReferrals).
+
+GET /api/referrals/:retailerId — (admin/retailer) list referrals (optional).
+
+Where: backend/pages/api/referrals/redeem.ts, optional .../[retailerId].ts.
+
+Service method (lib/referrals.ts)
+
+async linkCustomerToRetailer(customerId: number, referralCode: string): Promise<void>
+
+async getReferralsByRetailer(retailerId: number): Promise<Array<{customerId,name,email}>>
+
+3 — Products & Categories
+
+GET /api/products — list products (pagination, filters).
+
+GET /api/products/[id] — product detail + variants.
+
+POST /api/admin/products — create product (admin only).
+
+PUT /api/admin/products/[id] — update product (admin).
+
+DELETE /api/admin/products/[id] — soft-delete (admin).
+
+Where: backend/pages/api/products/index.ts, backend/pages/api/products/[id].ts, admin routes under backend/pages/api/admin/products.ts.
+
+Service methods (lib/products.ts)
+
+async listProducts(opts: {page, q, categoryId, limit}): Promise<{rows,total}>
+
+async getProduct(productId: number): Promise<ProductWithVariants>
+
+async createProduct(payload): Promise<Product>
+
+async updateProduct(id, payload): Promise<void>
+
+async softDeleteProduct(id): Promise<void>
+
+4 — Pricing & price resolution
+
+GET /api/prices/effective?variantId=&customerId? — return effective unit price for the viewer (applies retailer linkage and active flags/time windows). This is used by frontend product pages and cart.
+
+Where: backend/pages/api/prices/effective.ts
+
+Service methods (lib/price-resolver.ts)
+
+async getCustomerLinkedRetailer(customerId: number): Promise<Retailer | null> — checks CustomerReferrals.
+
+async getActiveRetailerVariantPrice(retailerId: number, variantId: number, now?: Date): Promise<RetailerVariantPrice | null>
+
+async getActiveVariantPrice(variantId: number, priceType: 'CUSTOMER' | 'RETAILER', now?: Date): Promise<VariantPrice | null>
+
+async resolveEffectivePrice({customerId, variantId}): Promise<{unitPrice: number, source: 'RETAILER'|'CUSTOMER'|'DEFAULT', wholesalePrice?: number}>
+
+Important: check IsActive, EffectiveFrom and EffectiveTo and choose latest active row. Cache resolved prices in Redis with short TTL; invalidate on price change. (Cache guidance.) 
+Hire SQL
+
+5 — Cart endpoints & services
+
+GET /api/cart — get current user's cart (or by cartId for guest).
+
+POST /api/cart/add-item — add item (body: variantId, qty) — store unit price at add time.
+
+PUT /api/cart/update-item — update qty.
+
+DELETE /api/cart/remove-item — remove item.
+
+POST /api/cart/merge — optional: merge guest cart after login.
+
+Where: backend/pages/api/cart/get.ts, add-item.ts, update-item.ts, remove-item.ts.
+
+Service methods (lib/cart.ts)
+
+async getOrCreateCart(userId: number): Promise<Cart>
+
+async addItem(cartId: number, variantId: number, qty: number, unitPrice: number): Promise<Cart>
+
+async updateItem(cartItemId:number, qty:number): Promise<void>
+
+async removeItem(cartItemId:number): Promise<void>
+
+function calculateCartTotals(cartId:number): Promise<{subtotal, tax, shipping, total}>
+
+Notes: persist CartItems Price = unit price at time added to cart, so totals remain consistent even if prices change later.
+
+6 — Checkout & Payments
+
+POST /api/checkout/create-order — create Orders, OrderItems, reserve stock (or reduce later), create Payments row, return payment intent/checkout link. Should be transactional.
+
+POST /api/checkout/payment-webhook — payment gateway webhook (webhook must be idempotent and verify signature). On success call settlement.
+
+Where: backend/pages/api/checkout/create-order.ts, payment-webhook.ts.
+
+Service methods (lib/checkout.ts)
+
+async createOrderFromCart(userId:number, shippingAddressId:number, paymentMethod, extra): Promise<{orderId}> — creates Order + OrderItems, computes totals, writes Payments row (PENDING). Use DB transaction.
+
+async markPaymentSucceeded(orderId:number, paymentInfo): Promise<void> — update Payments and PaymentStatus.
+
+async reserveOrDeductStock(orderId:number): Promise<void> — writes StockLedger and reduces ProductVariants.StockQty (in tx or queued).
+
+async createPaymentIntent(orderId:number, amount:number, currency:string): Promise<{providerClientSecret, providerId}> — integrate with gateway.
+
+Webhook notes: Next.js requires disabling bodyParser for routes that need raw body for signature verification:
+
+export const config = { api: { bodyParser: false } };
+
+
+Then parse raw buffer. (Stripe docs / Next.js notes). 
+Stack Overflow
++1
+
+7 — Orders & order lifecycle
+
+GET /api/orders — list orders (RBAC: admin can see all; retailer sees their retailer orders; customer sees their own).
+
+GET /api/orders/[id] — order detail.
+
+PUT /api/admin/orders/[id] — admin updates order status (CONFIRMED, SHIPPED, DELIVERED, CANCELLED).
+
+POST /api/admin/orders/[id]/refund — process refund (write Payment, FinancialLedger, and StockLedger if restocking).
+
+Where: backend/pages/api/orders/index.ts, backend/pages/api/orders/[id].ts, admin route under backend/pages/api/admin/orders.ts.
+
+Service methods (lib/orders.ts)
+
+async listOrders(filter:{userId?, retailerId?, status?, page?, from?, to?}): Promise<{rows,total}>
+
+async getOrder(orderId:number): Promise<OrderDetail>
+
+async updateOrderStatus(orderId:number, status:string, changedBy:number): Promise<void>
+
+async refundOrder(orderId:number, reason:string): Promise<void>
+
+Ledger interactions: When status updates or payment/refund occur, create FinancialLedger entries (see below).
+
+8 — Payments & Financial ledger
+
+POST /api/payments/capture — for manual capture flows (optional).
+
+GET /api/payments/[id] — payment status.
+
+Where: backend/pages/api/payments/* and backend/pages/api/admin/payouts.ts.
+
+Service methods (lib/financial.ts)
+
+async createLedgerEntry({userId, accountSegment, ledgerType, amount, narration, refOrderId?, refPaymentId?})
+
+async computeOrderFinancials(orderId:number): Promise<{adminAmount, retailerAmount, platformFee}>
+
+async recordPayout(rid, amount, fromDate, toDate, initiatedBy): Promise<Payout>
+
+Notes on calculations: Use the tables:
+
+VariantPrices (Customer price)
+
+RetailerVariantPrices (WholesalePrice & RetailerSellingPrice)
+Resolve based on whether order was direct customer or retailer customer. Ensure you store order-level ledger entries for audit.
+
+9 — Retailer endpoints (admin + retailer)
+
+POST/GET/PUT/DEACTIVATE retailers as you already listed: /api/admin/retailers and /api/admin/retailers/[id]
+
+Retailer endpoints for their prices & payouts:
+
+GET /api/retailer/prices — list retailer's prices
+
+PUT /api/retailer/prices — set RetailerVariantPrices
+
+GET /api/retailer/payouts — list payouts
+
+POST /api/admin/payouts — create payout manually
+
+Service methods (lib/retailer.ts)
+
+async createRetailer(payload, createdById): Promise<User>
+
+async setRetailerPrice(retailerId, variantId, wholesalePrice, sellingPrice, effectiveFrom): Promise<void>
+
+async deactivateRetailer(retailerId): Promise<void>
+
+10 — Stock ledger & inventory
+
+POST /api/admin/stock — admin adjustments.
+
+Stock movement is recorded on order placement/shipment/return: write StockLedger entries.
+
+Service methods (lib/stock.ts)
+
+async adjustStock(variantId, diffQty, movementType, refOrderId?, refOrderItemId?)
+
+async decrementStockForOrder(orderId)
+
+Note: Use transactions when changing StockQty and writing StockLedger.
+
+11 — Admin reports / finance
+
+GET /api/admin/reports/finance?from=&to=&segment= — aggregated report for admin (direct customers total, retailer customers total, admin profit, retailer payouts).
+
+GET /api/admin/reports/sales — sales summary.
+
+Where: backend/pages/api/admin/reports/finance.ts
+
+Service methods (lib/reports.ts)
+
+async salesSummary(opts): Promise<{byDay, totals}>
+
+async financeSummary(opts): Promise<{directCustomerTotal, retailerCustomerTotal, adminProfit, retailerProfit}>
+
+Implementation note: heavy aggregation can run slow on large datasets — run as background jobs or pre-aggregate nightly. 
+Medium
+
+12 — Webhook & idempotency
+
+POST /api/checkout/payment-webhook must:
+
+Verify signature (raw body).
+
+Check idempotency (store webhook event id and reject duplicates).
+
+Update payment and call settlement (lib/settlement.ts).
+
+Where: backend/pages/api/checkout/payment-webhook.ts
+
+Service methods (lib/webhooks.ts / lib/settlement.ts)
+
+async handlePaymentSuccess(event): validates and updates Payment & Order & FinancialLedger & StockLedger.
+
+async runSettlement(orderId): computes admin vs retailer share and writes FinancialLedger, and marks payout/retailer balance.
+
+Raw body note: disable body parser in Next.js route and parse raw buffer to verify signature. (Stripe docs / Next.js notes). 
+Stack Overflow
++1
+
+13 — Middleware & utilities
+
+Middleware (backend/middleware/auth.ts)
+
+export function requireAuth(handler, roles?: string[]) — Next.js wrapper that extracts JWT from header/cookie, verifies, attaches req.user, and enforces roles.
+
+Utils
+
+utils/validators.ts — request validation using zod.
+
+utils/logger.ts — central logger.
+
+utils/idempotency.ts — record external webhook IDs and TTL.
+
+Where to place: backend/middleware/auth.ts, backend/utils/*.ts.
+
+(Use modularization: keep API routes tiny and call service methods.) 
+Medium
+
+14 — DB helper & pooling (single file)
+
+Place: backend/lib/db.ts (you already have this). Important methods:
+
+async getPool(): Promise<sql.ConnectionPool> — returns singleton pool.
+
+async query(sql: string, params?): Promise<QueryResult> — helper for simpler calls.
+
+Notes: use single pool per process; tune pool.max. 
+tediousjs.github.io
++1
+
+15 — Caching
+
+Use Redis for price-resolver caching and for idempotency keys for webhooks.
+
+Cache key example: price:variant:{variantId}:retailer:{retailerId} with TTL 60–300s.
+
+16 — Security & best practices
+
+Validate all inputs with zod.
+
+Enforce RBAC in middleware.
+
+Use HTTPS in production and secure cookies (HttpOnly, Secure, SameSite).
+
+Log and monitor errors; return meaningful HTTP status codes. (Next.js API best practices).
