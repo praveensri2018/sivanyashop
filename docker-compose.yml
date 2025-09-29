@@ -8,5 +8,5 @@ services:
     image: sivanyashop_frontend:latest
     container_name: sivanyashop_frontend
     ports:
-      - "80:80"
+      - "3000:80"
     restart: unless-stopped
