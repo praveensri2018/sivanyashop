@@ -1,12 +1,16 @@
-// -> Place this exact file at: src/app/app.routes.ts
+// src/app/app.routes.ts
+// Place file at: src/app/app.routes.ts
+
 import { Routes } from '@angular/router';
-import { LoginComponent } from './pages/login/login.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { ShopComponent } from './shop/shop.component';                 // create: src/app/shop/shop.component.ts
+import { ProductDetailComponent } from './shop/product-detail.component'; // create
+import { CartComponent } from './cart/cart.component';                 // create
+//import { LoginComponent } from './auth/login.component';              // create
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: '**', redirectTo: 'login' }
-
+  { path: '', component: ShopComponent },                // feed / landing
+  { path: 'product/:id', component: ProductDetailComponent },
+  { path: 'cart', component: CartComponent },
+ // { path: 'login', component: LoginComponent },
+  { path: '**', redirectTo: '' }
 ];

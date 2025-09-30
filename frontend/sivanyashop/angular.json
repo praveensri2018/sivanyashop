@@ -29,7 +29,17 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+  {
+    "glob": "**/*",
+    "input": "src/assets",
+    "output": "/assets"
+  },
+  {
+    "glob": "favicon.ico",
+    "input": "src",
+    "output": "/"
+  }
             ],
             "styles": [
               "src/styles.scss"
@@ -89,7 +99,17 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+  {
+    "glob": "**/*",
+    "input": "src/assets",
+    "output": "/assets"
+  },
+  {
+    "glob": "favicon.ico",
+    "input": "src",
+    "output": "/"
+  }
             ],
             "styles": [
               "src/styles.scss"
