@@ -1,14 +1,14 @@
 // src/app/ui/header.component.ts
 // Place file at: src/app/ui/header.component.ts
 //
-// Adds automatic location detection (with user permission). The component:
-//  - attempts to get geolocation via navigator.geolocation
-//  - uses OpenStreetMap Nominatim reverse-geocoding to get a readable location (city + postcode)
-//  - displays "Detecting..." while waiting, shows coordinates or a short message on failure
-//  - is defensive: handles permission denied, timeouts and network errors
+// UPDATED: responsive + mobile support changes
+// - Promo message updated earlier (still there)
+// - Mobile-friendly promo-actions (stacked on small screens)
+// - Categories: added explicit mobile toggle button (so categories are accessible on small screens)
+// - Actions: icon-first buttons so they're always visible on small screens; text labels hidden on xs
 //
-// IMPORTANT: Nominatim is a free public service with rate-limits and usage policies.
-// For production workloads use a paid geocoding provider or your own proxy.
+// IMPORTANT: Keep comments — they mark each change and why it was added.
+
 import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -21,13 +21,17 @@ import { CartService } from '../services/cart.service';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <!-- PROMO STRIP (same as before) -->
+    <!-- PROMO STRIP (changed message earlier) -->
+    <!-- CHANGE: promo-actions now stacks on small screens instead of being hidden -->
     <div class="promo-strip d-flex align-items-center justify-content-center text-white">
-      <div class="container d-flex align-items-center justify-content-between py-1">
+      <div class="container d-flex align-items-center justify-content-between py-1 flex-column flex-md-row">
         <div class="promo-text small">
-          🎉 Limited-time: Flat 30% off on new arrivals — Use code <b>WELCOME30</b>
+          🎉 Welcome All — Launching our Website on <b>01-10-2025</b>
         </div>
-        <div class="promo-actions small d-none d-md-flex gap-3 align-items-center">
+
+        <!-- promo-actions: previously hidden on small screens (d-none d-md-flex).
+             CHANGE: show on all sizes; use flex-column on small, row on md+ -->
+        <div class="promo-actions small d-flex gap-3 align-items-center mt-2 mt-md-0 flex-column flex-md-row">
           <a routerLink="/" class="text-white text-decoration-underline">Shop Offers</a>
           <a routerLink="/login" class="text-white">Sign in for extra benefits</a>
         </div>
@@ -65,12 +69,20 @@ import { CartService } from '../services/cart.service';
           </div>
         </div>
 
+        <!-- MOBILE: Categories toggle button (visible only on small screens) -->
+        <!-- CHANGE: this button shows mobile categories panel, because original categories-select was hidden on mobile -->
+        <button class="btn btn-light d-lg-none d-flex align-items-center me-2" type="button" aria-label="Categories"
+                (click)="toggleMobileCategories()" title="Categories">
+          <i class="bi bi-list"></i>
+        </button>
+
         <!-- SEARCH (center) -->
         <div class="flex-fill px-3">
           <div class="search-wrap position-relative">
             <form class="d-flex" (submit)="onSearchSubmit($event)">
               <div class="input-group w-100">
-                <select class="form-select categories-select d-none d-lg-inline-block" [(ngModel)]="selectedCategory" name="cat">
+                <!-- CHANGE: categories-select now shows on md+; for xs we rely on the button above that toggles mobile panel -->
+                <select class="form-select categories-select d-none d-md-inline-block" [(ngModel)]="selectedCategory" name="cat">
                   <option value="">All Categories</option>
                   <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
                 </select>
@@ -85,6 +97,7 @@ import { CartService } from '../services/cart.service';
                   aria-label="Search products"
                 />
 
+                <!-- CHANGE: search button kept; on small screens it will shrink due to btn styling -->
                 <button class="btn btn-primary search-btn" type="submit" aria-label="Search">Search</button>
               </div>
             </form>
@@ -105,10 +118,16 @@ import { CartService } from '../services/cart.service';
         </div>
 
         <!-- ACTIONS -->
+        <!-- CHANGE: ensure actions are visible on mobile by always rendering icons; text labels hidden on xs -->
         <div class="actions d-flex align-items-center gap-2 ms-2">
-          <a routerLink="/orders" class="btn btn-sm btn-outline-secondary d-none d-md-inline">Orders</a>
+          <!-- Orders: show icon always; display text only on md+ -->
+          <a routerLink="/orders" class="btn btn-sm btn-outline-secondary d-flex align-items-center">
+            <i class="bi bi-card-list"></i>
+            <span class="ms-1 d-none d-md-inline">Orders</span>
+          </a>
 
-          <a routerLink="/cart" class="btn btn-outline-primary position-relative me-1" aria-label="Cart">
+          <!-- Cart: icon visible; badge remains -->
+          <a routerLink="/cart" class="btn btn-outline-primary position-relative me-1 d-flex align-items-center" aria-label="Cart">
             <i class="bi bi-cart-fill"></i>
             <span class="ms-1 d-none d-md-inline">Cart</span>
 
@@ -117,10 +136,11 @@ import { CartService } from '../services/cart.service';
             </ng-container>
           </a>
 
+          <!-- Account dropdown: small icon always visible; text label hidden on xs -->
           <div class="dropdown">
-            <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+            <button class="btn btn-sm btn-outline-dark dropdown-toggle d-flex align-items-center" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-person-circle"></i>
-              <span class="d-none d-md-inline ms-1">Account</span>
+              <span class="ms-1 d-none d-md-inline">Account</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
               <li><a class="dropdown-item" routerLink="/login">Sign in</a></li>
@@ -133,7 +153,7 @@ import { CartService } from '../services/cart.service';
       </div>
     </header>
 
-    <!-- MOBILE CATEGORIES PANEL (unchanged) -->
+    <!-- MOBILE CATEGORIES PANEL (unchanged behavior; toggled by button above) -->
     <div class="mobile-cats card shadow-sm" *ngIf="mobileCatsVisible">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -151,15 +171,35 @@ import { CartService } from '../services/cart.service';
     .promo-strip { background: linear-gradient(90deg,#ff6aa3,#6b8cff); font-weight:600; font-size:.92rem; box-shadow: 0 2px 6px rgba(11,17,35,0.06); }
     .logo-badge { width:48px; height:48px; background: linear-gradient(135deg,#ff9ec4,#7aaeff); color:white; font-weight:700; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow: 0 6px 18px rgba(122,138,255,0.18); font-size:1.05rem; transform: rotate(-6deg); transition: transform .25s ease; }
     .brand:hover .logo-badge { transform: rotate(0) scale(1.03); }
+
+    /* location click target */
     .location { cursor:pointer; }
+
+    /* search positioning */
     .search-wrap { position: relative; }
+
+    /* suggestions card */
     .suggestions { position:absolute; left:0; right:0; z-index:1200; border-radius:.5rem; overflow:hidden; }
-    .actions .btn { min-width:48px; }
-    .badge { font-size:.7rem; padding:.35rem .45rem; }
+
+    /* ensure action buttons are compact on small screens */
+    .actions .btn { min-width:44px; padding: .35rem .5rem; display: inline-flex; align-items:center; justify-content:center; }
+
+    /* badge sizing */
+    .badge { font-size:.65rem; padding:.3rem .4rem; }
+
+    /* responsive tweaks */
     @media (max-width: 991px) {
-      .categories-select { display:none; }
+      .categories-select { display:none; } /* we use a toggle button for mobile */
       .brand-text small { display:none; }
-      .promo-actions { display:none; }
+      /* promo-actions previously hidden: now visible but stacked */
+      .promo-actions { width:100%; justify-content:center; }
+    }
+
+    /* Improve spacing when promo-actions stacks */
+    @media (max-width: 575px) {
+      .promo-text { text-align:center; }
+      .promo-actions a { font-size:.92rem; }
+      .search-wrap { margin-top: 6px; }
     }
   `]
 })
@@ -199,25 +239,17 @@ export class HeaderComponent implements OnInit {
 
   /**
    * Request the browser for geolocation permission and coordinates.
-   * Steps:
-   *  1) set locState to 'detecting' so UI shows spinner
-   *  2) call navigator.geolocation.getCurrentPosition with timeout
-   *  3) on success: store lat/lon and call reverseGeocode()
-   *  4) on error: set locState appropriately
    */
   async requestLocation() {
-    // guard: does browser support geolocation?
     if (!('geolocation' in navigator)) {
       this.locState = 'error';
       this.location = 'Geolocation not supported';
       return;
     }
 
-    // update UI state
     this.locState = 'detecting';
     this.location = 'Detecting…';
 
-    // attempt to get position with a reasonable timeout
     const opts: PositionOptions = { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 };
 
     navigator.geolocation.getCurrentPosition(
@@ -225,12 +257,10 @@ export class HeaderComponent implements OnInit {
         try {
           this.lat = pos.coords.latitude;
           this.lon = pos.coords.longitude;
-          // call reverse geocoding to get human-readable string
           const label = await this.reverseGeocode(this.lat, this.lon);
           this.location = label ?? `${this.round(this.lat)}, ${this.round(this.lon)}`;
           this.locState = 'granted';
         } catch (err) {
-          // geocode failed — but we still have coordinates
           console.error('Reverse geocoding failed', err);
           this.location = `${this.round(pos.coords.latitude)}, ${this.round(pos.coords.longitude)}`;
           this.locState = 'granted';
@@ -253,28 +283,16 @@ export class HeaderComponent implements OnInit {
     );
   }
 
-  // small helper for rounding coords
   private round(n?: number) {
     if (n == null) return '';
     return n.toFixed(4);
   }
 
-  /**
-   * Reverse-geocode lat/lon using OpenStreetMap Nominatim.
-   * Returns a short label like "Mumbai 400001" or null on failure.
-   *
-   * NOTE: Nominatim has usage policies and rate limits. For production, use a paid geocoding provider or run your own proxy.
-   */
   private async reverseGeocode(lat: number, lon: number): Promise<string | null> {
     try {
-      // Nominatim reverse geocode endpoint (format=json)
       const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&addressdetails=1`;
       const resp = await fetch(url, {
-        headers: {
-          // Helpful to include a descriptive header, but browsers may block setting 'User-Agent'.
-          // Keep Accept header; don't set aggressive headers to avoid CORS problems.
-          'Accept': 'application/json'
-        }
+        headers: { 'Accept': 'application/json' }
       });
 
       if (!resp.ok) {
@@ -283,7 +301,6 @@ export class HeaderComponent implements OnInit {
       }
 
       const data = await resp.json();
-      // Try to build a compact label: city / town / village + postcode if available
       const addr = data.address || {};
       const place = addr.city || addr.town || addr.village || addr.county || addr.state;
       const postcode = addr.postcode;
@@ -291,7 +308,6 @@ export class HeaderComponent implements OnInit {
       if (place) label += place;
       if (postcode) label += label ? ` ${postcode}` : `${postcode}`;
       if (!label && data.display_name) {
-        // fallback to a trimmed display_name (first two parts)
         label = data.display_name.split(',').slice(0, 2).join(',').trim();
       }
       return label || null;
@@ -330,6 +346,7 @@ export class HeaderComponent implements OnInit {
     console.log('search for', this.query, 'category', this.selectedCategory);
   }
 
+  // Toggle mobile category panel
   toggleMobileCategories() { this.mobileCatsVisible = !this.mobileCatsVisible; }
 
   // close suggestions when clicking outside
