@@ -100,6 +100,111 @@
       },
       "response": []
     }
+    , {
+      "name": "Fetch Products Paginated",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/products?page=1&limit=10",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","products"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "10" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Update Product",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Updated Product Name\",\n    \"description\": \"Updated description\",\n    \"imagePath\": \"http://localhost:3000/images/new-image.png\",\n    \"categoryIds\": [1,2]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products/product/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","products","product","1"]
+        }
+      }
+    },
+    {
+      "name": "Delete Product Categories",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/products/1/categories",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","products","1","categories"]
+        }
+      }
+    },
+    {
+      "name": "Fetch All Categories",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/products/categories",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","products","categories"]
+        }
+      }
+    },
+    {
+      "name": "Delete Product",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/products/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","products","1"]
+        }
+      }
+    },{
+  "name": "Delete Product Image",
+  "request": {
+    "method": "DELETE",
+    "header": [
+      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+    ],
+    "url": {
+      "raw": "http://localhost:3000/api/product-images/1",
+      "protocol": "http",
+      "host": ["localhost"],
+      "port": "3000",
+      "path": ["api", "product-images", "1"]
+    }
+  }
+}
+
   ],
   "variable": [
     { "key": "adminToken", "value": "" }

@@ -10,5 +10,11 @@ router.post('/product', verifyToken, ensureAdmin, productController.createProduc
 router.post('/variant', verifyToken, ensureAdmin, productController.createVariant);
 router.post('/variant/price', verifyToken, ensureAdmin, productController.setPrice);
 router.put('/variant/price', verifyToken, ensureAdmin, productController.updatePrice);
+router.get('/all', verifyToken, ensureAdmin, productController.getAllProducts);
+router.get('/categories', verifyToken, ensureAdmin, productController.getAllCategories);
+router.put('/product/:id', verifyToken, ensureAdmin, productController.updateProduct);
+router.get('/', verifyToken, ensureAdmin, productController.getProductsPaginated);
+router.delete('/:id', verifyToken, ensureAdmin, productController.deleteProduct);
+router.delete('/:id/categories', verifyToken, ensureAdmin, productController.deleteProductCategories);
 
 module.exports = router;

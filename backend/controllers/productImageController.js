@@ -1,5 +1,6 @@
 const { uploadToR2 } = require('../middleware/uploadMiddleware');
 const productImageRepo = require('../repositories/productImageRepo');
+const productImageService = require('../services/productImageService'); 
 
 async function uploadProductImages(req, res, next) {
   try {
@@ -22,4 +23,21 @@ async function uploadProductImages(req, res, next) {
   }
 }
 
-module.exports = { uploadProductImages };
+async function deleteProductImage(req, res, next) {
+  try {
+    const imageId = parseInt(req.params.id, 10);
+    if (isNaN(imageId)) {
+      return res.status(400).json({ success: false, message: 'Invalid image id' });
+    }
+
+    // pass user id for audit if you want (optional)
+    const result = await productImageService.deleteProductImage(imageId, req.user && req.user.id);
+
+    // result may contain warning if cloud delete failed
+    res.json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { uploadProductImages,deleteProductImage };

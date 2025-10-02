@@ -75,11 +75,141 @@ async function updateVariantPrice(variantId, priceType, newPrice) {
   return result;
 }
 
-module.exports = {
+async function fetchAllProductsWithImagesAndCategories() {
+  const result = await query(`
+    SELECT 
+        p.Id AS ProductId,
+        p.Name AS ProductName,
+        p.Description,
+        p.ImagePath,
+        p.IsActive,
+        p.IsFeatured,
+        ISNULL(
+          (SELECT STRING_AGG(pc.CategoryId, ',') 
+           FROM dbo.ProductCategories pc 
+           WHERE pc.ProductId = p.Id), ''
+        ) AS CategoryIds,
+        ISNULL(
+          (SELECT STRING_AGG(pi.ImageUrl, ',') 
+           FROM dbo.ProductImages pi 
+           WHERE pi.ProductId = p.Id), ''
+        ) AS ImageUrls
+    FROM dbo.Products p
+    ORDER BY p.Id DESC
+  `);
+
+  // Map comma-separated strings to arrays
+  return result.recordset.map(p => ({
+    ...p,
+    CategoryIds: p.CategoryIds ? p.CategoryIds.split(',').map(Number) : [],
+    ImageUrls: p.ImageUrls ? p.ImageUrls.split(',') : []
+  }));
+}
+
+async function fetchAllCategories() {
+  const result = await query('SELECT Id, Name, ParentCategoryId FROM dbo.Categories ORDER BY Name');
+  return result.recordset;
+}
+
+async function updateProductDetails({ productId, name, description, imagePath }) {
+  const result = await query(`
+    UPDATE dbo.Products 
+    SET Name = @name, Description = @description, ImagePath = @imagePath
+    OUTPUT INSERTED.*
+    WHERE Id = @productId`,
+    {
+      productId: { type: sql.Int, value: productId },
+      name: { type: sql.NVarChar, value: name },
+      description: { type: sql.NVarChar, value: description },
+      imagePath: { type: sql.NVarChar, value: imagePath }
+    }
+  );
+  return result.recordset[0];
+}
+
+
+async function fetchProductsPaginated({ page, limit }) {
+  const offset = (page - 1) * limit;
+
+  const result = await query(`
+    SELECT 
+      p.Id AS ProductId,
+      p.Name AS ProductName,
+      p.Description,
+      p.ImagePath,
+      ISNULL((SELECT STRING_AGG(pc.CategoryId, ',') FROM dbo.ProductCategories pc WHERE pc.ProductId = p.Id), '') AS CategoryIds,
+      ISNULL((SELECT STRING_AGG(pi.ImageUrl, ',') FROM dbo.ProductImages pi WHERE pi.ProductId = p.Id), '') AS ImageUrls
+    FROM dbo.Products p
+    ORDER BY p.Id DESC
+    OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY`,
+    {
+      offset: { type: sql.Int, value: offset },
+      limit: { type: sql.Int, value: limit }
+    }
+  );
+
+  const countResult = await query('SELECT COUNT(*) AS total FROM dbo.Products');
+  const total = countResult.recordset[0].total;
+
+  return {
+    products: result.recordset.map(p => ({
+      ...p,
+      CategoryIds: p.CategoryIds ? p.CategoryIds.split(',').map(Number) : [],
+      ImageUrls: p.ImageUrls ? p.ImageUrls.split(',') : []
+    })),
+    total
+  };
+}
+
+async function deleteProductCategories(productId) {
+  // removes mappings from ProductCategories
+  await query('DELETE FROM dbo.ProductCategories WHERE ProductId = @productId', {
+    productId: { type: sql.Int, value: productId }
+  });
+  return { success: true };
+}
+
+async function deleteProductImages(productId) {
+  // if you want to keep DB rows for audit, change this to UPDATE instead of DELETE.
+  await query('DELETE FROM dbo.ProductImages WHERE ProductId = @productId', {
+    productId: { type: sql.Int, value: productId }
+  });
+}
+
+async function softDeleteProduct(productId) {
+  // 1) mark product as inactive
+  const updated = await query(`
+    UPDATE dbo.Products
+    SET IsActive = 0
+    OUTPUT INSERTED.*
+    WHERE Id = @productId
+  `, { productId: { type: sql.Int, value: productId } });
+
+  if (!updated.recordset || updated.recordset.length === 0) {
+    throw { status: 404, message: 'Product not found' };
+  }
+
+  // 2) delete category links
+  await deleteProductCategories(productId);
+
+  // 3) delete images (or change to archive if you prefer)
+  await deleteProductImages(productId);
+
+  // Optionally: you can also mark variants as inactive instead of deleting them.
+  await query('UPDATE dbo.ProductVariants SET StockQty = 0 WHERE ProductId = @productId', {
+    productId: { type: sql.Int, value: productId }
+  });
+
+  return updated.recordset[0];
+}
+
+module.exports = {softDeleteProduct,deleteProductImages,fetchProductsPaginated, updateProductDetails,deleteProductCategories,
+  fetchAllCategories,
   createCategory,
   createProduct,
   createProductCategory,
   createProductVariant,
   createVariantPrice,
-  updateVariantPrice
+  updateVariantPrice,
+  fetchAllProductsWithImagesAndCategories
 };

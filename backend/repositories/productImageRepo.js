@@ -13,4 +13,17 @@ async function addProductImage(productId, imageUrl, isPrimary = false) {
   return result.recordset[0];
 }
 
-module.exports = { addProductImage }; // ✅ export as object
+
+async function getProductImageById(imageId) {
+  const result = await query('SELECT * FROM dbo.ProductImages WHERE Id = @id', { id: { type: sql.Int, value: imageId } });
+  return result.recordset[0];
+}
+
+async function deleteProductImageById(imageId) {
+  await query('DELETE FROM dbo.ProductImages WHERE Id = @id', { id: { type: sql.Int, value: imageId } });
+  return { success: true };
+}
+
+module.exports = {   addProductImage,
+  getProductImageById,
+  deleteProductImageById, }; // ✅ export as object
