@@ -2,7 +2,7 @@
   "info": {
     "name": "SivanyaShop Admin Product Workflow",
     "_postman_id": "d1c0f6fa-1234-5678-9101-abcdef123456",
-    "description": "Test admin product workflow on localhost:3000",
+    "description": "Test admin product workflow on localhost:3000, including product images",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -10,13 +10,8 @@
       "name": "Admin Login",
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"adminpassword\"\n}"
-        },
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"adminpassword\"\n}" },
         "url": { "raw": "http://localhost:3000/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","auth","login"] }
       },
       "response": []
@@ -29,10 +24,7 @@
           { "key": "Content-Type", "value": "application/json" },
           { "key": "Authorization", "value": "Bearer {{adminToken}}" }
         ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"name\": \"Electronics\",\n    \"parentCategoryId\": null\n}"
-        },
+        "body": { "mode": "raw", "raw": "{\n    \"name\": \"Electronics\",\n    \"parentCategoryId\": null\n}" },
         "url": { "raw": "http://localhost:3000/api/products/category", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","category"] }
       },
       "response": []
@@ -45,10 +37,7 @@
           { "key": "Content-Type", "value": "application/json" },
           { "key": "Authorization", "value": "Bearer {{adminToken}}" }
         ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"name\": \"Smartphone XYZ\",\n    \"description\": \"Latest smartphone with awesome features\",\n    \"imagePath\": \"http://localhost:3000/images/smartphone.png\",\n    \"categoryIds\": [1]\n}"
-        },
+        "body": { "mode": "raw", "raw": "{\n    \"name\": \"Smartphone XYZ\",\n    \"description\": \"Latest smartphone with awesome features\",\n    \"imagePath\": \"http://localhost:3000/images/smartphone.png\",\n    \"categoryIds\": [1]\n}" },
         "url": { "raw": "http://localhost:3000/api/products/product", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","product"] }
       },
       "response": []
@@ -61,10 +50,7 @@
           { "key": "Content-Type", "value": "application/json" },
           { "key": "Authorization", "value": "Bearer {{adminToken}}" }
         ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"productId\": 1,\n    \"sku\": \"XYZ-BLK-128\",\n    \"variantName\": \"Black 128GB\",\n    \"attributes\": \"Color:Black;Storage:128GB\",\n    \"stockQty\": 50\n}"
-        },
+        "body": { "mode": "raw", "raw": "{\n    \"productId\": 1,\n    \"sku\": \"XYZ-BLK-128\",\n    \"variantName\": \"Black 128GB\",\n    \"attributes\": \"Color:Black;Storage:128GB\",\n    \"stockQty\": 50\n}" },
         "url": { "raw": "http://localhost:3000/api/products/variant", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","variant"] }
       },
       "response": []
@@ -77,10 +63,7 @@
           { "key": "Content-Type", "value": "application/json" },
           { "key": "Authorization", "value": "Bearer {{adminToken}}" }
         ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"variantId\": 1,\n    \"priceType\": \"CUSTOMER\",\n    \"price\": 500\n}"
-        },
+        "body": { "mode": "raw", "raw": "{\n    \"variantId\": 1,\n    \"priceType\": \"CUSTOMER\",\n    \"price\": 500\n}" },
         "url": { "raw": "http://localhost:3000/api/products/variant/price", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","variant","price"] }
       },
       "response": []
@@ -93,11 +76,27 @@
           { "key": "Content-Type", "value": "application/json" },
           { "key": "Authorization", "value": "Bearer {{adminToken}}" }
         ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"variantId\": 1,\n    \"priceType\": \"CUSTOMER\",\n    \"price\": 550\n}"
-        },
+        "body": { "mode": "raw", "raw": "{\n    \"variantId\": 1,\n    \"priceType\": \"CUSTOMER\",\n    \"price\": 550\n}" },
         "url": { "raw": "http://localhost:3000/api/products/variant/price", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","variant","price"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Product Images",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "productId", "value": "1", "type": "text" },
+            { "key": "images", "type": "file", "src": "/path/to/image1.png" },
+            { "key": "images", "type": "file", "src": "/path/to/image2.png" }
+          ]
+        },
+        "url": { "raw": "http://localhost:3000/api/product-images/upload", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","product-images","upload"] }
       },
       "response": []
     }

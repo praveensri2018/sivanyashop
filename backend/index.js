@@ -9,10 +9,12 @@ app.use(express.json());
 // Routes
 const authRoutes = require('./routes/auth');   
 const productRoutes = require('./routes/product');
+const productImageRoutes = require('./routes/productImage');
 
 // Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/product-images', productImageRoutes);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
