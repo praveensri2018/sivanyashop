@@ -311,3 +311,49 @@ CREATE TABLE dbo.SchemaMigrations (
     AppliedAt DATETIMEOFFSET NOT NULL DEFAULT (SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:30'))
 );
 GO
+
+
+
+CREATE or alter TRIGGER TRG_Users_InsertReferral
+ON dbo.Users
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @code NVARCHAR(6);
+    DECLARE @id INT;
+
+    -- Cursor through all inserted rows with Role='RETAILER'
+    DECLARE cur CURSOR FOR
+    SELECT Id FROM inserted WHERE Role='RETAILER';
+
+    OPEN cur;
+    FETCH NEXT FROM cur INTO @id;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Generate unique code
+        DECLARE @exists INT = 1;
+        WHILE @exists = 1
+        BEGIN
+            -- Generate random 6-character alphanumeric
+            SET @code = SUBSTRING(CONVERT(VARCHAR(36), NEWID()), 1, 6);
+
+            -- Check uniqueness
+            IF NOT EXISTS (SELECT 1 FROM dbo.Users WHERE ReferralCode = @code)
+                SET @exists = 0;
+        END
+
+        -- Update the inserted user with unique referral code
+        UPDATE dbo.Users
+        SET ReferralCode = @code
+        WHERE Id = @id;
+
+        FETCH NEXT FROM cur INTO @id;
+    END
+
+    CLOSE cur;
+    DEALLOCATE cur;
+END
+GO

@@ -1,35 +1,34 @@
 {
   "name": "backend",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "Express.js backend server for Sivanya-Glo-Shop",
+  "main": "index.js",
+  "type": "commonjs",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
+  "keywords": [
+    "express",
+    "backend",
+    "api"
+  ],
+  "author": "Praveen",
+  "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.901.0",
+    "@aws-sdk/lib-storage": "^3.901.0",
+    "aws-sdk": "^2.1692.0",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
-    "dotenv": "^17.2.2",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "micro": "^10.0.1",
-    "mssql": "^11.0.1",
-    "next": "15.5.4",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "zod": "^4.1.11"
+    "mssql": "^12.0.0",
+    "multer": "^2.0.2",
+    "multer-s3": "^3.0.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/mssql": "^9.1.8",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/tedious": "^4.0.14",
-    "eslint": "^9",
-    "eslint-config-next": "15.5.4",
-    "typescript": "^5"
+    "nodemon": "^3.1.10"
   }
 }

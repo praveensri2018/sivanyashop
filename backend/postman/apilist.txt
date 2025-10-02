@@ -1,0 +1,37 @@
+Auth APIs
+
+POST /api/auth/login → Admin login (token generate).
+
+📦 Product Management (Admin)
+
+POST /api/products/category → Create category.
+
+POST /api/products/product → Create product.
+
+POST /api/products/variant → Add product variant.
+
+POST /api/products/variant/price → Set price for variant.
+
+PUT /api/products/variant/price → Update variant price.
+
+GET /api/products/all → Get all products (with categories + images).
+
+GET /api/products?page=&limit= → Paginated product list.
+
+PUT /api/products/product/:id → Update product (details + categories).
+
+DELETE /api/products/:id → Delete product.
+
+DELETE /api/products/:id/categories → Remove product categories.
+
+GET /api/products/categories → Fetch all categories.
+
+🖼 Product Images
+
+POST /api/product-images/upload → Upload images.
+
+DELETE /api/product-images/:id → Delete product image (also from cloud).
+
+✅ Other
+
+GET /health → Health check.
