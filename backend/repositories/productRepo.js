@@ -203,7 +203,81 @@ async function softDeleteProduct(productId) {
   return updated.recordset[0];
 }
 
-module.exports = {softDeleteProduct,deleteProductImages,fetchProductsPaginated, updateProductDetails,deleteProductCategories,
+async function getTopSellingProducts(limit = 10) {
+  const result = await query(`
+    SELECT TOP (@limit) p.Id, p.Name, SUM(oi.Qty) AS SoldQty
+    FROM dbo.OrderItems oi
+    JOIN dbo.Products p ON oi.ProductId = p.Id
+    GROUP BY p.Id, p.Name
+    ORDER BY SoldQty DESC
+  `, { limit: { type: sql.Int, value: limit } });
+  return result.recordset;
+}
+
+// Low-stock products
+async function getLowStockProducts(threshold = 10) {
+  const result = await query(`
+    SELECT p.Id, p.Name, SUM(pv.StockQty) AS TotalStock
+    FROM dbo.ProductVariants pv
+    JOIN dbo.Products p ON pv.ProductId = p.Id
+    GROUP BY p.Id, p.Name
+    HAVING SUM(pv.StockQty) <= @threshold
+  `, { threshold: { type: sql.Int, value: threshold } });
+  return result.recordset;
+}
+
+// Mark product as featured
+async function updateProductFeatured(productId, isFeatured) {
+  const result = await query(`
+    UPDATE dbo.Products
+    SET IsFeatured = @isFeatured
+    OUTPUT INSERTED.*
+    WHERE Id = @productId
+  `, {
+    productId: { type: sql.Int, value: productId },
+    isFeatured: { type: sql.Bit, value: isFeatured }
+  });
+  return result.recordset[0];
+}
+
+// Placeholder: bulk upload products from CSV/Excel
+async function bulkInsertProductsFromFile(filePath) {
+  // TODO: parse CSV/XLSX and insert products
+  return { message: 'Bulk upload logic not implemented yet' };
+}
+
+async function addRecentlyViewed(userId, productId) {
+    await query(
+        `MERGE dbo.RecentlyViewedProducts AS target
+         USING (SELECT @userId AS UserId, @productId AS ProductId) AS source
+         ON target.UserId = source.UserId AND target.ProductId = source.ProductId
+         WHEN MATCHED THEN 
+             UPDATE SET ViewedAt = SYSDATETIMEOFFSET()
+         WHEN NOT MATCHED THEN
+             INSERT (UserId, ProductId, ViewedAt) VALUES (@userId, @productId, SYSDATETIMEOFFSET());`,
+        { userId: { type: sql.Int, value: userId }, productId: { type: sql.Int, value: productId } }
+    );
+}
+
+async function getRecentlyViewed(userId, limit = 10) {
+    const result = await query(
+        `SELECT TOP (@limit) p.Id, p.Name, p.Description, p.ImagePath
+         FROM dbo.RecentlyViewedProducts rv
+         INNER JOIN dbo.Products p ON p.Id = rv.ProductId
+         WHERE rv.UserId = @userId
+         ORDER BY rv.ViewedAt DESC`,
+        { userId: { type: sql.Int, value: userId }, limit: { type: sql.Int, value: limit } }
+    );
+    return result.recordset;
+}
+
+module.exports = {
+  addRecentlyViewed, getRecentlyViewed ,
+  getTopSellingProducts,
+  getLowStockProducts,
+  updateProductFeatured,
+  bulkInsertProductsFromFile,
+  softDeleteProduct,deleteProductImages,fetchProductsPaginated, updateProductDetails,deleteProductCategories,
   fetchAllCategories,
   createCategory,
   createProduct,
