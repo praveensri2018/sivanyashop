@@ -67,7 +67,44 @@ async function softDeleteProduct(productId, deletedByUserId = null) {
 }
 
 
-module.exports = { deleteProductCategories,
+async function fetchTopSellingProducts() {
+  return productRepo.getTopSellingProducts(); // define query in repo
+}
+
+async function fetchRecentlyViewedProducts(userId) {
+  return productRepo.getRecentlyViewedProducts(userId);
+}
+
+async function fetchLowStockProducts(threshold = 10) {
+  return productRepo.getLowStockProducts(threshold);
+}
+
+async function bulkUploadProducts(filePath) {
+  // parse CSV/Excel file and create products
+  return productRepo.bulkInsertProductsFromFile(filePath);
+}
+
+async function setProductFeatured(productId, isFeatured) {
+  return productRepo.updateProductFeatured(productId, isFeatured);
+}
+
+async function addRecentlyViewedProduct(userId, productId) {
+    return productRepo.addRecentlyViewed(userId, productId);
+}
+
+async function fetchRecentlyViewedProducts(userId, limit = 10) {
+    return productRepo.getRecentlyViewed(userId, limit);
+}
+
+module.exports = {
+   addRecentlyViewedProduct,
+    fetchRecentlyViewedProducts,
+  fetchTopSellingProducts,
+  fetchRecentlyViewedProducts,
+  fetchLowStockProducts,
+  bulkUploadProducts,
+  setProductFeatured,
+  deleteProductCategories,
   softDeleteProduct,getProductsPaginated,updateProduct,getAllCategories, getAllProducts,
   addCategory,
   addProduct,

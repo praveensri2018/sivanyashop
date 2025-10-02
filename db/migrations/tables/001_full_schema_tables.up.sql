@@ -313,6 +313,16 @@ CREATE TABLE dbo.SchemaMigrations (
 GO
 
 
+CREATE TABLE dbo.ProductImages (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    ProductId INT NOT NULL,
+    ImageUrl NVARCHAR(500) NOT NULL,
+    IsPrimary BIT NOT NULL DEFAULT 0,
+    CreatedAt DATETIMEOFFSET NOT NULL DEFAULT (SWITCHOFFSET(SYSDATETIMEOFFSET(), '+05:30')),
+    CONSTRAINT FK_ProductImages_Product FOREIGN KEY (ProductId) REFERENCES dbo.Products(Id)
+);
+GO
+
 
 CREATE or alter TRIGGER TRG_Users_InsertReferral
 ON dbo.Users

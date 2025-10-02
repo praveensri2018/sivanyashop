@@ -10,11 +10,15 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');   
 const productRoutes = require('./routes/product');
 const productImageRoutes = require('./routes/productImage');
+const categoryRoutes = require('./routes/category');
+const stockRoutes = require('./routes/stock');
 
 // Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/product-images', productImageRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/stock', stockRoutes);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));

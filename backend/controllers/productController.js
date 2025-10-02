@@ -112,5 +112,108 @@ async function deleteProduct(req, res, next) {
 }
 
 
-module.exports = {deleteProductCategories,
+async function getTopSellingProducts(req, res, next) {
+  try {
+    const products = await productService.fetchTopSellingProducts();
+    res.json({ success: true, products });
+  } catch (err) { next(err); }
+}
+
+// Recently viewed products
+async function getRecentlyViewedProducts(req, res, next) {
+  try {
+    const userId = req.user.id; // optional auth
+    const products = await productService.fetchRecentlyViewedProducts(userId);
+    res.json({ success: true, products });
+  } catch (err) { next(err); }
+}
+
+// Low-stock products
+async function getLowStockProducts(req, res, next) {
+  try {
+    const threshold = parseInt(req.query.threshold) || 10;
+    const products = await productService.fetchLowStockProducts(threshold);
+    res.json({ success: true, products });
+  } catch (err) { next(err); }
+}
+
+// Bulk product upload (CSV/Excel)
+async function bulkUploadProducts(req, res, next) {
+  try {
+    const file = req.file; // multer file middleware
+    const result = await productService.bulkUploadProducts(file.path);
+    res.json({ success: true, result });
+  } catch (err) { next(err); }
+}
+
+// Mark product as featured
+async function markProductFeatured(req, res, next) {
+  try {
+    const productId = parseInt(req.params.id);
+    const isFeatured = req.body.isFeatured; // boolean
+    const product = await productService.setProductFeatured(productId, isFeatured);
+    res.json({ success: true, product });
+  } catch (err) { next(err); }
+}
+
+async function recentlyViewedProducts(req, res, next) {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const products = await productService.fetchRecentlyViewedProducts(req.user.id, limit);
+        res.json({ success: true, products });
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function updateCategory(req, res, next) {
+  try {
+    const id = parseInt(req.params.id);
+    const { name, parentCategoryId } = req.body;
+    const updated = await categoryService.updateCategory(id, name, parentCategoryId);
+    res.json({ success: true, category: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deleteCategory(req, res, next) {
+  try {
+    const id = parseInt(req.params.id);
+    await categoryService.deleteCategory(id);
+    res.json({ success: true, message: 'Category deleted' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getCategoryTree(req, res, next) {
+  try {
+    const tree = await categoryService.getCategoryTree();
+    res.json({ success: true, tree });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getProductsByCategory(req, res, next) {
+  try {
+    const categoryId = parseInt(req.params.id);
+    const products = await categoryService.getProductsByCategory(categoryId);
+    res.json({ success: true, products });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+
+  updateCategory, deleteCategory, getCategoryTree, getProductsByCategory ,
+  recentlyViewedProducts,
+  getTopSellingProducts,
+  getRecentlyViewedProducts,
+  getLowStockProducts,
+  bulkUploadProducts,
+  markProductFeatured,
+  deleteProductCategories,
   deleteProduct,getProductsPaginated,updateProduct,getAllCategories, getAllProducts, createCategory, createProduct, createVariant, setPrice, updatePrice };

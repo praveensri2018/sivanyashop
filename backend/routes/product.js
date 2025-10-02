@@ -3,6 +3,18 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken, ensureAdmin } = require('../middleware/authMiddleware');
 const productController = require('../controllers/productController');
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // make sure this folder exists
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ storage });
 
 // Admin-only product management
 router.post('/category', verifyToken, ensureAdmin, productController.createCategory);
@@ -16,5 +28,12 @@ router.put('/product/:id', verifyToken, ensureAdmin, productController.updatePro
 router.get('/', verifyToken, ensureAdmin, productController.getProductsPaginated);
 router.delete('/:id', verifyToken, ensureAdmin, productController.deleteProduct);
 router.delete('/:id/categories', verifyToken, ensureAdmin, productController.deleteProductCategories);
+
+router.get('/top-selling', verifyToken, ensureAdmin, productController.getTopSellingProducts);
+//router.get('/recently-viewed', verifyToken, productController.getRecentlyViewedProducts);
+router.get('/low-stock', verifyToken, ensureAdmin, productController.getLowStockProducts);
+router.post('/bulk-upload', verifyToken, ensureAdmin, upload.single('file'), productController.bulkUploadProducts);
+router.put('/:id/feature', verifyToken, ensureAdmin, productController.markProductFeatured);
+router.get('/recently-viewed', verifyToken, productController.recentlyViewedProducts);
 
 module.exports = router;

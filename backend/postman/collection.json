@@ -10,9 +10,29 @@
       "name": "Admin Login",
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"adminpassword\"\n}" },
-        "url": { "raw": "http://localhost:3000/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","auth","login"] }
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"adminpassword\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
       },
       "response": []
     },
@@ -21,11 +41,32 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
-        "body": { "mode": "raw", "raw": "{\n    \"name\": \"Electronics\",\n    \"parentCategoryId\": null\n}" },
-        "url": { "raw": "http://localhost:3000/api/products/category", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","category"] }
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Electronics\",\n    \"parentCategoryId\": null\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products/category",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "products",
+            "category"
+          ]
+        }
       },
       "response": []
     },
@@ -34,11 +75,32 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
-        "body": { "mode": "raw", "raw": "{\n    \"name\": \"Smartphone XYZ\",\n    \"description\": \"Latest smartphone with awesome features\",\n    \"imagePath\": \"http://localhost:3000/images/smartphone.png\",\n    \"categoryIds\": [1]\n}" },
-        "url": { "raw": "http://localhost:3000/api/products/product", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","product"] }
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Smartphone XYZ\",\n    \"description\": \"Latest smartphone with awesome features\",\n    \"imagePath\": \"http://localhost:3000/images/smartphone.png\",\n    \"categoryIds\": [1]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products/product",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "products",
+            "product"
+          ]
+        }
       },
       "response": []
     },
@@ -47,11 +109,32 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
-        "body": { "mode": "raw", "raw": "{\n    \"productId\": 1,\n    \"sku\": \"XYZ-BLK-128\",\n    \"variantName\": \"Black 128GB\",\n    \"attributes\": \"Color:Black;Storage:128GB\",\n    \"stockQty\": 50\n}" },
-        "url": { "raw": "http://localhost:3000/api/products/variant", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","variant"] }
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"productId\": 1,\n    \"sku\": \"XYZ-BLK-128\",\n    \"variantName\": \"Black 128GB\",\n    \"attributes\": \"Color:Black;Storage:128GB\",\n    \"stockQty\": 50\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products/variant",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "products",
+            "variant"
+          ]
+        }
       },
       "response": []
     },
@@ -60,11 +143,33 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
-        "body": { "mode": "raw", "raw": "{\n    \"variantId\": 1,\n    \"priceType\": \"CUSTOMER\",\n    \"price\": 500\n}" },
-        "url": { "raw": "http://localhost:3000/api/products/variant/price", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","variant","price"] }
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"variantId\": 1,\n    \"priceType\": \"CUSTOMER\",\n    \"price\": 500\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products/variant/price",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "products",
+            "variant",
+            "price"
+          ]
+        }
       },
       "response": []
     },
@@ -73,11 +178,33 @@
       "request": {
         "method": "PUT",
         "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
-        "body": { "mode": "raw", "raw": "{\n    \"variantId\": 1,\n    \"priceType\": \"CUSTOMER\",\n    \"price\": 550\n}" },
-        "url": { "raw": "http://localhost:3000/api/products/variant/price", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","variant","price"] }
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"variantId\": 1,\n    \"priceType\": \"CUSTOMER\",\n    \"price\": 550\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products/variant/price",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "products",
+            "variant",
+            "price"
+          ]
+        }
       },
       "response": []
     },
@@ -86,36 +213,77 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
         "body": {
           "mode": "formdata",
           "formdata": [
-            { "key": "productId", "value": "1", "type": "text" },
-            { "key": "images", "type": "file", "src": "/path/to/image1.png" },
-            { "key": "images", "type": "file", "src": "/path/to/image2.png" }
+            {
+              "key": "productId",
+              "value": "1",
+              "type": "text"
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": "/path/to/image1.png"
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": "/path/to/image2.png"
+            }
           ]
         },
-        "url": { "raw": "http://localhost:3000/api/product-images/upload", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","product-images","upload"] }
+        "url": {
+          "raw": "http://localhost:3000/api/product-images/upload",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "product-images",
+            "upload"
+          ]
+        }
       },
       "response": []
-    }
-    , {
+    },
+    {
       "name": "Fetch Products Paginated",
       "request": {
         "method": "GET",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
         "url": {
           "raw": "http://localhost:3000/api/products?page=1&limit=10",
           "protocol": "http",
-          "host": ["localhost"],
+          "host": [
+            "localhost"
+          ],
           "port": "3000",
-          "path": ["api","products"],
+          "path": [
+            "api",
+            "products"
+          ],
           "query": [
-            { "key": "page", "value": "1" },
-            { "key": "limit", "value": "10" }
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
           ]
         }
       }
@@ -125,8 +293,14 @@
       "request": {
         "method": "PUT",
         "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
         "body": {
           "mode": "raw",
@@ -135,9 +309,16 @@
         "url": {
           "raw": "http://localhost:3000/api/products/product/1",
           "protocol": "http",
-          "host": ["localhost"],
+          "host": [
+            "localhost"
+          ],
           "port": "3000",
-          "path": ["api","products","product","1"]
+          "path": [
+            "api",
+            "products",
+            "product",
+            "1"
+          ]
         }
       }
     },
@@ -146,14 +327,24 @@
       "request": {
         "method": "DELETE",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
         "url": {
           "raw": "http://localhost:3000/api/products/1/categories",
           "protocol": "http",
-          "host": ["localhost"],
+          "host": [
+            "localhost"
+          ],
           "port": "3000",
-          "path": ["api","products","1","categories"]
+          "path": [
+            "api",
+            "products",
+            "1",
+            "categories"
+          ]
         }
       }
     },
@@ -162,14 +353,23 @@
       "request": {
         "method": "GET",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
         "url": {
           "raw": "http://localhost:3000/api/products/categories",
           "protocol": "http",
-          "host": ["localhost"],
+          "host": [
+            "localhost"
+          ],
           "port": "3000",
-          "path": ["api","products","categories"]
+          "path": [
+            "api",
+            "products",
+            "categories"
+          ]
         }
       }
     },
@@ -178,35 +378,252 @@
       "request": {
         "method": "DELETE",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
         ],
         "url": {
           "raw": "http://localhost:3000/api/products/1",
           "protocol": "http",
-          "host": ["localhost"],
+          "host": [
+            "localhost"
+          ],
           "port": "3000",
-          "path": ["api","products","1"]
+          "path": [
+            "api",
+            "products",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Product Image",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/product-images/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "product-images",
+            "1"
+          ]
         }
       }
     },{
-  "name": "Delete Product Image",
-  "request": {
-    "method": "DELETE",
-    "header": [
-      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
-    ],
-    "url": {
-      "raw": "http://localhost:3000/api/product-images/1",
-      "protocol": "http",
-      "host": ["localhost"],
-      "port": "3000",
-      "path": ["api", "product-images", "1"]
+      "name": "Top-Selling Products",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": { "raw": "http://localhost:3000/api/products/top-selling", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","top-selling"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Recently Viewed Products",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": { "raw": "http://localhost:3000/api/products/recently-viewed", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","recently-viewed"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Low-Stock Products",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/products/low-stock?threshold=10",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","products","low-stock"],
+          "query": [
+            { "key": "threshold", "value": "10" }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Bulk Upload Products",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": "/path/to/products.csv" }
+          ]
+        },
+        "url": { "raw": "http://localhost:3000/api/products/bulk-upload", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","products","bulk-upload"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Mark Product Featured",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"isFeatured\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products/1/feature",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","products","1","feature"]
+        }
+      },
+      "response": []
+    },
+        {
+      "name": "Update Category",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"name\": \"Electronics Updated\", \"parentCategoryId\": null }"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/categories/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","categories","1"]
+        }
+      }
+    },
+    {
+      "name": "Delete Category",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/categories/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","categories","1"]
+        }
+      }
+    },
+    {
+      "name": "Category Tree",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/categories/tree",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","categories","tree"]
+        }
+      }
+    },
+    {
+      "name": "Products by Category",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/categories/1/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","categories","1","products"]
+        }
+      }
+    },
+    {
+      "name": "Adjust Stock",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"productId\": 1, \"variantId\": 1, \"movementType\": \"IN\", \"qty\": 50 }"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/stock/adjust",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","stock","adjust"]
+        }
+      }
+    },
+    {
+      "name": "Stock Ledger",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/stock/ledger",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","stock","ledger"]
+        }
+      }
+    },
+    {
+      "name": "Current Stock",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/stock/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api","stock","1"]
+        }
+      }
     }
-  }
-}
-
   ],
   "variable": [
-    { "key": "adminToken", "value": "" }
+    {
+      "key": "adminToken",
+      "value": ""
+    }
   ]
 }
