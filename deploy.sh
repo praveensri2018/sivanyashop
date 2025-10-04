@@ -18,10 +18,10 @@ echo "Latest commit: $(git rev-parse --short HEAD || true)"
 DOCKER_COMPOSE_CMD=""
 if command -v docker-compose >/dev/null 2>&1; then
   DOCKER_COMPOSE_CMD="docker-compose"
-elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-  DOCKER_COMPOSE_CMD="docker compose"
+elif sudo docker compose version >/dev/null 2>&1; then
+  DOCKER_COMPOSE_CMD="sudo docker compose"
 else
-  echo "Error: Neither docker-compose nor docker compose is installed."
+  echo "Error: Neither docker-compose nor docker compose is installed. Install Docker Compose on the VPS."
   exit 1
 fi
 echo "Using Docker Compose command: $DOCKER_COMPOSE_CMD"
