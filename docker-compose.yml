@@ -42,9 +42,10 @@ services:
     networks:
       - webnet
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
-      - ./nginx/html:/usr/share/nginx/html:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro       # nginx configs
+      - /etc/letsencrypt/live:/etc/letsencrypt/live:ro       # live symlinks
+      - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro # archive directory for symlinks
+      - ./nginx/html:/usr/share/nginx/html:ro    # static HTML
     depends_on:
       - frontend
       - backend

@@ -35,3 +35,102 @@ DELETE /api/product-images/:id → Delete product image (also from cloud).
 ✅ Other
 
 GET /health → Health check.
+
+
+missing apis
+
+
+
+
+
+🔹 Possible Additional / Advanced APIs
+
+1. Products / Catalog Enhancements
+
+GET /api/products/top-selling → Top-selling products for analytics / homepage
+
+GET /api/products/recently-viewed → Personalized product list
+
+GET /api/products/low-stock → Admin: alert low stock
+
+POST /api/products/bulk-upload → Upload multiple products via CSV / Excel
+
+PUT /api/products/:id/feature → Mark product as featured
+
+2. Categories / Filters
+
+PUT /api/categories/:id → Update category
+
+DELETE /api/categories/:id → Delete category
+
+GET /api/categories/tree → Nested categories (parent → children hierarchy)
+
+GET /api/categories/:id/products → Products in a category
+
+3. Inventory / Stock
+
+POST /api/stock/adjust → Manual stock adjustment
+
+GET /api/stock/ledger → Stock ledger history
+
+GET /api/stock/:productId → Current stock per product / variant
+
+4. Orders / Shipping
+
+PUT /api/orders/:id/shipment → Update shipping info / tracking
+
+GET /api/orders/pending → Admin: pending orders
+
+GET /api/orders/retailer/:id → Orders placed by retailer-linked customers
+
+5. Retailer / Customer Management
+
+GET /api/retailers → List all retailers
+
+GET /api/customers → List all customers
+
+PUT /api/users/:id/block → Admin blocks user
+
+POST /api/retailers/:id/invite → Resend referral / invite
+
+6. Payments / Finance
+
+GET /api/financial-ledger → Admin: revenue report
+
+GET /api/payouts → Admin / retailer: payout history
+
+PUT /api/payouts/:id/cancel → Cancel payout
+
+7. Analytics / Reporting
+
+GET /api/reports/sales → Daily / monthly sales report
+
+GET /api/reports/customers → Customer signup / order trends
+
+GET /api/reports/products → Product performance
+
+8. Notifications / Messaging
+
+POST /api/notifications/send → Admin sends notifications to users
+
+GET /api/notifications/user → Fetch notifications for user
+
+PUT /api/notifications/:id/read → Mark as read
+
+9. Reviews / Feedback
+
+POST /api/reviews → Add review for product
+
+GET /api/products/:id/reviews → Fetch product reviews
+
+PUT /api/reviews/:id → Update review
+
+DELETE /api/reviews/:id → Delete review
+
+10. Misc / Utility
+
+GET /api/settings → Fetch app-wide settings (tax, shipping, currencies)
+
+PUT /api/settings → Update settings
+
+POST /api/email/send → Send manual email / notification
