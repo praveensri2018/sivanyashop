@@ -22,7 +22,7 @@ DOCKER_COMPOSE_CMD=""
 if command -v docker-compose >/dev/null 2>&1; then
   DOCKER_COMPOSE_CMD="docker-compose"
 elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-  DOCKER_COMPOSE_CMD="docker compose"
+  DOCKER_COMPOSE_CMD="docker-compose"
 else
   echo "Error: Neither docker-compose nor docker compose is installed."
   exit 1
