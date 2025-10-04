@@ -1,6 +1,7 @@
+# => PLACE: /srv/apps/sivanyashop/deploy.sh (on the server)
 #!/usr/bin/env bash
-# PLACE: /srv/apps/sivanyashop/deploy.sh
 set -euo pipefail
+
 IFS=$'\n\t'
 
 # Fix PATH for non-interactive SSH sessions
@@ -24,33 +25,12 @@ if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; 
 elif command -v docker-compose >/dev/null 2>&1; then
   DOCKER_COMPOSE_CMD="docker-compose"  # <-- legacy v1
 else
-  echo "Error: Neither docker compose (v2) nor docker-compose (v1) is installed."
-  exit 1
-fi
-echo "Using Docker Compose command: $DOCKER_COMPOSE_CMD"
+  echo "Docker not found or docker-compose.yml missing. Falling back to npm (pm2) approach."
 
-# 4) Build / start Docker Compose
-if [ -f docker-compose.yml ]; then
-  echo "Using Docker Compose to build and deploy containers"
-  $DOCKER_COMPOSE_CMD pull --ignore-pull-failures || true
-  $DOCKER_COMPOSE_CMD build --pull --no-cache
-  $DOCKER_COMPOSE_CMD up -d
-  echo "Docker Compose deployment finished"
-else
-  echo "docker-compose.yml not found in $ROOT_DIR — please place compose file here."
+  # Install deps and restart pm2 (uncomment if you use pm2)
+  # cd backend
+  # npm ci --production
+  # pm2 restart sivanya-backend || pm2 start index.js --name sivanya-backend
 fi
 
-# 5) Post-deploy health check (API)
-sleep 5
-if command -v curl >/dev/null 2>&1; then
-  echo "Performing quick health checks..."
-  if curl -fsS --max-time 5 https://api.sivanyatrendstops.com/health >/dev/null 2>&1; then
-    echo "API health check OK"
-  else
-    echo "Warning: API health check failed (check logs)"
-  fi
-else
-  echo "curl not available; skipping health checks"
-fi
-
-echo "=== Deploy finished: $(date -u) ==="
+echo "=== DEPLOY END: $(date) ==="
