@@ -1,30 +1,29 @@
 # => PLACE: /srv/apps/sivanyashop/deploy.sh (on the server)
 #!/usr/bin/env bash
 set -euo pipefail
-LOG=/srv/apps/sivanyashop/deploy-$(date +%s).log
-exec > >(tee -a "$LOG") 2>&1
 
-echo "=== DEPLOY START: $(date) ==="
+IFS=$'\n\t'
 
-# ensure in repo root
-cd /srv/apps/sivanyashop
+# Fix PATH for non-interactive SSH sessions
+export PATH=$PATH:/usr/bin
 
-# ensure correct branch and latest code (force reset to avoid conflicts)
-git fetch --all --prune
-git reset --hard origin/main
+echo "=== Deploy start: $(date -u) ==="
 
-# optional: ensure submodules updated
-# git submodule sync --recursive
-# git submodule update --init --recursive
+# 1) Ensure we are in the repo directory
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$ROOT_DIR"
+echo "Working directory: $ROOT_DIR"
 
-# Build / restart with docker compose if you use compose
-if command -v docker >/dev/null 2>&1 && [ -f docker-compose.yml ]; then
-  echo "Docker detected and docker-compose.yml exists. Building and restarting."
-  docker compose build --pull --quiet
-  docker compose up -d --remove-orphans --force-recreate
-  docker system prune -f || true
-  echo "Docker services status:"
-  docker compose ps
+# 2) Optional: display current branch and commit
+echo "Git branch: $(git rev-parse --abbrev-ref HEAD || true)"
+echo "Latest commit: $(git rev-parse --short HEAD || true)"
+
+# 3) Determine docker-compose command (use v2 if available)
+DOCKER_COMPOSE_CMD=""
+if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+  DOCKER_COMPOSE_CMD="docker compose"  # <-- v2 plugin
+elif command -v docker-compose >/dev/null 2>&1; then
+  DOCKER_COMPOSE_CMD="docker-compose"  # <-- legacy v1
 else
   echo "Docker not found or docker-compose.yml missing. Falling back to npm (pm2) approach."
 
