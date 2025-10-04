@@ -1,55 +1,37 @@
+# => PLACE: /srv/apps/sivanyashop/deploy.sh (on the server)
 #!/usr/bin/env bash
-# PLACE: /srv/apps/sivanyashop/deploy.sh
-# Deploy script to run on VPS (called by GitHub Actions or run manually)
 set -euo pipefail
-IFS=$'\n\t'
+LOG=/srv/apps/sivanyashop/deploy-$(date +%s).log
+exec > >(tee -a "$LOG") 2>&1
 
-echo "=== Deploy start: $(date -u) ==="
+echo "=== DEPLOY START: $(date) ==="
 
-# 1) Ensure we are in the repo directory
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$ROOT_DIR"
+# ensure in repo root
+cd /srv/apps/sivanyashop
 
-echo "Working directory: $ROOT_DIR"
+# ensure correct branch and latest code (force reset to avoid conflicts)
+git fetch --all --prune
+git reset --hard origin/main
 
-# 2) Optional: display current branch and commit
-echo "Git branch: $(git rev-parse --abbrev-ref HEAD || true)"
-echo "Latest commit: $(git rev-parse --short HEAD || true)"
+# optional: ensure submodules updated
+# git submodule sync --recursive
+# git submodule update --init --recursive
 
-# 3) Install/update dependencies (if desired)
-# Uncomment if you want the server to run npm install (not needed if using docker builds)
-# if [ -f package.json ]; then
-#   echo "Running npm ci"
-#   npm ci --production
-# fi
-
-# 4) Build / start Docker Compose
-if [ -f docker-compose.yml ]; then
-  echo "Using docker-compose to build and deploy containers"
-  # Pull images (if using remote images) and build local images
-  docker-compose pull --ignore-pull-failures || true
-  docker-compose build --pull --no-cache
-  docker-compose up -d
-  echo "docker-compose up -d finished"
+# Build / restart with docker compose if you use compose
+if command -v docker >/dev/null 2>&1 && [ -f docker-compose.yml ]; then
+  echo "Docker detected and docker-compose.yml exists. Building and restarting."
+  docker compose build --pull --quiet
+  docker compose up -d --remove-orphans --force-recreate
+  docker system prune -f || true
+  echo "Docker services status:"
+  docker compose ps
 else
-  echo "docker-compose.yml not found in $ROOT_DIR — please place compose file here."
+  echo "Docker not found or docker-compose.yml missing. Falling back to npm (pm2) approach."
+
+  # Install deps and restart pm2 (uncomment if you use pm2)
+  # cd backend
+  # npm ci --production
+  # pm2 restart sivanya-backend || pm2 start index.js --name sivanya-backend
 fi
 
-# 5) Post-deploy health check (API)
-# Wait a few seconds for services to come up
-sleep 5
-
-# Attempt a simple health check (optional)
-if command -v curl >/dev/null 2>&1; then
-  echo "Performing quick health checks..."
-  # API health (adjust domain or local mapped port as needed)
-  if curl -fsS --max-time 5 https://api.sivanyatrendstops.com/health >/dev/null 2>&1; then
-    echo "API health check OK"
-  else
-    echo "Warning: API health check failed (check logs)"
-  fi
-else
-  echo "curl not available; skipping health checks"
-fi
-
-echo "=== Deploy finished: $(date -u) ==="
+echo "=== DEPLOY END: $(date) ==="
