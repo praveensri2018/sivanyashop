@@ -3,9 +3,6 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# Fix PATH for non-interactive SSH sessions
-export PATH=$PATH:/usr/bin
-
 echo "=== Deploy start: $(date -u) ==="
 
 # 1) Ensure we are in the repo directory
@@ -31,8 +28,7 @@ echo "Using Docker Compose command: $DOCKER_COMPOSE_CMD"
 
 # 4) Build / start Docker Compose
 if [ -f docker-compose.yml ]; then
-  echo "Using Docker Compose to build and deploy containers"
-  # Pull images (if using remote images) and build local images
+  echo "Using docker-compose to build and deploy containers"
   $DOCKER_COMPOSE_CMD pull --ignore-pull-failures || true
   $DOCKER_COMPOSE_CMD build --pull --no-cache
   $DOCKER_COMPOSE_CMD up -d
