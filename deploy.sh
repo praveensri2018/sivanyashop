@@ -20,7 +20,7 @@ echo "Latest commit: $(git rev-parse --short HEAD || true)"
 # 3) Determine docker-compose command (use v2 if available)
 DOCKER_COMPOSE_CMD=""
 if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-  DOCKER_COMPOSE_CMD="/usr/bin/docker compose"  # <-- v2 plugin
+  DOCKER_COMPOSE_CMD="docker compose"  # <-- v2 plugin
 elif command -v docker-compose >/dev/null 2>&1; then
   DOCKER_COMPOSE_CMD="docker-compose"  # <-- legacy v1
 else
