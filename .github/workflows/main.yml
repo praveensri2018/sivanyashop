@@ -1,4 +1,4 @@
-# => PLACE: .github/workflows/deploy.yml (in your repo)
+# PLACE: .github/workflows/deploy.yml
 name: Deploy to VPS
 
 on:
@@ -9,43 +9,54 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Add server to known_hosts
-        uses: webfactory/ssh-agent@v0.7.0
+      - name: Checkout repository (optional for actions that need workspace)
+        uses: actions/checkout@v4
+
+      - name: Start SSH agent and add private key
+        uses: webfactory/ssh-agent@v0.8.1
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-      - name: Ensure remote host in known_hosts (optional but helpful)
+      - name: Ensure VPS host in known_hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          # Add host key to known_hosts to avoid host verification prompt
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
 
-      - name: SSH into VPS and deploy
-        uses: appleboy/ssh-action@v0.1.10
+      - name: SSH to VPS and run deploy script
+        uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: root
+          username: ${{ secrets.VPS_USER }}            # e.g., root or an admin user
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          timeout: 60s
+          port: ${{ secrets.VPS_SSH_PORT || '22' }}
+          timeout: 120s
           script: |
             set -euo pipefail
-            echo "=> Entering /srv/apps/sivanyashop"
+            echo "=> Entering deploy directory"
             cd /srv/apps/sivanyashop
 
-            echo "=> show git status"
+            echo "=> Show git status (for debugging)"
             git status --porcelain || true
 
-            echo "=> fetch and hard reset to origin/main"
+            echo "=> Fetching and resetting to origin/main"
             git fetch --all --prune
             git reset --hard origin/main
 
-            echo "=> make deploy script executable"
+            echo "=> Ensure deploy.sh is executable"
             chmod +x ./deploy.sh || true
 
-            echo "=> run deploy.sh (captures output)"
+            echo "=> Running deploy.sh (output saved to deploy.log)"
             ./deploy.sh 2>&1 | tee deploy.log
-            echo "=> deploy finished"
+
+            echo "=> Checking docker-compose status (if present)"
+            if command -v docker-compose >/dev/null 2>&1; then
+              docker-compose ps || true
+            fi
+
+            echo "=> Deploy job finished"
