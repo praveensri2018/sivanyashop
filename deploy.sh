@@ -17,14 +17,14 @@ echo "Working directory: $ROOT_DIR"
 echo "Git branch: $(git rev-parse --abbrev-ref HEAD || true)"
 echo "Latest commit: $(git rev-parse --short HEAD || true)"
 
-# 3) Determine docker-compose command (use v2 if available)
+# 3) Determine docker-compose command
 DOCKER_COMPOSE_CMD=""
-if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-  DOCKER_COMPOSE_CMD="docker compose"  # <-- v2 plugin
-elif command -v docker-compose >/dev/null 2>&1; then
-  DOCKER_COMPOSE_CMD="docker-compose"  # <-- legacy v1
+if command -v docker-compose >/dev/null 2>&1; then
+  DOCKER_COMPOSE_CMD="docker-compose"
+elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+  DOCKER_COMPOSE_CMD="docker-compose"
 else
-  echo "Error: Neither docker compose (v2) nor docker-compose (v1) is installed."
+  echo "Error: Neither docker-compose nor docker compose is installed."
   exit 1
 fi
 echo "Using Docker Compose command: $DOCKER_COMPOSE_CMD"
@@ -32,6 +32,7 @@ echo "Using Docker Compose command: $DOCKER_COMPOSE_CMD"
 # 4) Build / start Docker Compose
 if [ -f docker-compose.yml ]; then
   echo "Using Docker Compose to build and deploy containers"
+  # Pull images (if using remote images) and build local images
   $DOCKER_COMPOSE_CMD pull --ignore-pull-failures || true
   $DOCKER_COMPOSE_CMD build --pull --no-cache
   $DOCKER_COMPOSE_CMD up -d
