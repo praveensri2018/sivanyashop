@@ -1,33 +1,86 @@
-#!/usr/bin/env bash
-set -euo pipefail
-IFS=$'\n\t'
+#!/bin/bash
+set -e
 
-echo "=== Deploy start: $(date -u) ==="
+# ========================
+# CONFIG
+# ========================
+FRONTEND_DIR=/srv/apps/sivanyashop/frontend/sivanyashop
+BACKEND_DIR=/srv/apps/sivanyashop/backend
+FRONTEND_DOMAIN=sivanyatrendstops.com
+API_DOMAIN=api.sivanyatrendstops.com
 
-# 1) Ensure we are in the repo directory
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$ROOT_DIR"
-echo "Working directory: $ROOT_DIR"
+# ========================
+# 1️⃣ Update code from git
+# ========================
+echo "Updating frontend and backend from git..."
+cd $FRONTEND_DIR
+git pull
+cd $BACKEND_DIR
+git pull
 
-# 2) Display current branch and commit
-echo "Git branch: $(git rev-parse --abbrev-ref HEAD || true)"
-echo "Latest commit: $(git rev-parse --short HEAD || true)"
+# ========================
+# 2️⃣ Build Angular frontend
+# ========================
+echo "Building Angular frontend..."
+cd $FRONTEND_DIR
+npm install --no-audit --no-fund
+npm run build -- --configuration production
 
-# 3) Pull latest code
-echo "Pulling latest code..."
-git fetch origin
-git reset --hard origin/main
+# ========================
+# 3️⃣ Start backend with PM2
+# ========================
+echo "Starting backend..."
+cd $BACKEND_DIR
+npm install --no-audit --no-fund
+pm2 restart sivanyatrends-backend --update-env || pm2 start index.js --name sivanyatrends-backend
+pm2 save
 
-# 4) Stop running containers
-echo "Stopping containers..."
-/usr/bin/docker compose down
+# ========================
+# 4️⃣ Configure Nginx
+# ========================
 
-# 5) Build and start containers
-echo "Building and starting containers..."
-/usr/bin/docker compose up -d --build
+# Frontend server block
+cat > /etc/nginx/sites-available/$FRONTEND_DOMAIN <<EOL
+server {
+    listen 80;
+    server_name $FRONTEND_DOMAIN www.$FRONTEND_DOMAIN;
 
-# 6) Show nginx logs (last 20 lines)
-echo "Nginx logs:"
-/usr/bin/docker compose logs --tail=20 nginx
+    root $FRONTEND_DIR/dist/sivanyashop/browser;
+    index index.html;
 
-echo "=== Deploy end: $(date -u) ==="
+    location / {
+        try_files \$uri /index.html;
+    }
+}
+EOL
+
+# API server block
+cat > /etc/nginx/sites-available/$API_DOMAIN <<EOL
+server {
+    listen 80;
+    server_name $API_DOMAIN;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    }
+}
+EOL
+
+# Enable sites
+ln -sf /etc/nginx/sites-available/$FRONTEND_DOMAIN /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/$API_DOMAIN /etc/nginx/sites-enabled/
+
+# Test and reload Nginx
+nginx -t
+systemctl reload nginx
+
+echo "✅ Deployment finished!"
+echo "Frontend: http://$FRONTEND_DOMAIN"
+echo "API: http://$API_DOMAIN/health"
