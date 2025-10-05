@@ -7,81 +7,65 @@
 - Use HTTP caching, service worker, and CDN for static assets.
 
 ## Project layout (customer-first)
-/src
-  /app
-    /core
-      auth.service.ts
-      api.service.ts
-      cache.service.ts
-      guards/
-      interceptors/
-    /shared
-      components/
-      directives/
-      pipes/
-      models/
-    /features
-      /home
-        home.component.ts
-      /catalog
-        catalog.component.ts
-        product-card.component.ts
-      /product
-        product-detail.component.ts
-      /customer
-        customer.module.ts
-        customer-routing.module.ts
-        /browse
-          browse.component.ts
-        /product
-          quick-view.component.ts
-        /cart
-          cart.component.ts
-          mini-cart.component.ts
-          checkout.component.ts
-          checkout-summary.component.ts
-        /account
-          profile.component.ts
-          addresses.component.ts
-          payments.component.ts
-          referrals.component.ts
-        /orders
-          orders-list.component.ts
-          order-detail.component.ts
-        /wishlist
-          wishlist.component.ts
-        /notifications
-          notifications.component.ts
-      /auth
-        login.component.ts
-        register.component.ts
-        redeem-referral.component.ts
-    /admin (lazy)
-      admin-dashboard.component.ts
-      products/
-        product-list.component.ts
-        product-edit.component.ts
-      pricing/
-        pricing-list.component.ts
-        pricing-edit.component.ts
-      orders/
-        orders.component.ts
-        order-detail.component.ts
-      reports/
-        finance-report.component.ts
-      retailers/
-        admin-retailers.component.ts
-        retailer-edit.component.ts
-        retailer-invite-modal.component.ts
-    /retailer (lazy)
-      retailer-dashboard.component.ts
-      my-prices.component.ts
-      orders.component.ts
-      payouts.component.ts
-    app-routing.module.ts
-    app.module.ts
-  main.ts
-  styles.scss
+src/
+├── main.ts                            # ✅ bootstrap entry (no AppModule)
+├── index.html
+├── styles.scss
+│
+└── app/
+    ├── app.component.html             # Root layout (header + footer + router)
+    ├── app.component.scss
+    ├── app.component.ts               # Root standalone component
+    ├── app.routes.ts                  # Central route definitions
+    ├── app.config.ts                  # ✅ Angular providers + AppConfig constants
+    │
+    ├── ui/                            # 🧩 shared layout components
+    │   ├── header.component.ts
+    │   ├── header.component.html
+    │   ├── header.component.scss
+    │   ├── footer.component.ts
+    │   ├── footer.component.html
+    │   └── footer.component.scss
+    │
+    ├── auth/                          # 🔐 authentication & guards
+    │   ├── auth.service.ts
+    │   ├── auth.interceptor.ts
+    │   ├── role.guard.ts
+    │   ├── public-redirect.guard.ts
+    │   └── login.component.ts
+    │
+    ├── services/                      # ⚙️ API and data services
+    │   └── admin-product.service.ts   # your Postman admin/product APIs
+    │
+    ├── shop/                          # 🛍️ public pages
+    │   ├── shop.component.ts
+    │   ├── shop.component.html
+    │   ├── shop.component.scss
+    │   ├── product-detail.component.ts
+    │   ├── product-detail.component.html
+    │   └── product-detail.component.scss
+    │
+    ├── cart/                          # 🛒 cart pages
+    │   ├── cart.component.ts
+    │   ├── cart.component.html
+    │   └── cart.component.scss
+    │
+    ├── customer/                      # 👤 customer dashboard
+    │   ├── customer-dashboard.component.ts
+    │   ├── customer-dashboard.component.html
+    │   └── customer-dashboard.component.scss
+    │
+    ├── retailer/                      # 🏪 retailer dashboard
+    │   ├── retailer-dashboard.component.ts
+    │   ├── retailer-dashboard.component.html
+    │   └── retailer-dashboard.component.scss
+    │
+    └── admin/                         # 🧑‍💼 admin area
+        ├── admin.component.ts
+        ├── admin.component.html
+        ├── admin.component.scss
+        └── (future admin submodules)
+
 
 ## Customer features (implement first)
 1. Browse & Search - fast paginated catalog.

@@ -10,3 +10,11 @@ export const appConfig: ApplicationConfig = {
             registrationStrategy: 'registerWhenStable:30000'
           })]
 };
+
+
+export const AppConfig = {
+  apiBase: 'http://localhost:3000',   // 👈 your backend API
+  //apiBase: 'http://api.sivanyatrendstops.com', 
+  appName: 'SivanuyaShop',
+  version: '1.0.0'
+};

@@ -1,0 +1,33 @@
+/* Place file at: src/app/ui/header.component.scss */
+:host { display:block; z-index: 1050; }
+.promo-strip { background: linear-gradient(90deg,#ff6aa3,#6b8cff); font-weight:600; font-size:.92rem; box-shadow: 0 2px 6px rgba(11,17,35,0.06); }
+.logo-badge { width:48px; height:48px; background: linear-gradient(135deg,#ff9ec4,#7aaeff); color:white; font-weight:700; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow: 0 6px 18px rgba(122,138,255,0.18); font-size:1.05rem; transform: rotate(-6deg); transition: transform .25s ease; }
+.brand:hover .logo-badge { transform: rotate(0) scale(1.03); }
+
+/* location click target */
+.location { cursor:pointer; }
+
+/* search positioning */
+.search-wrap { position: relative; }
+
+/* suggestions card */
+.suggestions { position:absolute; left:0; right:0; z-index:1200; border-radius:.5rem; overflow:hidden; }
+
+/* ensure action buttons are compact on small screens */
+.actions .btn { min-width:44px; padding: .35rem .5rem; display: inline-flex; align-items:center; justify-content:center; }
+
+/* badge sizing */
+.badge { font-size:.65rem; padding:.3rem .4rem; }
+
+/* responsive tweaks */
+@media (max-width: 991px) {
+  .categories-select { display:none; }
+  .brand-text small { display:none; }
+  .promo-actions { width:100%; justify-content:center; }
+}
+
+@media (max-width: 575px) {
+  .promo-text { text-align:center; }
+  .promo-actions a { font-size:.92rem; }
+  .search-wrap { margin-top: 6px; }
+}

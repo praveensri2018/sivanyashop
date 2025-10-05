@@ -1,0 +1,132 @@
+<!-- Place file at: src/app/ui/header.component.html -->
+<!-- PROMO STRIP -->
+<div class="promo-strip d-flex align-items-center justify-content-center text-white">
+  <div class="container d-flex align-items-center justify-content-between py-1 flex-column flex-md-row">
+    <div class="promo-text small">
+      🎉 Welcome All — Launching our Website on <b>01-10-2025</b>
+    </div>
+
+    <div class="promo-actions small d-flex gap-3 align-items-center mt-2 mt-md-0 flex-column flex-md-row">
+      <a routerLink="/" class="text-white text-decoration-underline">Shop Offers</a>
+      <a routerLink="/login" class="text-white">Sign in for extra benefits</a>
+    </div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+  <div class="container d-flex align-items-center gap-3">
+    <!-- BRAND -->
+    <a class="brand d-flex align-items-center gap-2 text-decoration-none" routerLink="/">
+      <div class="logo-badge d-flex align-items-center justify-content-center">ST</div>
+      <div class="brand-text">
+        <div class="h6 mb-0">Sivanuya Trends Tops</div>
+        <small class="text-muted"></small>
+      </div>
+    </a>
+
+    <!-- LOCATION SELECTOR -->
+    <div class="location d-none d-md-flex align-items-center gap-2 ms-3" title="Click to re-detect location">
+      <i class="bi bi-geo-alt-fill text-muted" aria-hidden="true"></i>
+      <div class="location-select" role="button" tabindex="0" (click)="requestLocation()" (keydown.enter)="requestLocation()">
+        <div class="small text-muted">Deliver to</div>
+        <div class="fw-semibold location-value">
+          <ng-container *ngIf="locState === 'idle'">{{ location }}</ng-container>
+          <ng-container *ngIf="locState === 'detecting'">
+            Detecting… <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+          </ng-container>
+          <ng-container *ngIf="locState === 'granted'">{{ location }}</ng-container>
+          <ng-container *ngIf="locState === 'denied'">Location blocked</ng-container>
+          <ng-container *ngIf="locState === 'error'">Unable to detect</ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOBILE: Categories toggle button -->
+    <button class="btn btn-light d-lg-none d-flex align-items-center me-2" type="button" aria-label="Categories"
+            (click)="toggleMobileCategories()" title="Categories">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <!-- SEARCH (center) -->
+    <div class="flex-fill px-3">
+      <div class="search-wrap position-relative">
+        <form class="d-flex" (submit)="onSearchSubmit($event)">
+          <div class="input-group w-100">
+            <select class="form-select categories-select d-none d-md-inline-block" [(ngModel)]="selectedCategory" name="cat">
+              <option value="">All Categories</option>
+              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+            </select>
+
+            <input
+              type="text"
+              class="form-control search-input"
+              placeholder="Search products, brands and more"
+              [(ngModel)]="query"
+              name="q"
+              (input)="onInput($event)"
+              aria-label="Search products"
+            />
+
+            <button class="btn btn-primary search-btn" type="submit" aria-label="Search">Search</button>
+          </div>
+        </form>
+
+        <div class="suggestions card mt-1" *ngIf="showSuggestions && filteredSuggestions.length > 0">
+          <div class="list-group list-group-flush">
+            <a
+              *ngFor="let s of filteredSuggestions"
+              class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+              (click)="selectSuggestion(s)"
+            >
+              <div>{{ s }}</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions d-flex align-items-center gap-2 ms-2">
+      <a routerLink="/orders" class="btn btn-sm btn-outline-secondary d-flex align-items-center">
+        <i class="bi bi-card-list"></i>
+        <span class="ms-1 d-none d-md-inline">Orders</span>
+      </a>
+
+      <a routerLink="/cart" class="btn btn-outline-primary position-relative me-1 d-flex align-items-center" aria-label="Cart">
+        <i class="bi bi-cart-fill"></i>
+        <span class="ms-1 d-none d-md-inline">Cart</span>
+
+        <ng-container *ngIf="count$ | async as c">
+          <span *ngIf="c > 0" class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{ c }}</span>
+        </ng-container>
+      </a>
+
+      <div class="dropdown">
+        <button class="btn btn-sm btn-outline-dark dropdown-toggle d-flex align-items-center" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-person-circle"></i>
+          <span class="ms-1 d-none d-md-inline">Account</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+          <li><a class="dropdown-item" routerLink="/login">Sign in</a></li>
+          <li><a class="dropdown-item" routerLink="/dashboard">Your Dashboard</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" routerLink="/orders">Your Orders</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MOBILE CATEGORIES PANEL -->
+<div class="mobile-cats card shadow-sm" *ngIf="mobileCatsVisible">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <strong>Categories</strong>
+      <button class="btn btn-sm btn-light" (click)="toggleMobileCategories()">Close</button>
+    </div>
+    <div class="list-group">
+      <a *ngFor="let c of categories" class="list-group-item list-group-item-action">{{ c }}</a>
+    </div>
+  </div>
+</div>

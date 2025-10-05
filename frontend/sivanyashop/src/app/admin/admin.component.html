@@ -1,0 +1,47 @@
+<!-- Place file at: src/app/admin/admin.component.html -->
+<div class="admin-dashboard container py-4">
+  <h3>Admin Panel</h3>
+  <p class="text-muted">Signed in as <strong>{{ user?.name || 'Admin' }}</strong></p>
+
+  <div class="row g-3">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <h6>Products</h6>
+          <p class="small text-muted">Create, edit or remove products.</p>
+          <a routerLink="/admin/products" class="btn btn-sm btn-primary">Manage</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <h6>Categories</h6>
+          <p class="small text-muted">Manage categories and structure.</p>
+          <a routerLink="/admin/categories" class="btn btn-sm btn-outline-primary">Manage</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <h6>Stock</h6>
+          <p class="small text-muted">Adjust stock levels and ledger.</p>
+          <a routerLink="/admin/stock" class="btn btn-sm btn-outline-secondary">Open</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body">
+          <h6>Reports</h6>
+          <p class="small text-muted">Sales, top-selling and low-stock.</p>
+          <a routerLink="/admin/reports" class="btn btn-sm btn-outline-secondary">Open</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,43 @@
+<!-- Place file at: src/app/cart/cart.component.html -->
+<div class="cart-page container py-4">
+  <h3 class="mb-3">Your Cart</h3>
+
+  <div *ngIf="(items$ | async) as items">
+    <div *ngIf="items.length > 0; else empty">
+      <div class="list-group mb-3">
+        <div *ngFor="let it of items" class="list-group-item d-flex gap-3 align-items-center">
+          <img [src]="it.image || 'assets/placeholder.png'" class="cart-thumb rounded" alt="{{ it.name }}" />
+          <div class="flex-grow-1">
+            <div class="fw-semibold">{{ it.name }}</div>
+            <div class="small text-muted">{{ it.variant || '' }}</div>
+            <div class="mt-2 d-flex align-items-center gap-2">
+              <button class="btn btn-sm btn-outline-secondary" (click)="updateQty(it, -1)">-</button>
+              <div class="px-2">{{ it.qty }}</div>
+              <button class="btn btn-sm btn-outline-secondary" (click)="updateQty(it, 1)">+</button>
+            </div>
+          </div>
+
+          <div class="text-end">
+            <div class="fw-bold">₹ {{ it.price * (it.qty || 1) }}</div>
+            <button class="btn btn-link text-danger small" (click)="removeItem(it.id)">Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <button class="btn btn-outline-danger btn-sm" (click)="clearCart()">Clear Cart</button>
+        </div>
+        <div class="text-end">
+          <div class="small text-muted">Total</div>
+          <div class="h5">₹ {{ total$ | async }}</div>
+          <button class="btn btn-primary mt-2" (click)="checkout()">Checkout</button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #empty>
+      <div class="alert alert-info">Your cart is empty. <a routerLink="/">Continue shopping</a></div>
+    </ng-template>
+  </div>
+</div>

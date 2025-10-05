@@ -1,0 +1,11 @@
+/* Place file at: src/app/cart/cart.component.scss */
+.cart-page { padding-top: 1rem; }
+
+.cart-thumb {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  display: block;
+}
+
+.list-group-item { border-radius: 8px; }
