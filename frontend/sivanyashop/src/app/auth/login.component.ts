@@ -28,7 +28,7 @@ export class LoginComponent {
 
     this.auth.login(this.email, this.password).subscribe({
       next: (resp) => {
-        console.log(resp);
+        //console.log(resp);
         this.loading = false;
         const role = (resp.role || '').toString().toUpperCase();
         if (role === 'ADMIN') this.router.navigate(['/admin']);
