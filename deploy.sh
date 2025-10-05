@@ -23,7 +23,7 @@ git pull
 # ========================
 echo "Building Angular frontend..."
 cd $FRONTEND_DIR
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund --legacy-peer-deps
 npm run build -- --configuration production
 
 # ========================
@@ -31,7 +31,7 @@ npm run build -- --configuration production
 # ========================
 echo "Starting backend..."
 cd $BACKEND_DIR
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund --legacy-peer-deps
 pm2 restart sivanyatrends-backend --update-env || pm2 start index.js --name sivanyatrends-backend
 pm2 save
 
