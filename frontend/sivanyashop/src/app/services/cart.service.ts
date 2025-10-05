@@ -1,48 +1,93 @@
-// src/app/services/cart.service.ts
 // Place file at: src/app/services/cart.service.ts
-
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { Product } from '../models/product';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
-export interface CartItem { product: Product; qty: number; }
+export interface CartItem {
+  id: number | string;
+  name: string;
+  price: number;
+  qty: number;
+  image?: string;
+  variant?: string;
+  [key: string]: any;
+}
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  private items: CartItem[] = [];
-  private items$ = new BehaviorSubject<CartItem[]>([]);
-  private count$subj = new BehaviorSubject<number>(0);
+  private storageKey = 'cart_items_v1';
 
-  readonly itemsObservable = this.items$.asObservable();
-  readonly count$ = this.count$subj.asObservable();
+  private itemsSubject = new BehaviorSubject<CartItem[]>(this.loadFromStorage());
+  public items$ = this.itemsSubject.asObservable();
 
-  add(product: Product, qty = 1) {
-    const item = this.items.find(i => i.product.id === product.id);
-    if (item) item.qty += qty;
-    else this.items.push({ product, qty });
-    this.emit();
+  // total as observable (sum of price * qty)
+  public total$: Observable<number> = this.items$.pipe(
+    map(items => items.reduce((acc, it) => acc + (Number(it.price) || 0) * (Number(it.qty) || 0), 0))
+  );
+
+  // count observable convenience
+  public count$ = this.items$.pipe(map(items => items.reduce((s, i) => s + (i.qty || 0), 0)));
+
+  private loadFromStorage(): CartItem[] {
+    try {
+      const raw = localStorage.getItem(this.storageKey);
+      if (!raw) return [];
+      return JSON.parse(raw) as CartItem[];
+    } catch {
+      return [];
+    }
   }
 
-  remove(productId: string) {
-    this.items = this.items.filter(i => i.product.id !== productId);
-    this.emit();
+  private saveToStorage(items: CartItem[]) {
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(items));
+    } catch { /* ignore */ }
   }
 
-  updateQty(productId: string, qty: number) {
-    const item = this.items.find(i => i.product.id === productId);
-    if (!item) return;
-    item.qty = qty;
-    if (item.qty <= 0) this.remove(productId);
-    else this.emit();
+  // public API
+
+  /** Get current items snapshot (non-reactive) */
+  getSnapshot(): CartItem[] {
+    return [...this.itemsSubject.value];
   }
 
-  clear() { this.items = []; this.emit(); }
+  /** Add an item (if exists, increments qty) */
+  add(item: CartItem) {
+    const items = this.getSnapshot();
+    const idx = items.findIndex(i => String(i.id) === String(item.id));
+    if (idx > -1) {
+      items[idx].qty = (items[idx].qty || 0) + (item.qty || 1);
+    } else {
+      items.push({ ...item, qty: item.qty ?? 1 });
+    }
+    this.itemsSubject.next(items);
+    this.saveToStorage(items);
+  }
 
-  getItems() { return [...this.items]; }
+  /** Remove item by id */
+  remove(id: number | string) {
+    const items = this.getSnapshot().filter(i => String(i.id) !== String(id));
+    this.itemsSubject.next(items);
+    this.saveToStorage(items);
+  }
 
-  private emit() {
-    this.items$.next(this.getItems());
-    const count = this.items.reduce((s, it) => s + it.qty, 0);
-    this.count$subj.next(count);
+  /** Update item by id with partial changes (e.g., { qty: 3 }) */
+  update(id: number | string, changes: Partial<CartItem>) {
+    const items = this.getSnapshot();
+    const idx = items.findIndex(i => String(i.id) === String(id));
+    if (idx === -1) return;
+    items[idx] = { ...items[idx], ...changes };
+    // if qty becomes 0 or less, remove the item
+    if ((items[idx].qty ?? 0) <= 0) {
+      items.splice(idx, 1);
+    }
+    this.itemsSubject.next(items);
+    this.saveToStorage(items);
+  }
+
+  /** Clear cart */
+  clear() {
+    this.itemsSubject.next([]);
+    try { localStorage.removeItem(this.storageKey); } catch {}
   }
 }

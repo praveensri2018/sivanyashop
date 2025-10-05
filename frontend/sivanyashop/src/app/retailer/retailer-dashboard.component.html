@@ -1,0 +1,37 @@
+<!-- Place file at: src/app/retailer/retailer-dashboard.component.html -->
+<div class="retailer-dashboard container py-4">
+  <h3>Retailer Dashboard</h3>
+  <p class="text-muted">Hello, <strong>{{ user?.name || 'Retailer' }}</strong></p>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6>Manage Products</h6>
+          <p class="small text-muted">Add or edit products for your store.</p>
+          <a routerLink="/retailer/products" class="btn btn-sm btn-primary">Go</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6>Orders</h6>
+          <p class="small text-muted">View orders placed for your products.</p>
+          <a routerLink="/retailer/orders" class="btn btn-sm btn-outline-primary">Go</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6>Reports</h6>
+          <p class="small text-muted">Sales, stock and analytics.</p>
+          <a routerLink="/retailer/reports" class="btn btn-sm btn-outline-secondary">Go</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

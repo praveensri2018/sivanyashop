@@ -1,0 +1,23 @@
+<!-- Place file at: src/app/customer/customer-dashboard.component.html -->
+<div class="customer-dashboard container py-4">
+  <h3>Customer Dashboard</h3>
+  <p class="text-muted">Welcome back, <strong>{{ user?.name || 'Customer' }}</strong></p>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">Quick Links</h5>
+      <div class="d-flex gap-2 flex-wrap">
+        <a routerLink="/orders" class="btn btn-outline-primary btn-sm">My Orders</a>
+        <a routerLink="/cart" class="btn btn-outline-secondary btn-sm">My Cart</a>
+        <a routerLink="/" class="btn btn-outline-success btn-sm">Continue Shopping</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h6>Profile</h6>
+      <pre class="small text-muted">{{ user | json }}</pre>
+    </div>
+  </div>
+</div>
