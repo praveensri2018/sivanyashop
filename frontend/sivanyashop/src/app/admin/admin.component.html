@@ -1,45 +1,73 @@
-<!-- Place file at: src/app/admin/admin.component.html -->
+<!-- FILE: src/app/admin/admin.component.html -->
+<!-- Updated Admin Dashboard with modern style and Product Upload link -->
+
 <div class="admin-dashboard container py-4">
-  <h3>Admin Panel</h3>
-  <p class="text-muted">Signed in as <strong>{{ user?.name || 'Admin' }}</strong></p>
+  <h2 class="mb-1">⚙️ Admin Panel</h2>
+  <p class="text-muted mb-4">
+    Signed in as <strong>{{ user?.name || 'Admin' }}</strong>
+  </p>
 
   <div class="row g-3">
-    <div class="col-md-3">
-      <div class="card">
-        <div class="card-body">
-          <h6>Products</h6>
-          <p class="small text-muted">Create, edit or remove products.</p>
-          <a routerLink="/admin/products" class="btn btn-sm btn-primary">Manage</a>
+    <!-- Product Upload / Management -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card admin-card shadow-sm border-0">
+        <div class="card-body text-center">
+          <div class="icon-circle bg-primary-subtle text-primary mb-2">
+            <i class="bi bi-box-seam"></i>
+          </div>
+          <h6 class="fw-semibold">Products</h6>
+          <p class="small text-muted mb-3">Create, edit or upload products.</p>
+          <a routerLink="/admin/products" class="btn btn-sm btn-primary w-100">
+            Manage
+          </a>
         </div>
       </div>
     </div>
 
-    <div class="col-md-3">
-      <div class="card">
-        <div class="card-body">
-          <h6>Categories</h6>
-          <p class="small text-muted">Manage categories and structure.</p>
-          <a routerLink="/admin/categories" class="btn btn-sm btn-outline-primary">Manage</a>
+    <!-- Categories -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card admin-card shadow-sm border-0">
+        <div class="card-body text-center">
+          <div class="icon-circle bg-info-subtle text-info mb-2">
+            <i class="bi bi-diagram-3"></i>
+          </div>
+          <h6 class="fw-semibold">Categories</h6>
+          <p class="small text-muted mb-3">Manage categories & structure.</p>
+          <a routerLink="/admin/categories" class="btn btn-sm btn-outline-primary w-100">
+            Manage
+          </a>
         </div>
       </div>
     </div>
 
-    <div class="col-md-3">
-      <div class="card">
-        <div class="card-body">
-          <h6>Stock</h6>
-          <p class="small text-muted">Adjust stock levels and ledger.</p>
-          <a routerLink="/admin/stock" class="btn btn-sm btn-outline-secondary">Open</a>
+    <!-- Stock -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card admin-card shadow-sm border-0">
+        <div class="card-body text-center">
+          <div class="icon-circle bg-warning-subtle text-warning mb-2">
+            <i class="bi bi-boxes"></i>
+          </div>
+          <h6 class="fw-semibold">Stock</h6>
+          <p class="small text-muted mb-3">Adjust stock & inventory ledger.</p>
+          <a routerLink="/admin/stock" class="btn btn-sm btn-outline-secondary w-100">
+            Open
+          </a>
         </div>
       </div>
     </div>
 
-    <div class="col-md-3">
-      <div class="card">
-        <div class="card-body">
-          <h6>Reports</h6>
-          <p class="small text-muted">Sales, top-selling and low-stock.</p>
-          <a routerLink="/admin/reports" class="btn btn-sm btn-outline-secondary">Open</a>
+    <!-- Reports -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card admin-card shadow-sm border-0">
+        <div class="card-body text-center">
+          <div class="icon-circle bg-success-subtle text-success mb-2">
+            <i class="bi bi-graph-up-arrow"></i>
+          </div>
+          <h6 class="fw-semibold">Reports</h6>
+          <p class="small text-muted mb-3">Sales & performance overview.</p>
+          <a routerLink="/admin/reports" class="btn btn-sm btn-outline-success w-100">
+            Open
+          </a>
         </div>
       </div>
     </div>

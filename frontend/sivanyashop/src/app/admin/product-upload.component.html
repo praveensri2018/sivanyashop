@@ -1,0 +1,76 @@
+<!-- FILE: src/app/admin/product-upload.component.html -->
+<div class="admin-container">
+  <h2>🛒 Admin — Product Upload</h2>
+
+  <!-- Step 1: Create product -->
+  <section class="card">
+    <h3>Step 1: Create Product</h3>
+    <form [formGroup]="productForm" (ngSubmit)="createProduct()" class="form-grid">
+      <label>Product Name <input formControlName="name" /></label>
+      <label>Description <textarea formControlName="description" rows="2"></textarea></label>
+      <label>Categories
+        <select formControlName="categoryIds" multiple>
+          <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </label>
+      <div class="row-actions">
+        <button class="btn-primary" type="submit">Create Product</button>
+        <button type="button" class="btn-secondary" (click)="productForm.reset()">Reset</button>
+      </div>
+    </form>
+
+    <div *ngIf="createdProductId" class="created-info">
+      <small>Created Product ID: <strong>{{ createdProductId }}</strong></small>
+    </div>
+  </section>
+
+  <!-- Step 2: Images - only show after product created -->
+  <section *ngIf="createdProductId" class="card">
+    <h3>Step 2: Upload Images (optional)</h3>
+    <input type="file" multiple (change)="onFilesSelected($event)" />
+    <div class="row-actions" style="margin-top:10px">
+      <button class="btn-primary" (click)="uploadImages()" [disabled]="uploading">
+        {{ uploading ? 'Uploading...' : 'Upload Images' }}
+      </button>
+      <button class="btn-outline" (click)="skipToVariants()">Skip to Variants</button>
+    </div>
+
+    <div *ngIf="uploadedImages?.length" class="thumbs">
+      <h4>Uploaded Images</h4>
+      <div class="thumb-row">
+        <div class="thumb" *ngFor="let img of uploadedImages">
+          <img [src]="img.url ?? img.path ?? img" alt="img" />
+          <small class="muted">{{ img.filename ?? img.name ?? '' }}</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 3: Variants -->
+  <section *ngIf="createdProductId" class="card">
+    <h3>Step 3: Add Variant</h3>
+    <form [formGroup]="variantForm" (ngSubmit)="addVariant()" class="form-grid">
+      <label>SKU <input formControlName="sku" /></label>
+      <label>Variant Name <input formControlName="variantName" /></label>
+      <label>Attributes <input formControlName="attributes" /></label>
+      <label>Stock Qty <input type="number" formControlName="stockQty" /></label>
+      <label>Price <input type="number" formControlName="price" /></label>
+      <div class="row-actions">
+        <button class="btn-primary" type="submit">Add Variant</button>
+        <button type="button" class="btn-secondary" (click)="variantForm.reset()">Reset</button>
+      </div>
+    </form>
+
+    <hr />
+
+    <h4>Update Existing Variant</h4>
+    <form [formGroup]="updateVariantForm" (ngSubmit)="updateVariant()" class="form-grid">
+      <label>Variant ID <input formControlName="variantId" /></label>
+      <label>New Price <input formControlName="price" type="number" /></label>
+      <label>New Stock (optional) <input formControlName="stockQty" type="number" /></label>
+      <div class="row-actions">
+        <button class="btn-warning" type="submit">Update Variant</button>
+      </div>
+    </form>
+  </section>
+</div>
