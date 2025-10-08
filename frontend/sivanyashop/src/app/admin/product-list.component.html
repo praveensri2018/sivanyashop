@@ -1,0 +1,48 @@
+<!-- FILE: src/app/admin/product-list.component.html -->
+<div class="admin-container">
+  <div class="list-header">
+    <h2>Products</h2>
+    <div class="actions">
+      <a routerLink="/admin/product-upload" class="btn btn-primary">+ New Product</a>
+      <button class="btn btn-outline" (click)="loadProducts()">Refresh</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading">Loading products...</div>
+  <div *ngIf="!loading && products.length === 0">No products found.</div>
+
+  <div *ngIf="!loading" class="prod-list">
+    <div class="prod-card" *ngFor="let p of products">
+      <img class="thumb"
+     [src]="getImage(p)"
+     alt="{{ p.name || 'product' }}"
+     (error)="onImgError($event)" />
+      <div class="prod-info">
+        <h4>{{ p.name }}</h4>
+        <p class="muted">{{ p.description }}</p>
+        <div class="meta">
+          <small>ID: {{ p.id }}</small>
+          <small>Status: <strong>{{ p.isActive ? 'Active' : 'Inactive' }}</strong></small>
+        </div>
+
+        <div *ngIf="editingId !== p.id" class="card-actions">
+          <button class="btn-sm btn-primary" (click)="startEdit(p)">Edit</button>
+          <button class="btn-sm btn-outline" (click)="toggleActive(p)">{{ p.isActive ? 'Deactivate' : 'Activate' }}</button>
+          <button class="btn-sm btn-danger" (click)="confirmDelete(p.id)">Delete</button>
+        </div>
+
+        <div *ngIf="editingId === p.id" class="edit-area">
+          <form [formGroup]="editForm" (ngSubmit)="saveEdit(p.id)" class="edit-form">
+            <input formControlName="name" placeholder="Product name" />
+            <input formControlName="imagePath" placeholder="Image URL" />
+            <textarea formControlName="description" rows="2" placeholder="Description"></textarea>
+            <div class="edit-actions">
+              <button class="btn-sm btn-primary" type="submit">Save</button>
+              <button class="btn-sm btn-outline" type="button" (click)="cancelEdit()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

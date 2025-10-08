@@ -8,6 +8,9 @@ import { CustomerDashboardComponent } from './customer/customer-dashboard.compon
 import { RoleGuard } from './auth/role.guard';
 import { PublicRedirectGuard } from './auth/public-redirect.guard';
 import { LoginComponent } from './auth/login.component';
+import { ProductUploadComponent } from './admin/product-upload.component';
+import { CategoryManagementComponent } from './admin/category-management.component';
+import { ProductListComponent } from './admin/product-list.component';
 
 export const routes: Routes = [
   { path: '', component: ShopComponent, canActivate: [PublicRedirectGuard] },
@@ -17,5 +20,8 @@ export const routes: Routes = [
   { path: 'retailer', component: RetailerDashboardComponent, canActivate: [RoleGuard], data: { roles: ['retailer'] } },
   { path: 'admin', component: AdminComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
   { path: 'login', component: LoginComponent },
+  { path: 'admin/product-upload', component: ProductUploadComponent},
+  { path: 'admin/categories', component: CategoryManagementComponent },
+    { path: 'admin/products', component: ProductListComponent  },
   { path: '**', redirectTo: '' }
 ];

@@ -1,0 +1,40 @@
+<!-- FILE: src/app/admin/category-management.component.html
+     Place at: src/app/admin/category-management.component.html -->
+
+<div class="admin-container">
+  <h2>📂 Category Management</h2>
+
+  <section class="card">
+    <h3>Create Category</h3>
+    <form [formGroup]="form" (ngSubmit)="createCategory()" class="form-grid">
+      <label>
+        Category Name
+        <input formControlName="name" placeholder="e.g. Electronics" />
+      </label>
+
+      <label>
+        Parent Category (optional)
+        <select formControlName="parentCategoryId">
+          <option [ngValue]="null">-- None (top-level) --</option>
+          <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
+        </select>
+      </label>
+
+      <button class="btn-primary" type="submit">Create Category</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h3>Existing Categories</h3>
+    <div *ngIf="loading">Loading...</div>
+    <ul *ngIf="!loading && categories.length === 0">No categories yet.</ul>
+
+    <ul *ngIf="categories.length > 0" class="category-list">
+      <li *ngFor="let c of categories">
+        <strong>{{ c.name }}</strong>
+        <span class="muted"> (id: {{ c.id }} )</span>
+        <div *ngIf="c.parentName" class="muted">Parent: {{ c.parentName }}</div>
+      </li>
+    </ul>
+  </section>
+</div>

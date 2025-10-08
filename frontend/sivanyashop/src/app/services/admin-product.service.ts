@@ -1,7 +1,12 @@
-// Place file at: src/app/services/admin-product.service.ts
+// FILE: src/app/services/admin-product.service.ts
+// Place at: src/app/services/admin-product.service.ts
+// This version uses ONLY your backend APIs (no cloudUploadUrl).
+// Logs every response to console for debugging. Remove logs in production.
+
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { AppConfig } from '../app.config';
 
 export interface Product {
@@ -10,7 +15,6 @@ export interface Product {
   description?: string;
   imagePath?: string;
   categoryIds?: number[];
-  // add more fields as your backend returns
 }
 
 @Injectable({ providedIn: 'root' })
@@ -19,20 +23,80 @@ export class AdminProductService {
 
   constructor(private http: HttpClient) {}
 
-  // Fetch products paginated
-  fetchProducts(page = 1, limit = 12): Observable<{ items: Product[]; total?: number }> {
+  /* -------------------------
+     Products / categories
+     ------------------------- */
+
+  fetchProducts(page = 1, limit = 12): Observable<any> {
     const params = new HttpParams().set('page', String(page)).set('limit', String(limit));
-    return this.http.get<{ items: Product[]; total?: number }>(`${this.base}/products`, { params });
+    return this.http.get(`${this.base}/products`, { params })
+      .pipe(tap(res => console.log('[API] fetchProducts response:', res)));
   }
 
-  // Fetch a single product by id (assumes endpoint exists; if not, adapt)
   fetchProduct(productId: number | string): Observable<Product> {
-    return this.http.get<Product>(`${this.base}/products/${productId}`);
+    return this.http.get<Product>(`${this.base}/products/${productId}`)
+      .pipe(tap(res => console.log('[API] fetchProduct response:', res)));
   }
 
-  // create / update / delete etc. (already shown earlier) - include only what's needed for shop
-  // For completeness, quick wrappers:
   fetchCategories(): Observable<any> {
-    return this.http.get(`${this.base}/products/categories`);
+    return this.http.get(`${this.base}/products/categories`)
+      .pipe(tap(res => console.log('[API] fetchCategories response:', res)));
+  }
+
+  createCategory(payload: { name: string; parentCategoryId?: number | null }) {
+    return this.http.post(`${this.base}/products/category`, payload)
+      .pipe(tap(res => console.log('[API] createCategory response:', res)));
+  }
+
+  createProduct(payload: any) {
+    return this.http.post(`${this.base}/products/product`, payload)
+      .pipe(tap(res => console.log('[API] createProduct response:', res)));
+  }
+
+  updateProduct(productId: number, payload: any) {
+    return this.http.put(`${this.base}/products/product/${productId}`, payload)
+      .pipe(tap(res => console.log('[API] updateProduct response for id', productId, ':', res)));
+  }
+
+  deleteProduct(productId: number) {
+    return this.http.delete(`${this.base}/products/${productId}`)
+      .pipe(tap(res => console.log('[API] deleteProduct response for id', productId, ':', res)));
+  }
+
+  /* -------------------------
+     Variants & prices
+     ------------------------- */
+
+  addVariant(payload: any) {
+    return this.http.post(`${this.base}/products/variant`, payload)
+      .pipe(tap(res => console.log('[API] addVariant response:', res)));
+  }
+
+  setVariantPrice(variantId: number, priceType: string, price: number) {
+    return this.http.post(`${this.base}/products/variant/price`, { variantId, priceType, price })
+      .pipe(tap(res => console.log('[API] setVariantPrice response:', res)));
+  }
+
+  updateVariantPrice(variantId: number, priceType: string, price: number) {
+    return this.http.put(`${this.base}/products/variant/price`, { variantId, priceType, price })
+      .pipe(tap(res => console.log('[API] updateVariantPrice response:', res)));
+  }
+
+  /* -------------------------
+     Image uploads (backend-only)
+     ------------------------- */
+
+  /**
+   * Upload product images to backend.
+   * Backend endpoint: POST /api/product-images/upload
+   * FormData: productId, images[] (multiple)
+   * Backend should return uploaded image info/URLs which will be logged.
+   */
+  uploadProductImages(productId: number, files: File[]): Observable<any> {
+    const fd = new FormData();
+    fd.append('productId', String(productId));
+    files.forEach(f => fd.append('images', f, f.name));
+    return this.http.post(`${this.base}/product-images/upload`, fd)
+      .pipe(tap(res => console.log('[API] uploadProductImages response:', res)));
   }
 }
