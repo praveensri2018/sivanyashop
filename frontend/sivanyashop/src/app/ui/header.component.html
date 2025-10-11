@@ -1,132 +1,107 @@
-<!-- Place file at: src/app/ui/header.component.html -->
-<!-- PROMO STRIP -->
-<div class="promo-strip d-flex align-items-center justify-content-center text-white">
-  <div class="container d-flex align-items-center justify-content-between py-1 flex-column flex-md-row">
-    <div class="promo-text small">
-      🎉 Welcome All — Launching our Website on <b>01-10-2025</b>
-    </div>
+<!-- Place file at: src/app/ui/header.component.html
+     REPLACE existing file. Uses Font Awesome icons (free). -->
 
-    <div class="promo-actions small d-flex gap-3 align-items-center mt-2 mt-md-0 flex-column flex-md-row">
-      <a routerLink="/" class="text-white text-decoration-underline">Shop Offers</a>
-      <a routerLink="/login" class="text-white">Sign in for extra benefits</a>
+<!-- Guest -->
+<header *ngIf="designVariant === 'guest'" class="meesho-header design-guest" [class.scrolled]="isScrolled">
+  <div class="mh-row">
+    
+    <a routerLink="/" class="mh-brand" aria-label="home"><img src="/assets/logo.png" alt="logo" /></a>
+
+    <form class="mh-search" (ngSubmit)="onSearch()" role="search">
+      <input type="search" name="q" [(ngModel)]="query" placeholder="Search products, brands and more"
+        class="mh-search-input" (input)="onInput($event)" autocomplete="off" />
+      <button class="mh-search-go" type="submit">Go</button>
+    </form>
+
+    <div class="mh-controls">
+      <a routerLink="/login" class="mh-icon-btn" aria-label="login">
+        <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+      </a>
     </div>
   </div>
-</div>
+</header>
 
-<!-- NAVBAR -->
-<header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-  <div class="container d-flex align-items-center gap-3">
-    <!-- BRAND -->
-    <a class="brand d-flex align-items-center gap-2 text-decoration-none" routerLink="/">
-      <div class="logo-badge d-flex align-items-center justify-content-center">ST</div>
-      <div class="brand-text">
-        <div class="h6 mb-0">Sivanuya Trends Tops</div>
-        <small class="text-muted"></small>
-      </div>
-    </a>
+<!-- Admin -->
+<header *ngIf="designVariant === 'admin'" class="meesho-header design-admin" [class.scrolled]="isScrolled">
+  <div class="mh-row">
 
-    <!-- LOCATION SELECTOR -->
-    <div class="location d-none d-md-flex align-items-center gap-2 ms-3" title="Click to re-detect location">
-      <i class="bi bi-geo-alt-fill text-muted" aria-hidden="true"></i>
-      <div class="location-select" role="button" tabindex="0" (click)="requestLocation()" (keydown.enter)="requestLocation()">
-        <div class="small text-muted">Deliver to</div>
-        <div class="fw-semibold location-value">
-          <ng-container *ngIf="locState === 'idle'">{{ location }}</ng-container>
-          <ng-container *ngIf="locState === 'detecting'">
-            Detecting… <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
-          </ng-container>
-          <ng-container *ngIf="locState === 'granted'">{{ location }}</ng-container>
-          <ng-container *ngIf="locState === 'denied'">Location blocked</ng-container>
-          <ng-container *ngIf="locState === 'error'">Unable to detect</ng-container>
-        </div>
-      </div>
-    </div>
+    <a routerLink="/admin" class="mh-brand" aria-label="admin"><img src="/assets/logo.png" alt="admin" /></a>
 
-    <!-- MOBILE: Categories toggle button -->
-    <button class="btn btn-light d-lg-none d-flex align-items-center me-2" type="button" aria-label="Categories"
-            (click)="toggleMobileCategories()" title="Categories">
-      <i class="bi bi-list"></i>
-    </button>
+    <form class="mh-search" (ngSubmit)="onSearch()" role="search">
+      <input type="search" name="q" [(ngModel)]="query" placeholder="Search orders, users, SKUs" class="mh-search-input"
+        (input)="onInput($event)" autocomplete="off" />
+      <button class="mh-search-go" type="submit">Go</button>
+    </form>
 
-    <!-- SEARCH (center) -->
-    <div class="flex-fill px-3">
-      <div class="search-wrap position-relative">
-        <form class="d-flex" (submit)="onSearchSubmit($event)">
-          <div class="input-group w-100">
-            <select class="form-select categories-select d-none d-md-inline-block" [(ngModel)]="selectedCategory" name="cat">
-              <option value="">All Categories</option>
-              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
-            </select>
-
-            <input
-              type="text"
-              class="form-control search-input"
-              placeholder="Search products, brands and more"
-              [(ngModel)]="query"
-              name="q"
-              (input)="onInput($event)"
-              aria-label="Search products"
-            />
-
-            <button class="btn btn-primary search-btn" type="submit" aria-label="Search">Search</button>
-          </div>
-        </form>
-
-        <div class="suggestions card mt-1" *ngIf="showSuggestions && filteredSuggestions.length > 0">
-          <div class="list-group list-group-flush">
-            <a
-              *ngFor="let s of filteredSuggestions"
-              class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-              (click)="selectSuggestion(s)"
-            >
-              <div>{{ s }}</div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ACTIONS -->
-    <div class="actions d-flex align-items-center gap-2 ms-2">
-      <a routerLink="/orders" class="btn btn-sm btn-outline-secondary d-flex align-items-center">
-        <i class="bi bi-card-list"></i>
-        <span class="ms-1 d-none d-md-inline">Orders</span>
-      </a>
-
-      <a routerLink="/cart" class="btn btn-outline-primary position-relative me-1 d-flex align-items-center" aria-label="Cart">
-        <i class="bi bi-cart-fill"></i>
-        <span class="ms-1 d-none d-md-inline">Cart</span>
-
-        <ng-container *ngIf="count$ | async as c">
-          <span *ngIf="c > 0" class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{ c }}</span>
-        </ng-container>
-      </a>
-
-      <div class="dropdown">
-        <button class="btn btn-sm btn-outline-dark dropdown-toggle d-flex align-items-center" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-person-circle"></i>
-          <span class="ms-1 d-none d-md-inline">Account</span>
+    <div class="mh-controls">
+  
+      <!-- USER MENU (admin) -->
+      <div class="mh-user" [class.open]="isUserMenuOpen">
+        <button class="mh-user-btn" type="button" aria-haspopup="true" [attr.aria-expanded]="isUserMenuOpen"
+          (click)="toggleUserMenu($event)" (touchend)="$event.preventDefault(); toggleUserMenu($event)">
+          <i class="fas fa-user-shield" aria-hidden="true"></i>
+          <span class="mh-username">{{ currentUser?.name || 'Admin' }}</span>
         </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-          <li><a class="dropdown-item" routerLink="/login">Sign in</a></li>
-          <li><a class="dropdown-item" routerLink="/dashboard">Your Dashboard</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" routerLink="/orders">Your Orders</a></li>
+
+        <!-- keep in DOM but hide/show with .open and aria-hidden -->
+        <ul class="mh-user-menu" [attr.aria-hidden]="!isUserMenuOpen">
+          <li><a routerLink="/admin" (click)="closeUserMenu()">Dashboard</a></li>
+          <li><button class="link-like" (click)="logout(); closeUserMenu()">Logout</button></li>
         </ul>
       </div>
     </div>
   </div>
 </header>
 
-<!-- MOBILE CATEGORIES PANEL -->
-<div class="mobile-cats card shadow-sm" *ngIf="mobileCatsVisible">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <strong>Categories</strong>
-      <button class="btn btn-sm btn-light" (click)="toggleMobileCategories()">Close</button>
-    </div>
-    <div class="list-group">
-      <a *ngFor="let c of categories" class="list-group-item list-group-item-action">{{ c }}</a>
+<!-- Customer / Retailer -->
+<header *ngIf="designVariant === 'customer'" class="meesho-header design-customer" [class.scrolled]="isScrolled">
+  <div class="mh-row">
+
+
+    <a routerLink="/" class="mh-brand" aria-label="home"><img src="/assets/logo.png" alt="logo" /></a>
+
+    <form class="mh-search" (ngSubmit)="onSearch()" role="search">
+      <button type="button" class="mh-search-left" (click)="$event.preventDefault()">
+        <i class="fas fa-search" aria-hidden="true"></i>
+      </button>
+      <input type="search" name="q" [(ngModel)]="query" placeholder="Search for products, brands and more"
+        class="mh-search-input" (input)="onInput($event)" autocomplete="off" />
+      <button class="mh-search-go" type="submit">Go</button>
+    </form>
+
+    <div class="mh-controls">
+      <a routerLink="/cart" class="mh-icon-btn" aria-label="cart">
+        <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+        <span class="mh-badge" *ngIf="(cartCount$ | async) as c">{{ c }}</span>
+      </a>
+
+      <!-- USER MENU (customer/retailer) -->
+      <div class="mh-user" [class.open]="isUserMenuOpen">
+        <button class="mh-user-btn" type="button" aria-haspopup="true" [attr.aria-expanded]="isUserMenuOpen"
+          (click)="toggleUserMenu($event)" (touchend)="$event.preventDefault(); toggleUserMenu($event)">
+          <i class="fas fa-user" aria-hidden="true"></i>
+          <span class="mh-username">{{ currentUser?.name || 'Account' }}</span>
+        </button>
+
+        <ul class="mh-user-menu" [attr.aria-hidden]="!isUserMenuOpen">
+          <li *ngIf="role === 'admin'"><a routerLink="/admin" (click)="closeUserMenu()">Admin Panel</a></li>
+          <li *ngIf="role === 'retailer'"><a routerLink="/retailer" (click)="closeUserMenu()">Retailer</a></li>
+          <li *ngIf="role === 'customer'"><a routerLink="/orders" (click)="closeUserMenu()">My Orders</a></li>
+          <li><button class="link-like" (click)="logout(); closeUserMenu()">Logout</button></li>
+        </ul>
+      </div>
+
+      <a *ngIf="!role" routerLink="/login" class="mh-login">Login</a>
     </div>
   </div>
-</div>
+
+  <div class="mh-cats-panel" *ngIf="mobileCatsVisible">
+    <div class="mh-cats-head d-flex">
+      <strong>Categories</strong>
+      <button class="mh-close" (click)="toggleMobileCategories()">Close</button>
+    </div>
+    <ul class="mh-cats-list">
+      <li *ngFor="let c of categories"><a href="#">{{ c }}</a></li>
+    </ul>
+  </div>
+</header>

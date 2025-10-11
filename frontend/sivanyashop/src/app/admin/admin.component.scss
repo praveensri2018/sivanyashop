@@ -1,2 +1,254 @@
-/* Place file at: src/app/admin/admin.component.scss */
-.admin-dashboard .card { border-radius: 8px; }
+/* FILE: src/app/admin/admin.component.scss
+   REPLACE existing file at src/app/admin/admin.component.scss
+
+   Cleaned & corrected:
+   - Removed duplicate/overlapping .btn-primary rules that caused inconsistent colors
+   - Ensured Manage button is readable (dark text on light button by default)
+   - Kept classic boxed tiles, KPI row, responsive breakpoints
+   - Minor polishing and consistent naming
+*/
+
+/* Theme variables (classic neutral) */
+:root {
+  --ad-bg: #f7f7f8;
+  --card-bg: #ffffff;
+  --muted: #6b7280;
+  --text: #111827;
+  --accent: #111827; /* dark neutral like Amazon */
+  --accent-2: #0b74de; /* optional accent for links/buttons */
+  --radius: 8px;
+  --shadow-sm: 0 6px 18px rgba(12,13,20,0.06);
+  --shadow-md: 0 12px 28px rgba(12,13,20,0.08);
+}
+
+/* Page container */
+.admin-dashboard {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--ad-bg);
+  color: var(--text);
+  padding: 18px 12px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Header */
+.admin-dashboard h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.admin-dashboard .text-muted {
+  color: var(--muted) !important;
+  margin-bottom: 12px;
+}
+
+/* ------------ Top KPI row (classic) ------------ */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.kpi {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+
+.kpi:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.kpi .kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #fff, #f3f4f6);
+  border: 1px solid rgba(0,0,0,0.04);
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.kpi .kpi-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi .kpi-value {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.kpi .kpi-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* on wide screens show 4 KPIs */
+@media (min-width: 768px) {
+  .kpi-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ------------ Classic card grid (tiles) ------------ */
+.card-grid {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* desktop: 4 across */
+@media (min-width: 992px) {
+  .card-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+}
+
+/* card */
+.admin-card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  border: 1px solid rgba(15,23,36,0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 170px;
+  box-sizing: border-box;
+}
+
+.admin-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(15,23,36,0.06);
+}
+
+.admin-card .icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.04);
+  margin: 0 auto 10px auto;
+  font-size: 22px;
+  color: var(--accent);
+}
+
+.admin-card h6 {
+  text-align: center;
+  margin: 6px 0 4px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.admin-card p {
+  text-align: center;
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* -------------------------
+   Button styles (cleaned)
+   - single source for .btn-primary inside admin-card (no duplicates)
+   - default: light background + dark text for readability
+   ------------------------- */
+
+.admin-card .btn {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: none;
+  transition: background 140ms ease, transform 120ms ease, color 140ms ease;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+/* Primary button (Manage) — light background with dark text for contrast */
+.admin-card .btn-primary {
+  background: #f8f9fa;        /* light grey background */
+  color: #111827;            /* dark text for visibility */
+  border: 1px solid rgba(0,0,0,0.08);
+  font-weight: 600;
+}
+
+/* Hover/active */
+.admin-card .btn-primary:hover {
+  background: #e9ecef;
+  color: #000;
+  transform: translateY(-1px);
+}
+
+/* Outline buttons (other actions) */
+.admin-card .btn-outline {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid rgba(15,23,36,0.08);
+}
+
+.admin-card .btn-outline:hover {
+  background: rgba(15,23,36,0.04);
+  transform: translateY(-1px);
+}
+
+/* small screens adjustments */
+@media (max-width: 575px) {
+  .card-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-dashboard {
+    padding: 12px 10px;
+  }
+  .admin-card {
+    padding: 12px;
+  }
+  .admin-card .icon-circle {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+}
+
+/* accessibility & focus */
+.admin-card .btn:focus,
+.admin-card a:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(11,116,222,0.12);
+}
+
+/* subtle divider under header */
+.admin-dashboard .header-divider {
+  margin-top: 10px;
+  margin-bottom: 12px;
+  height: 1px;
+  background: rgba(15,23,36,0.04);
+  border-radius: 1px;
+}

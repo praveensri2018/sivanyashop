@@ -11,7 +11,7 @@ import { RouterModule } from '@angular/router';
   selector: 'app-admin-product-list',
   standalone: true,
   templateUrl: './product-list.component.html',
-  styleUrls: ['./product-list.component.css'],
+  styleUrls: ['./product-list.component.scss'],
   imports: [CommonModule, RouterModule, ReactiveFormsModule]
 })
 export class ProductListComponent implements OnInit {

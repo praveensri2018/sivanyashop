@@ -1,18 +1,44 @@
-<!-- FILE: src/app/admin/product-upload.component.html -->
+<!-- FILE: src/app/admin/product-upload.component.html
+     Replace the existing file with this updated template.
+     Notes:
+     - The <select id="categorySelect"> is where Select2 will initialize.
+     - The debug <div id="select2-debug"> shows the reactive form value for categoryIds.
+     - Keep the id "categorySelect" — the TS uses that selector.
+-->
+
 <div class="admin-container">
   <h2>🛒 Admin — Product Upload</h2>
 
   <!-- Step 1: Create product -->
   <section class="card">
     <h3>Step 1: Create Product</h3>
+
     <form [formGroup]="productForm" (ngSubmit)="createProduct()" class="form-grid">
-      <label>Product Name <input formControlName="name" /></label>
-      <label>Description <textarea formControlName="description" rows="2"></textarea></label>
-      <label>Categories
-        <select formControlName="categoryIds" multiple>
-          <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
-        </select>
+      <label>
+        Product Name
+        <input formControlName="name" />
       </label>
+
+      <label>
+        Description
+        <textarea formControlName="description" rows="2"></textarea>
+      </label>
+
+      <label>Categories</label>
+
+      <!-- === SELECT2 MULTIPLE SELECT ===
+           PLACE: keep id="categorySelect" exactly as below.
+           This <select> is enhanced by Select2 in the component TS.
+      -->
+      <select id="categorySelect" formControlName="categoryIds" multiple style="width:100%">
+        <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+      </select>
+
+      <!-- DEBUG: shows the Angular form value for categoryIds -->
+      <div id="select2-debug" style="margin-top:8px;font-size:0.9rem;color:#333">
+        Selected (form): {{ productForm.get('categoryIds')?.value | json }}
+      </div>
+
       <div class="row-actions">
         <button class="btn-primary" type="submit">Create Product</button>
         <button type="button" class="btn-secondary" (click)="productForm.reset()">Reset</button>

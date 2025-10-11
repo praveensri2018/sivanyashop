@@ -1,10 +1,11 @@
 // Place file at: src/app/ui/header.component.ts
-import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, ElementRef, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
-import { CartService } from '../services/cart.service'; // <-- FIXED path (one level up)
+import { Observable, Subscription } from 'rxjs';
+import { CartService } from '../services/cart.service';
+import { AuthService, UserPayload } from '../auth/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -13,141 +14,159 @@ import { CartService } from '../services/cart.service'; // <-- FIXED path (one l
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent implements OnInit {
-  count$: Observable<number>;
+export class HeaderComponent implements OnInit, OnDestroy {
+  cartCount$!: Observable<number>;
+
+  currentUser: UserPayload | null = null;
+  role: 'admin' | 'retailer' | 'customer' | null = null;
+  private authSub?: Subscription;
+
+  // scroll state for sticky/shrink header
+  isScrolled = false;
+  private ticking = false;
+
+  // USER MENU (mobile-friendly)
+  isUserMenuOpen = false;
+
+  // search
   query = '';
-  selectedCategory = '';
-  showSuggestions = false;
-  suggestions: string[] = ['Floral summer top','Casual tee','Elegant kurti','Stylish palazzo','Trendy denim jacket','Party dress'];
+  suggestions: string[] = [
+    'Floral summer top', 'Casual tee', 'Elegant kurti', 'Stylish palazzo', 'Trendy denim jacket', 'Party dress'
+  ];
   filteredSuggestions: string[] = [];
 
-  categories = ['Women','Men','Kids','Home','Accessories','Beauty'];
+  categories = ['Women', 'Men', 'Kids', 'Home', 'Accessories', 'Beauty'];
   mobileCatsVisible = false;
 
-  locState: 'idle' | 'detecting' | 'granted' | 'denied' | 'error' = 'idle';
-  location = 'Select location';
-  lat?: number;
-  lon?: number;
+  // keep references for listeners so we can remove them
+  private _footerToggleListener = () => this.toggleMobileCategories();
 
-  constructor(private cart: CartService, private host: ElementRef) {
-    this.count$ = this.cart.count$;
+  constructor(
+    private cart: CartService,
+    private host: ElementRef,
+    private router: Router,
+    private auth: AuthService
+  ) {
+    this.cartCount$ = this.cart.count$;
     this.filteredSuggestions = [...this.suggestions];
   }
 
   ngOnInit(): void {
-    this.requestLocation();
+  // initial user state
+  try { this.currentUser = this.auth.getUser(); } catch { this.currentUser = null; }
+  this.normalizeRole();
+
+  // DEBUG: force menu open on load to verify rendering
+  this.isUserMenuOpen = true;
+  console.log('[DEBUG] header init: isUserMenuOpen forced true, currentUser=', this.currentUser);
+
+  // subscribe to auth changes ...
+  const maybeObs: any = (this.auth as any).currentUser$;
+  if (maybeObs && typeof maybeObs.subscribe === 'function') {
+    this.authSub = maybeObs.subscribe((u: UserPayload | null) => {
+      this.currentUser = u;
+      this.normalizeRole();
+    });
   }
 
-  async requestLocation() {
-    if (!('geolocation' in navigator)) {
-      this.locState = 'error';
-      this.location = 'Geolocation not supported';
-      return;
-    }
+  window.addEventListener('storage', this._onStorageEvent);
+  window.addEventListener('toggleMobileCategories', this._footerToggleListener);
 
-    this.locState = 'detecting';
-    this.location = 'Detecting…';
+  this.checkScroll();
+}
 
-    const opts: PositionOptions = { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 };
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          this.lat = pos.coords.latitude;
-          this.lon = pos.coords.longitude;
-          const label = await this.reverseGeocode(this.lat, this.lon);
-          this.location = label ?? `${this.round(this.lat)}, ${this.round(this.lon)}`;
-          this.locState = 'granted';
-        } catch (err) {
-          console.error('Reverse geocoding failed', err);
-          this.location = `${this.round(pos.coords.latitude)}, ${this.round(pos.coords.longitude)}`;
-          this.locState = 'granted';
-        }
-      },
-      (err) => {
-        console.warn('Geolocation error', err);
-        if (err.code === 1) {
-          this.locState = 'denied';
-          this.location = 'Location blocked';
-        } else if (err.code === 3) {
-          this.locState = 'error';
-          this.location = 'Location timeout';
-        } else {
-          this.locState = 'error';
-          this.location = 'Unable to detect';
-        }
-      },
-      opts
-    );
+  ngOnDestroy(): void {
+    this.authSub?.unsubscribe();
+    window.removeEventListener('storage', this._onStorageEvent);
+    window.removeEventListener('toggleMobileCategories', this._footerToggleListener);
   }
 
-  private round(n?: number) {
-    if (n == null) return '';
-    return n.toFixed(4);
+  // ---------- user menu controls ----------
+toggleUserMenu(ev?: Event) {
+  if (ev && ev.stopPropagation) ev.stopPropagation();
+  console.log('[DEBUG] toggleUserMenu called; before=', this.isUserMenuOpen, 'event=', ev?.type);
+  this.isUserMenuOpen = !this.isUserMenuOpen;
+  console.log('[DEBUG] toggleUserMenu after=', this.isUserMenuOpen);
+}
+
+  closeUserMenu() {
+    this.isUserMenuOpen = false;
   }
-
-  private async reverseGeocode(lat: number, lon: number): Promise<string | null> {
-    try {
-      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&addressdetails=1`;
-      const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
-
-      if (!resp.ok) {
-        console.warn('Nominatim returned non-OK', resp.status);
-        return null;
-      }
-
-      const data = await resp.json();
-      const addr = data.address || {};
-      const place = addr.city || addr.town || addr.village || addr.county || addr.state;
-      const postcode = addr.postcode;
-      let label = '';
-      if (place) label += place;
-      if (postcode) label += label ? ` ${postcode}` : `${postcode}`;
-      if (!label && data.display_name) {
-        label = data.display_name.split(',').slice(0, 2).join(',').trim();
-      }
-      return label || null;
-    } catch (e) {
-      console.error('Reverse geocode failed', e);
-      return null;
-    }
-  }
-
-  onInput(ev: Event) {
-    const val = (ev.target as HTMLInputElement).value;
-    this.query = val;
-    this.updateSuggestions(val);
-  }
-
-  updateSuggestions(q: string) {
-    if (!q || q.trim().length < 1) {
-      this.filteredSuggestions = [];
-      this.showSuggestions = false;
-      return;
-    }
-    const low = q.toLowerCase();
-    this.filteredSuggestions = this.suggestions.filter(s => s.toLowerCase().includes(low)).slice(0, 6);
-    this.showSuggestions = this.filteredSuggestions.length > 0;
-  }
-
-  selectSuggestion(s: string) {
-    this.query = s;
-    this.showSuggestions = false;
-  }
-
-  onSearchSubmit(e: Event) {
-    e.preventDefault();
-    this.showSuggestions = false;
-    console.log('search for', this.query, 'category', this.selectedCategory);
-  }
-
-  toggleMobileCategories() { this.mobileCatsVisible = !this.mobileCatsVisible; }
 
   @HostListener('document:click', ['$event'])
-  onDocClick(ev: MouseEvent) {
-    const el = this.host.nativeElement as HTMLElement;
-    if (!el.contains(ev.target as Node)) {
-      this.showSuggestions = false;
+onDocumentClick(ev: MouseEvent) {
+  const hostEl = this.host && (this.host.nativeElement as HTMLElement);
+  if (!hostEl) return;
+  if (!hostEl.contains(ev.target as Node)) {
+    if (this.isUserMenuOpen) {
+      console.log('[DEBUG] document click outside - closing user menu');
     }
+    this.isUserMenuOpen = false;
+  }
+}
+
+  // ---------- scroll handling ----------
+  @HostListener('window:scroll', [])
+  @HostListener('document:scroll', [])
+  @HostListener('window:touchmove', [])
+  onWindowScroll(): void { this.checkScroll(); }
+
+  private checkScroll() {
+    const y = (window.scrollY || window.pageYOffset || 0);
+    if (!this.ticking) {
+      this.ticking = true;
+      window.requestAnimationFrame(() => {
+        this.isScrolled = y > 20;
+        this.ticking = false;
+      });
+    }
+  }
+
+  // ---------- auth / role helpers ----------
+  private _onStorageEvent = (e: StorageEvent) => {
+    if (e.key === 'user' || e.key === 'currentUser' || e.key === 'token') {
+      try { this.currentUser = this.auth.getUser(); } catch { this.currentUser = null; }
+      this.normalizeRole();
+    }
+  };
+
+  private normalizeRole() {
+    const r = this.currentUser?.role ?? null;
+    if (!r) { this.role = null; return; }
+    const rr = String(r).toUpperCase();
+    if (rr === 'ADMIN') this.role = 'admin';
+    else if (rr === 'RETAILER') this.role = 'retailer';
+    else if (rr === 'CUSTOMER') this.role = 'customer';
+    else this.role = null;
+  }
+
+  get designVariant(): 'guest' | 'admin' | 'customer' {
+    if (!this.role) return 'guest';
+    if (this.role === 'admin') return 'admin';
+    return 'customer';
+  }
+
+  onInput(ev: Event) { this.query = (ev.target as HTMLInputElement).value; }
+  toggleMobileCategories() { this.mobileCatsVisible = !this.mobileCatsVisible; }
+
+  onSearch() {
+    if (!this.query?.trim()) return;
+    this.router.navigate(['/search'], { queryParams: { q: this.query } });
+  }
+
+  logout() {
+    if (typeof (this.auth as any).logout === 'function') {
+      (this.auth as any).logout();
+    } else {
+      localStorage.removeItem('user');
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+    }
+    this.currentUser = null;
+    this.role = null;
+    this.closeUserMenu();
+    this.router.navigate(['/']);
   }
 }

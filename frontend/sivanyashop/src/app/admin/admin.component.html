@@ -1,75 +1,104 @@
-<!-- FILE: src/app/admin/admin.component.html -->
-<!-- Updated Admin Dashboard with modern style and Product Upload link -->
+<!-- FILE: src/app/admin/admin.component.html
+     REPLACE existing file. Paste this complete HTML into src/app/admin/admin.component.html.
+
+     Notes:
+     - Uses Bootstrap-like utilities + the SCSS I provided earlier (kpi-row, card-grid, admin-card).
+     - KPI bindings: totalOrders, totalRevenue, totalCustomers, totalProducts (add these to the TS if not present).
+     - Icons use Bootstrap Icons (class="bi ..."). Replace with FontAwesome if you prefer.
+-->
 
 <div class="admin-dashboard container py-4">
+  <!-- Header -->
   <h2 class="mb-1">⚙️ Admin Panel</h2>
-  <p class="text-muted mb-4">
+  <p class="text-muted mb-2">
     Signed in as <strong>{{ user?.name || 'Admin' }}</strong>
   </p>
 
-  <div class="row g-3">
-    <!-- Product Upload / Management -->
-    <div class="col-md-3 col-sm-6">
-      <div class="card admin-card shadow-sm border-0">
-        <div class="card-body text-center">
-          <div class="icon-circle bg-primary-subtle text-primary mb-2">
-            <i class="bi bi-box-seam"></i>
-          </div>
-          <h6 class="fw-semibold">Products</h6>
-          <p class="small text-muted mb-3">Create, edit or upload products.</p>
-          <a routerLink="/admin/products" class="btn btn-sm btn-primary w-100">
-            Manage
-          </a>
-        </div>
+  <!-- KPI / Stats row (classic e-comm style) -->
+  <div class="kpi-row" aria-label="Key performance indicators">
+    <div class="kpi" role="group" aria-roledescription="stat">
+      <div class="kpi-icon" aria-hidden="true"><i class="bi bi-basket-fill"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ totalOrders ?? 0 }}</div>
+        <div class="kpi-label">Total Orders</div>
       </div>
+    </div>
+
+    <div class="kpi" role="group" aria-roledescription="stat">
+      <div class="kpi-icon" aria-hidden="true"><i class="bi bi-currency-rupee"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-value">₹ {{ totalRevenue ?? 0 | number }}</div>
+        <div class="kpi-label">Revenue</div>
+      </div>
+    </div>
+
+    <div class="kpi" role="group" aria-roledescription="stat">
+      <div class="kpi-icon" aria-hidden="true"><i class="bi bi-people-fill"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ totalCustomers ?? 0 }}</div>
+        <div class="kpi-label">Customers</div>
+      </div>
+    </div>
+
+    <div class="kpi" role="group" aria-roledescription="stat">
+      <div class="kpi-icon" aria-hidden="true"><i class="bi bi-box-seam"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-value">{{ totalProducts ?? 0 }}</div>
+        <div class="kpi-label">Products</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-divider" aria-hidden="true"></div>
+
+  <!-- Classic card grid (tiles) -->
+  <div class="card-grid">
+    <!-- Products -->
+    <div class="admin-card" role="region" aria-label="Products">
+      <div class="icon-circle bg-primary-subtle text-primary mb-2">
+        <i class="bi bi-box-seam"></i>
+      </div>
+      <h6 class="fw-semibold">Products</h6>
+      <p class="small text-muted mb-3">Create, edit or upload products.</p>
+      <a routerLink="/admin/products" class="btn btn-primary w-100" (click)="onNavigate()">
+        Manage
+      </a>
     </div>
 
     <!-- Categories -->
-    <div class="col-md-3 col-sm-6">
-      <div class="card admin-card shadow-sm border-0">
-        <div class="card-body text-center">
-          <div class="icon-circle bg-info-subtle text-info mb-2">
-            <i class="bi bi-diagram-3"></i>
-          </div>
-          <h6 class="fw-semibold">Categories</h6>
-          <p class="small text-muted mb-3">Manage categories & structure.</p>
-          <a routerLink="/admin/categories" class="btn btn-sm btn-outline-primary w-100">
-            Manage
-          </a>
-        </div>
+    <div class="admin-card" role="region" aria-label="Categories">
+      <div class="icon-circle bg-info-subtle text-info mb-2">
+        <i class="bi bi-diagram-3"></i>
       </div>
+      <h6 class="fw-semibold">Categories</h6>
+      <p class="small text-muted mb-3">Manage categories & structure.</p>
+      <a routerLink="/admin/categories" class="btn btn-outline w-100" (click)="onNavigate()">
+        Manage
+      </a>
     </div>
 
     <!-- Stock -->
-    <div class="col-md-3 col-sm-6">
-      <div class="card admin-card shadow-sm border-0">
-        <div class="card-body text-center">
-          <div class="icon-circle bg-warning-subtle text-warning mb-2">
-            <i class="bi bi-boxes"></i>
-          </div>
-          <h6 class="fw-semibold">Stock</h6>
-          <p class="small text-muted mb-3">Adjust stock & inventory ledger.</p>
-          <a routerLink="/admin/stock" class="btn btn-sm btn-outline-secondary w-100">
-            Open
-          </a>
-        </div>
+    <div class="admin-card" role="region" aria-label="Stock">
+      <div class="icon-circle bg-warning-subtle text-warning mb-2">
+        <i class="bi bi-boxes"></i>
       </div>
+      <h6 class="fw-semibold">Stock</h6>
+      <p class="small text-muted mb-3">Adjust stock & inventory ledger.</p>
+      <a routerLink="/admin/stock" class="btn btn-outline w-100" (click)="onNavigate()">
+        Open
+      </a>
     </div>
 
     <!-- Reports -->
-    <div class="col-md-3 col-sm-6">
-      <div class="card admin-card shadow-sm border-0">
-        <div class="card-body text-center">
-          <div class="icon-circle bg-success-subtle text-success mb-2">
-            <i class="bi bi-graph-up-arrow"></i>
-          </div>
-          <h6 class="fw-semibold">Reports</h6>
-          <p class="small text-muted mb-3">Sales & performance overview.</p>
-          <a routerLink="/admin/reports" class="btn btn-sm btn-outline-success w-100">
-            Open
-          </a>
-        </div>
+    <div class="admin-card" role="region" aria-label="Reports">
+      <div class="icon-circle bg-success-subtle text-success mb-2">
+        <i class="bi bi-graph-up-arrow"></i>
       </div>
+      <h6 class="fw-semibold">Reports</h6>
+      <p class="small text-muted mb-3">Sales & performance overview.</p>
+      <a routerLink="/admin/reports" class="btn btn-outline w-100" (click)="onNavigate()">
+        Open
+      </a>
     </div>
   </div>
 </div>
