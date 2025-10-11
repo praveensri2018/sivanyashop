@@ -34,7 +34,11 @@ pm2 save
 
 # ==== 4. NGINX ====
 log "Updating nginx configs..."
-cat > "$NGX_AVAIL/$FRONTEND_DOMAIN" <<EOL
+# FRONTEND - keep existing if it has SSL
+if grep -q "listen 443" "$NGX_AVAIL/$FRONTEND_DOMAIN" 2>/dev/null; then
+  log "Keeping existing $FRONTEND_DOMAIN nginx (has SSL)"
+else
+  cat > "$NGX_AVAIL/$FRONTEND_DOMAIN" <<EOL
 server {
     listen 80;
     server_name $FRONTEND_DOMAIN www.$FRONTEND_DOMAIN;
@@ -43,8 +47,13 @@ server {
     location / { try_files \$uri /index.html; }
 }
 EOL
+fi
 
-cat > "$NGX_AVAIL/$API_DOMAIN" <<EOL
+# API - keep existing if it has SSL
+if grep -q "listen 443" "$NGX_AVAIL/$API_DOMAIN" 2>/dev/null; then
+  log "Keeping existing $API_DOMAIN nginx (has SSL)"
+else
+  cat > "$NGX_AVAIL/$API_DOMAIN" <<EOL
 server {
     listen 80;
     server_name $API_DOMAIN;
@@ -60,10 +69,12 @@ server {
     }
 }
 EOL
+fi
 
 ln -sf "$NGX_AVAIL/$FRONTEND_DOMAIN" "$NGX_ENABLED/$FRONTEND_DOMAIN"
 ln -sf "$NGX_AVAIL/$API_DOMAIN" "$NGX_ENABLED/$API_DOMAIN"
 nginx -t && systemctl reload nginx
+
 
 # ==== 5. CERTBOT ====
 if [ "$AUTO_CERTS" = "true" ] && command -v certbot >/dev/null; then
