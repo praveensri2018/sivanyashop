@@ -61,9 +61,7 @@
     <a routerLink="/" class="mh-brand" aria-label="home"><img src="/assets/logo.png" alt="logo" /></a>
 
     <form class="mh-search" (ngSubmit)="onSearch()" role="search">
-      <button type="button" class="mh-search-left" (click)="$event.preventDefault()">
-        <i class="fas fa-search" aria-hidden="true"></i>
-      </button>
+     
       <input type="search" name="q" [(ngModel)]="query" placeholder="Search for products, brands and more"
         class="mh-search-input" (input)="onInput($event)" autocomplete="off" />
       <button class="mh-search-go" type="submit">Go</button>
