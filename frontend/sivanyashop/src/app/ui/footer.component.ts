@@ -1,6 +1,7 @@
 // Replace file: src/app/ui/footer.component.ts
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';   // <-- ADD
 import { Subscription, Observable } from 'rxjs';
 import { AuthService, UserPayload } from '../auth/auth.service';
 import { CartService } from '../services/cart.service';
@@ -8,7 +9,7 @@ import { CartService } from '../services/cart.service';
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule], // <-- include RouterModule here
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss']
 })

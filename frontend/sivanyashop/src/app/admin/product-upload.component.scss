@@ -1,78 +1,70 @@
 /* FILE: src/app/admin/product-upload.component.scss
-   Place in: src/app/admin/product-upload.component.scss
-   Mobile-first, responsive, Meesho-like admin product upload styles.
+   REPLACE or MERGE with your existing file at src/app/admin/product-upload.component.scss
+   -- ADDED styles for .variant-input and mobile tuning (search for "VARIANT INPUT" comments)
 */
 
-/* -------------------- VARIABLES -------------------- */
+/* ---------------------- VARIABLES ---------------------- */
 $bg: #f7f8fa;
 $card-bg: #ffffff;
 $text: #111827;
 $muted: #6b7280;
 $border: #e6e9ee;
-$primary: #007bff;
+$primary: #0b74ff;
 $secondary: #6c757d;
-$warning: #ffc107;
-$danger: #dc3545;
 $radius: 12px;
-$shadow: 0 8px 30px rgba(10, 15, 25, 0.06);
-$max-width: 980px;
+$shadow-sm: 0 6px 18px rgba(10,15,25,0.04);
+$shadow-lg: 0 12px 40px rgba(10,15,25,0.06);
+$max-width: 1100px;
 
-/* Respect header/footer safe spacing (set globally in src/styles.css) */
-$header-offset: calc(var(--app-header-height, 64px) + 12px);
-$footer-offset: calc(var(--app-footer-height, 68px) + 12px);
+/* ---------------------- LAYOUT ---------------------- */
+:host { display: block; background: $bg; min-height: 100%; }
 
-/* -------------------- LAYOUT -------------------- */
 .admin-container {
   max-width: $max-width;
-  margin: 18px auto;
-  padding: 16px;
+  margin: 14px auto;
+  padding: 14px;
   box-sizing: border-box;
-  background: transparent;
-  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   color: $text;
-  /* Ensure content isn't hidden under fixed header/footer */
-  margin-top: $header-offset;
-  margin-bottom: $footer-offset;
 }
 
 /* Card */
 .card {
   background: $card-bg;
   border-radius: $radius;
-  padding: 16px;
-  margin-bottom: 18px;
-  box-shadow: $shadow;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: $shadow-sm;
   border: 1px solid $border;
 
   h3 {
-    margin: 0 0 12px 0;
-    font-size: 1.05rem;
+    margin: 0 0 10px 0;
+    font-size: 1rem;
     font-weight: 600;
     color: $text;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba($border, 0.4);
   }
 }
 
-/* -------------------- FORM GRID (mobile-first) -------------------- */
-/* 1 column on mobile; 2-column compact grid on medium+ screens */
+/* small helper */
+.row-actions { display:flex; gap:8px; align-items:center; }
+
+/* ---------------------- FORM GRID (mobile-first) ---------------------- */
 .form-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
 
   label {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    display: block;
     font-weight: 600;
-    color: $text;
     font-size: 0.95rem;
+    color: $text;
 
-    input,
-    textarea,
-    select {
-      margin-top: 4px;
+    input, textarea, select, .ng-select-container {
+      display: block;
+      width: 100%;
+      margin-top: 6px;
       padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid $border;
@@ -83,33 +75,25 @@ $footer-offset: calc(var(--app-footer-height, 68px) + 12px);
       transition: box-shadow .12s ease, border-color .12s ease;
     }
 
-    textarea { min-height: 72px; resize: vertical; }
+    textarea { min-height: 80px; resize: vertical; }
 
-    input:focus,
-    textarea:focus,
-    select:focus {
+    input:focus, textarea:focus, select:focus, .ng-select-container:focus-within {
       outline: none;
       border-color: $primary;
-      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.08);
+      box-shadow: 0 8px 30px rgba(11,116,255,0.08);
     }
   }
 
   .row-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-start;
-    align-items: center;
     margin-top: 4px;
+    justify-content: flex-start;
 
-    button {
-      min-height: 40px;
-    }
+    button { min-height: 40px; }
   }
 }
 
-/* -------------------- BUTTONS -------------------- */
-button,
-.btn {
+/* ---------------------- BUTTONS ---------------------- */
+.btn, button {
   cursor: pointer;
   border: none;
   border-radius: 10px;
@@ -126,9 +110,8 @@ button,
 .btn-primary {
   background: linear-gradient(180deg, lighten($primary, 6%), $primary);
   color: #fff;
-  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.12);
+  box-shadow: 0 8px 20px rgba(11,116,255,0.12);
 }
-
 .btn-primary:hover { transform: translateY(-2px); }
 
 .btn-secondary {
@@ -144,25 +127,54 @@ button,
 }
 
 .btn-warning {
-  background: linear-gradient(180deg, lighten($warning, 6%), $warning);
+  background: linear-gradient(180deg, #ffe4a3, #ffc107);
   color: #222;
 }
 
-button:focus-visible {
-  outline: 3px solid rgba(0,123,255,0.14);
+/* small close button used on thumbs */
+.btn-close {
+  background: #fff;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(0,0,0,0.06);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* focus visible */
+button:focus-visible, .btn:focus-visible {
+  outline: 3px solid rgba(11,116,255,0.12);
   outline-offset: 3px;
 }
 
-/* -------------------- FILE INPUT & THUMBS -------------------- */
-input[type="file"] {
-  padding: 6px 0;
+/* ---------------------- FILE INPUT & THUMBS ---------------------- */
+/* make the visible label look like a button; hide default input */
+#addFiles {
+  display: none; /* actual file input hidden */
 }
 
-/* uploaded thumbs */
+/* clickable label style */
+label[for="addFiles"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f0f7ff, #e6f0ff);
+  border: 1px solid lighten($primary, 36%);
+  color: $primary;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* thumbs preview container */
 .thumbs {
   margin-top: 12px;
 
-  h4 { margin: 8px 0; font-size: 1rem; }
+  h4 { margin: 8px 0; font-size: 1rem; font-weight: 600; }
 
   .thumb-row {
     display: flex;
@@ -172,16 +184,17 @@ input[type="file"] {
   }
 
   .thumb {
-    width: 84px;
+    width: 88px;
     border-radius: 8px;
     background: #fff;
     border: 1px solid $border;
-    padding: 6px;
-    box-shadow: 0 8px 18px rgba(10, 15, 25, 0.04);
+    padding: 8px;
+    box-shadow: $shadow-sm;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
+    position: relative;
 
     img {
       width: 72px;
@@ -191,110 +204,239 @@ input[type="file"] {
       display: block;
     }
 
-    .muted {
-      color: $muted;
-      font-size: 0.75rem;
+    small {
+      display: block;
       text-align: center;
-      word-break: break-word;
+      font-size: 0.72rem;
+      color: $muted;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .btn-close {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 26px;
+      height: 26px;
+      font-size: 14px;
+      line-height: 1;
     }
   }
 }
 
-/* -------------------- VARIANT SECTION -------------------- */
-.card hr { border: none; border-top: 1px solid rgba($border, 0.6); margin: 18px 0; }
-
-.form-grid .small-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+/* preview "selectedFiles" thumbnails (same style) */
+.selected-preview {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-
-/* small numeric input tweaks */
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
-/* -------------------- UTILITIES & STATES -------------------- */
-.loading,
-.no-products {
+.preview-item {
+  position: relative;
+  width: 96px;
   text-align: center;
-  color: $muted;
-  padding: 18px 0;
+  img { width: 88px; height: 88px; object-fit: cover; border-radius: 8px; box-shadow: $shadow-sm; display:block; }
+  small { color: $muted; font-size: 0.75rem; display:block; margin-top:6px; }
+  .btn-close { position:absolute; top:6px; right:6px; }
 }
 
-/* -------------------- RESPONSIVE: DESKTOP LAYOUT -------------------- */
-@media (min-width: 820px) {
-  .admin-container { padding: 20px; }
+/* ---------------------- VARIANTS TABLE (IMPROVED RESPONSIVE INPUTS & ALIGNMENT) ----------------------
+   PLACE: merge/replace the existing table-related styles for variants in
+   src/app/admin/product-upload.component.scss
+*/
 
-  /* make form grid two columns for many groups */
-  .form-grid {
-    grid-template-columns: repeat(2, 1fr);
-    align-items: start;
+table.variants-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 0.95rem;
+  table-layout: auto; /* allow columns to size naturally */
 
-    /* make the action row span both columns */
-    .row-actions { grid-column: 1 / -1; }
+  thead {
+    th {
+      text-align: left;
+      padding: 12px 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: $muted;
+      border-bottom: 1px dashed rgba(0,0,0,0.06);
+      white-space: nowrap;
+    }
   }
 
-  .card { padding: 20px; }
+  tbody {
+    tr {
+      td {
+      /*  padding: 12px 10px;*/
+        vertical-align: middle;
+        /* Important: allow inputs inside to shrink properly on small screens */
+        min-width: 0;
+      }
 
-  .thumb-row .thumb { width: 100px; img { width: 88px; height: 88px; } }
+      /* ensure inputs (variant-input) take full width of their cell */
+      input.variant-input, input[type="number"].variant-input {
+        width: 100%;
+        box-sizing: border-box;
+        min-width: 0; /* very important for flex/overflow contexts */
+      }
+
+      /* Action column (duplicate/remove) should keep a predictable width and not force the rest */
+      td.actions-cell {
+        width: 150px;            /* fixed-ish width for action buttons */
+        white-space: nowrap;
+        vertical-align: middle;
+      }
+
+      /* Buttons inside actions should stack on mobile */
+      .variant-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: flex-end;
+      }
+    }
+  }
 }
 
-/* large desktop: center and max width bump */
-@media (min-width: 1200px) {
-  .admin-container { max-width: 1100px; margin-left: auto; margin-right: auto; }
-  .form-grid { gap: 16px; }
+/* TINY input polish (keeps style consistent) */
+.variant-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid $border;
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  font-size: 0.95rem;
+  color: $text;
+  box-sizing: border-box;
+  transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
 }
 
-/* -------------------- ACCESSIBILITY & POLISH -------------------- */
-label { color: $text; }
+/* Mobile behaviour: make table rows wrap and buttons stacked for small screens */
+
+@media (max-width: 680px) {
+   table.variants-table {
+    width: 100%;
+
+    thead {
+      display: none; /* hide header on mobile */
+    }
+
+    tbody {
+      tr {
+        display: block;
+        padding: 10px;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        background: #fff;
+        border-radius: 10px;
+        margin-bottom: 10px;
+
+        td {
+          display: flex;               /* ✅ label left, input right */
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 0;
+          min-width: 0;
+          gap: 10px;
+
+          /* make sure input doesn't overflow */
+          .variant-input {
+            flex: 1;                   /* let input take available space */
+            max-width: 60%;            /* adjust if you want wider inputs */
+          }
+        }
+
+        /* label text before each input */
+        td::before {
+          content: attr(data-label);
+          font-weight: 600;
+          font-size: 0.9rem;
+          color: $muted;
+          width: 40%;                  /* label width on the left */
+          text-align: left;
+          flex-shrink: 0;
+        }
+
+        /* Actions cell layout */
+        td.actions-cell {
+          display: block;
+          margin-top: 8px;
+
+          .variant-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+          }
+        }
+      }
+    }
+  }
+
+  /* input style consistent for mobile */
+  .variant-input {
+    padding: 0px;
+    border-radius: 12px;
+    font-size: 1rem;
+  }
+}
+
+/* Desktop tweak: make action buttons inline and compact */
+@media (min-width: 820px) {
+  .variant-actions {
+    flex-direction: row;
+  }
+}
+
+/* ---------------------- NG-SELECT / MULTI SELECT TWEAKS ---------------------- */
+.ng-select.ng-select {
+  width: 100%;
+  .ng-select-container {
+    border: 1px solid $border;
+    border-radius: 8px;
+    padding: 6px 8px;
+    min-height: 44px;
+  }
+  .ng-value {
+    background: $primary;
+    color: #fff;
+    border-radius: 999px;
+    padding: 4px 8px;
+    margin-right: 6px;
+    font-weight: 600;
+  }
+}
+
+/* ---------------------- UTILITIES ---------------------- */
 .muted { color: $muted; }
-select[multiple] { min-height: 90px; }
+.loading, .no-products { text-align:center; color: $muted; padding: 16px 0; }
 
+/* disabled state */
 [disabled], button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* -------------------- TINY HELPERS (optional) -------------------- */
-/* Use .compact on .card to tighten spacing for quick admin views */
-.card.compact {
-  padding: 12px;
-  .form-grid { gap: 8px; }
-  .thumb { padding: 4px; img { width: 64px; height: 64px; } }
+/* compact card variation */
+.card.compact { padding: 10px; }
+
+/* ---------------------- RESPONSIVE: DESKTOP ---------------------- */
+@media (min-width: 820px) {
+  .admin-container { padding: 18px; }
+
+  .form-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .form-grid .row-actions { grid-column: 1 / -1; }
+
+  .thumb { width: 100px; img { width: 88px; height: 88px; } }
+  .preview-item { width: 110px; img { width: 100px; height: 100px; } }
+
+  /* on desktop, slightly smaller variant radius to match table */
+  .variant-input { border-radius: 8px; padding: 8px 10px; font-size: 0.95rem; }
 }
 
-
-/* Select2 custom look (append to product-upload.component.scss) */
-.select2-container--default .select2-selection--multiple {
-  background-color: #fff;
-  border: 1px solid #e6e9ee;
-  border-radius: 8px;
-  padding: 6px 8px;
-  min-height: 46px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+/* wide screens */
+@media (min-width: 1200px) {
+  .admin-container { max-width: 1200px; padding: 22px; }
+  .form-grid { gap: 18px; }
 }
-
-.select2-container--default .select2-selection--multiple .select2-selection__choice {
-  background-color: #007bff;
-  color: #fff;
-  border-radius: 999px;
-  padding: 4px 10px;
-  margin-top: 6px;
-  margin-right: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  box-shadow: 0 2px 6px rgba(0,123,255,0.12);
-}
-
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-  color: #fff;
-  margin-right: 6px;
-}
-
-.select2-dropdown {
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-  border: 1px solid #e6e9ee;
-}
-.select2-container { width: 100% !important; }

@@ -104,6 +104,33 @@ export class AuthService {
     this.clear();
   }
 
+  register(name: string, email: string, password: string, remember = true) {
+  const url = `${this.apiBase}/api/auth/register`;
+
+  return this.http.post<any>(url, { name, email, password }).pipe(
+    map(res => {
+      // backend shape: { success: true, data: { token, user } }
+      const data = res?.data ?? {};
+      const user = data.user ?? {};
+      const token = data.token ?? null;
+
+      // force role to CUSTOMER for all new users
+      const userPayload: UserPayload = {
+        id: user.id ?? null,
+        name: user.name ?? '',
+        email: user.email ?? '',
+        role: 'CUSTOMER',
+        token
+      };
+
+      // store user & emit change
+      this.setUser(userPayload, !remember);
+
+      return userPayload; // emits observable for frontend
+    })
+  );
+}
+
   // ---------- Internal: read from storage (prefers localStorage then sessionStorage) ----------
   private _readUserFromStorage(): UserPayload | null {
     const raw = localStorage.getItem(this.storageKey) ?? sessionStorage.getItem(this.storageKey);

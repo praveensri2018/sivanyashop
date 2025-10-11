@@ -26,7 +26,7 @@
         </div>
 
         <div *ngIf="editingId !== p.id" class="card-actions">
-          <button class="btn-sm btn-primary" (click)="startEdit(p)">Edit</button>
+<button class="btn-sm btn-primary" (click)="editProduct(p.id)">Edit</button>
           <button class="btn-sm btn-outline" (click)="toggleActive(p)">{{ p.isActive ? 'Deactivate' : 'Activate' }}</button>
           <button class="btn-sm btn-danger" (click)="confirmDelete(p.id)">Delete</button>
         </div>

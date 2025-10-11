@@ -11,6 +11,8 @@ import { LoginComponent } from './auth/login.component';
 import { ProductUploadComponent } from './admin/product-upload.component';
 import { CategoryManagementComponent } from './admin/category-management.component';
 import { ProductListComponent } from './admin/product-list.component';
+import { AdminRetailerListComponent } from './admin/retailer-list.component';
+import { RegisterComponent } from './auth/register.component';
 
 export const routes: Routes = [
   { path: '', component: ShopComponent, canActivate: [PublicRedirectGuard] },
@@ -20,8 +22,10 @@ export const routes: Routes = [
   { path: 'retailer', component: RetailerDashboardComponent, canActivate: [RoleGuard], data: { roles: ['retailer'] } },
   { path: 'admin', component: AdminComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
   { path: 'login', component: LoginComponent },
-  { path: 'admin/product-upload', component: ProductUploadComponent},
-  { path: 'admin/categories', component: CategoryManagementComponent },
-    { path: 'admin/products', component: ProductListComponent  },
+  { path: 'admin/product-upload', component: ProductUploadComponent, canActivate: [RoleGuard], data: { roles: ['admin'] }},
+  { path: 'admin/categories', component: CategoryManagementComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
+    { path: 'admin/products', component: ProductListComponent, canActivate: [RoleGuard], data: { roles: ['admin'] }  },
+    { path: 'admin/retailers', component: AdminRetailerListComponent, canActivate: [RoleGuard], data: { roles: ['admin']  }},
+  { path: 'register', component: RegisterComponent },
   { path: '**', redirectTo: '' }
 ];

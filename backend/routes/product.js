@@ -16,6 +16,12 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+router.delete('/variant/:id', verifyToken, ensureAdmin, productController.deleteVariant);
+router.put('/variant/:id/deactivate', verifyToken, ensureAdmin, productController.deactivateVariant);
+
+router.get('/getdetails/:id', verifyToken, ensureAdmin, productController.getProductById);
+router.put('/variant/:id', verifyToken, ensureAdmin, productController.updateVariant);
+
 // Admin-only product management
 router.post('/category', verifyToken, ensureAdmin, productController.createCategory);
 router.post('/product', verifyToken, ensureAdmin, productController.createProduct);

@@ -1,0 +1,79 @@
+<!-- PLACE: src/app/admin/retailer-list.component.html
+     REPLACE existing file with this updated template.
+     NOTE: status badge is now clickable and calls toggleActive(row)
+-->
+<div class="retailer-list container py-4">
+  <div class="header d-flex align-items-center justify-content-between mb-3">
+    <h3>Retailers</h3>
+    <button class="btn btn-primary" (click)="openCreate()">+ Add Retailer</button>
+  </div>
+
+  <div *ngIf="loading" class="muted">Loading...</div>
+  <div *ngIf="!loading && retailers.length === 0" class="text-muted">No retailers found.</div>
+
+   <div class="list-group" *ngIf="!loading">
+    <div class="list-item d-flex justify-content-between align-items-center" *ngFor="let r of retailers">
+      <div class="info">
+        <div class="line1">
+          <strong class="name">{{ r.Name ?? r.name }}</strong>
+
+          <!-- USE getIsActive(r) to normalize property names and always return boolean -->
+          <small
+            class="badge status"
+            [ngClass]="{'active': getIsActive(r), 'inactive': !getIsActive(r)}"
+            title="Click to toggle status"
+            (click)="toggleActive(r)">
+            {{ getIsActive(r) ? 'Active' : 'Inactive' }}
+          </small>
+        </div>
+
+        <div class="line2"><small class="text-muted">{{ r.Email ?? r.email }}</small></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-sm btn-outline me-1" (click)="openEdit(r)">Edit</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- form drawer -->
+  <div *ngIf="formVisible" class="form-card card p-3 mt-4">
+    <h5 class="mb-3">{{ editingId ? 'Edit Retailer' : 'Create Retailer' }}</h5>
+
+    <form [formGroup]="editForm" (ngSubmit)="submitForm()">
+      <div class="mb-2">
+        <input formControlName="name" class="form-control" placeholder="Name" />
+        <div class="error" *ngIf="editForm.get('name')?.touched && editForm.get('name')?.invalid">Name is required.</div>
+      </div>
+
+      <div class="mb-2">
+        <input #emailInput formControlName="email" class="form-control" placeholder="Email" />
+        <div class="error" *ngIf="editForm.get('email')?.touched && editForm.get('email')?.hasError('required')">Email is required.</div>
+        <div class="error" *ngIf="editForm.get('email')?.touched && editForm.get('email')?.hasError('email')">Enter a valid email.</div>
+
+        <!-- server-side duplication error -->
+        <div class="error" *ngIf="emailExistsError">{{ emailErrorMessage || 'Email already exists' }}</div>
+      </div>
+
+      <div class="mb-2" *ngIf="!editingId">
+        <input formControlName="password" type="password" class="form-control" placeholder="Password (required)" />
+        <div class="error" *ngIf="editForm.get('password')?.touched && editForm.get('password')?.invalid">Password is required (min 6 chars).</div>
+      </div>
+
+      <div class="mb-2 form-check">
+        <input type="checkbox" formControlName="isActive" class="form-check-input" id="isActive" />
+        <label class="form-check-label" for="isActive">Active</label>
+      </div>
+
+      <div *ngIf="serverError" class="alert alert-danger small">{{ serverError }}</div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit" [disabled]="editForm.invalid || saving">
+          {{ saving ? 'Saving...' : 'Save' }}
+        </button>
+        <button class="btn btn-outline" type="button" (click)="closeForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

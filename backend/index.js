@@ -28,12 +28,15 @@ const productRoutes = require('./routes/product');
 const productImageRoutes = require('./routes/productImage');
 const categoryRoutes = require('./routes/category');
 const stockRoutes = require('./routes/stock');
+const retailerRoutes = require('./routes/retailer');
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/product-images', productImageRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/stock', stockRoutes);
+app.use('/api/retailers', retailerRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 

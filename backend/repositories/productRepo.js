@@ -271,7 +271,157 @@ async function getRecentlyViewed(userId, limit = 10) {
     return result.recordset;
 }
 
+
+async function getProductRowById(productId) {
+  const result = await query(
+    `SELECT Id, Name, Description, ImagePath, IsActive, IsFeatured, CreatedAt
+     FROM dbo.Products
+     WHERE Id = @productId`,
+    { productId: { type: sql.Int, value: productId } }
+  );
+  return result.recordset[0] || null;
+}
+
+/**
+ * Return array of category ids [1,2,3]
+ */
+async function getCategoryIdsForProduct(productId) {
+  const res = await query(
+    `SELECT CategoryId FROM dbo.ProductCategories WHERE ProductId = @productId`,
+    { productId: { type: sql.Int, value: productId } }
+  );
+  return res.recordset.map(r => r.CategoryId);
+}
+
+/**
+ * Return images array with fields { Id, ImageUrl, filename, name } — frontend normalizer supports ImageUrl/url/path/src
+ */
+async function getImagesForProduct(productId) {
+  const res = await query(
+    `SELECT Id, ImageUrl, IsPrimary, CreatedAt FROM dbo.ProductImages WHERE ProductId = @productId ORDER BY IsPrimary DESC, Id ASC`,
+    { productId: { type: sql.Int, value: productId } }
+  );
+  return (res.recordset || []).map(row => ({
+    Id: row.Id,
+    ImageUrl: row.ImageUrl,
+    filename: row.ImageUrl ? row.ImageUrl.split('/').pop() : null,
+    name: row.ImageUrl ? row.ImageUrl.split('/').pop() : null,
+    IsPrimary: row.IsPrimary
+  }));
+}
+
+/**
+ * Return variants for a product:
+ * include imageIds as comma-separated -> array (if you maintain mapping elsewhere)
+ */
+async function getVariantsForProduct(productId) {
+  const res = await query(
+    `SELECT pv.Id, pv.SKU, pv.VariantName, pv.Attributes, pv.StockQty
+     FROM dbo.ProductVariants pv
+     WHERE pv.ProductId = @productId
+     ORDER BY pv.Id ASC`,
+    { productId: { type: sql.Int, value: productId } }
+  );
+  // Optionally fetch imageIds mapping if you have a link table (not in schema). For now, return empty imageIds.
+  return (res.recordset || []).map(r => ({
+    Id: r.Id,
+    SKU: r.SKU,
+    VariantName: r.VariantName,
+    Attributes: r.Attributes,
+    StockQty: r.StockQty,
+    imageIds: [] // populate if you have a variant->image mapping table
+  }));
+}
+
+/**
+ * Given an array of variantIds, return map { variantId: [ { Id, VariantId, PriceType, Price, IsActive } ] }
+ * Only returns active prices (IsActive = 1) if you prefer latest effective price.
+ */
+async function getActivePricesForVariants(variantIds) {
+  if (!variantIds || variantIds.length === 0) return {};
+
+  // create a table-valued parameter like construct or inline list
+  const idsList = variantIds.join(',');
+   const res = await query(`
+    WITH RankedPrices AS (
+      SELECT
+        Id,
+        VariantId,
+        PriceType,
+        Price,
+        EffectiveFrom,
+        EffectiveTo,
+        IsActive,
+        ROW_NUMBER() OVER (PARTITION BY VariantId, PriceType ORDER BY Id DESC) AS rn
+      FROM dbo.VariantPrices
+      WHERE VariantId IN (${idsList}) AND IsActive = 1
+    )
+    SELECT Id, VariantId, PriceType, Price, EffectiveFrom, EffectiveTo, IsActive
+    FROM RankedPrices
+    WHERE rn = 1
+    ORDER BY VariantId, PriceType;
+  `);
+
+  const map = {};
+  for (const row of (res.recordset || [])) {
+    if (!map[row.VariantId]) map[row.VariantId] = [];
+    map[row.VariantId].push({
+      Id: row.Id,
+      VariantId: row.VariantId,
+      PriceType: row.PriceType,
+      Price: Number(row.Price),
+      EffectiveFrom: row.EffectiveFrom,
+      EffectiveTo: row.EffectiveTo,
+      IsActive: row.IsActive
+    });
+  }
+  return map;
+}
+
+async function updateProductVariant({ variantId, sku, variantName, attributes, stockQty }) {
+  const result = await query(`
+    UPDATE dbo.ProductVariants
+    SET SKU = @sku,
+        VariantName = @variantName,
+        Attributes = @attributes,
+        StockQty = @stockQty
+    OUTPUT INSERTED.*
+    WHERE Id = @variantId
+  `, {
+    variantId: { type: sql.Int, value: variantId },
+    sku: { type: sql.NVarChar, value: sku },
+    variantName: { type: sql.NVarChar, value: variantName },
+    attributes: { type: sql.NVarChar, value: attributes },
+    stockQty: { type: sql.Int, value: stockQty }
+  });
+
+  return result.recordset[0] || null;
+}
+
+async function deleteProductVariant(variantId) {
+  await query('DELETE FROM dbo.ProductVariants WHERE Id = @variantId', { variantId: { type: sql.Int, value: variantId } });
+  // also optionally delete related prices
+  await query('DELETE FROM dbo.VariantPrices WHERE VariantId = @variantId', { variantId: { type: sql.Int, value: variantId } });
+  return { success: true };
+}
+
+async function deactivateProductVariant(variantId) {
+  // set IsActive = 0 (assumes column added)
+  const result = await query(`
+    UPDATE dbo.ProductVariants
+    SET IsActive = 0
+    OUTPUT INSERTED.*
+    WHERE Id = @variantId
+  `, { variantId: { type: sql.Int, value: variantId } });
+  // optionally deactivate prices too
+  await query('UPDATE dbo.VariantPrices SET IsActive = 0 WHERE VariantId = @variantId', { variantId: { type: sql.Int, value: variantId } });
+  return result.recordset[0] || null;
+}
+
 module.exports = {
+  deleteProductVariant,
+  deactivateProductVariant,
+    updateProductVariant,
   addRecentlyViewed, getRecentlyViewed ,
   getTopSellingProducts,
   getLowStockProducts,
@@ -285,5 +435,10 @@ module.exports = {
   createProductVariant,
   createVariantPrice,
   updateVariantPrice,
-  fetchAllProductsWithImagesAndCategories
+  fetchAllProductsWithImagesAndCategories,
+   getProductRowById,
+  getCategoryIdsForProduct,
+  getImagesForProduct,
+  getVariantsForProduct,
+  getActivePricesForVariants,
 };

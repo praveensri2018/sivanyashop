@@ -43,7 +43,8 @@
             ],
             "styles": [
   "node_modules/select2/dist/css/select2.min.css",
-  "src/styles.scss"
+  "src/styles.scss",
+  "node_modules/@ng-select/ng-select/themes/default.theme.css" 
 ],
 "scripts": [
   "node_modules/jquery/dist/jquery.min.js",

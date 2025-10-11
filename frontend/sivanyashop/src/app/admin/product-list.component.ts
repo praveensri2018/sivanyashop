@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { AdminProductService } from '../services/admin-product.service';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-product-list',
@@ -23,7 +24,8 @@ export class ProductListComponent implements OnInit {
   limit = 100;
 placeholderImage = '/assets/no-image.jpg'; 
 
-  constructor(private ps: AdminProductService, private fb: FormBuilder) {}
+  constructor(private ps: AdminProductService, private fb: FormBuilder,
+  private router: Router) {}
 
   ngOnInit(): void {
     this.loadProducts();
@@ -35,6 +37,11 @@ placeholderImage = '/assets/no-image.jpg';
       isActive: [true]
     });
   }
+
+  editProduct(productId: number) {
+  if (!productId) return;
+  this.router.navigate(['/admin/product-upload'], { queryParams: { id: productId } });
+}
 
   loadProducts() {
   this.loading = true;
