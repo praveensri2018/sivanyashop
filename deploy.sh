@@ -12,12 +12,20 @@ PM2_APP_NAME=sivanyatrends-backend
 NGX_AVAIL=/etc/nginx/sites-available
 NGX_ENABLED=/etc/nginx/sites-enabled
 
-log() { echo "[$(date '+%F %T')] $*"; }
+log(){ echo "[$(date '+%F %T')] $*"; }
+
+# require root
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run as root"; exit 1
+fi
+
+# certbot binary fallback
+CERTBOT="$(command -v certbot 2>/dev/null || echo /snap/bin/certbot)"
 
 # ==== 1. GIT ====
 log "Git pull..."
-cd "$FRONTEND_DIR" && git pull
-cd "$BACKEND_DIR" && git pull
+if [ -d "$FRONTEND_DIR" ]; then cd "$FRONTEND_DIR" && git pull || true; fi
+if [ -d "$BACKEND_DIR" ]; then cd "$BACKEND_DIR" && git pull || true; fi
 
 # ==== 2. BUILD ====
 log "Building frontend..."
@@ -32,12 +40,33 @@ npm ci --no-audit --no-fund --legacy-peer-deps
 pm2 restart "$PM2_APP_NAME" --update-env || pm2 start index.js --name "$PM2_APP_NAME"
 pm2 save
 
-# ==== 4. NGINX ====
+# ==== prepare backups and remove dup vhosts ====
+mkdir -p /root/nginx-backups
+# Move any extra site files that declare the same frontend domain (except canonical file)
+grep -R "server_name .*${FRONTEND_DOMAIN}" /etc/nginx/sites-available -n 2>/dev/null | awk -F: '{print $1}' | sort -u | while read -r f; do
+  if [ "$f" != "$NGX_AVAIL/$FRONTEND_DOMAIN" ]; then
+    log "Backing up and disabling duplicate $f"
+    mv "$f" /root/nginx-backups/ 2>/dev/null || true
+    rm -f "$NGX_ENABLED/$(basename "$f")" 2>/dev/null || true
+  fi
+done
+
+# also handle explicit known duplicates
+for dup in sivanyashop.com sivanytrendstops.com; do
+  if [ -f "$NGX_AVAIL/$dup" ] && [ "$dup" != "$FRONTEND_DOMAIN" ]; then
+    log "Moving extra $dup to backup"
+    mv "$NGX_AVAIL/$dup" /root/nginx-backups/ 2>/dev/null || true
+    rm -f "$NGX_ENABLED/$dup" 2>/dev/null || true
+  fi
+done
+
+# ==== 4. NGINX (preserve SSL) ====
 log "Updating nginx configs..."
-# FRONTEND - keep existing if it has SSL
+# FRONTEND - keep if has SSL
 if grep -q "listen 443" "$NGX_AVAIL/$FRONTEND_DOMAIN" 2>/dev/null; then
-  log "Keeping existing $FRONTEND_DOMAIN nginx (has SSL)"
+  log "Keeping existing $FRONTEND_DOMAIN (has SSL)"
 else
+  [ -f "$NGX_AVAIL/$FRONTEND_DOMAIN" ] && cp "$NGX_AVAIL/$FRONTEND_DOMAIN" /root/nginx-backups/"$FRONTEND_DOMAIN.$(date +%s)".bak || true
   cat > "$NGX_AVAIL/$FRONTEND_DOMAIN" <<EOL
 server {
     listen 80;
@@ -47,12 +76,14 @@ server {
     location / { try_files \$uri /index.html; }
 }
 EOL
+  log "Wrote HTTP config for $FRONTEND_DOMAIN"
 fi
 
-# API - keep existing if it has SSL
+# API - keep if has SSL
 if grep -q "listen 443" "$NGX_AVAIL/$API_DOMAIN" 2>/dev/null; then
-  log "Keeping existing $API_DOMAIN nginx (has SSL)"
+  log "Keeping existing $API_DOMAIN (has SSL)"
 else
+  [ -f "$NGX_AVAIL/$API_DOMAIN" ] && cp "$NGX_AVAIL/$API_DOMAIN" /root/nginx-backups/"$API_DOMAIN.$(date +%s)".bak || true
   cat > "$NGX_AVAIL/$API_DOMAIN" <<EOL
 server {
     listen 80;
@@ -69,33 +100,32 @@ server {
     }
 }
 EOL
+  log "Wrote HTTP config for $API_DOMAIN"
 fi
 
 ln -sf "$NGX_AVAIL/$FRONTEND_DOMAIN" "$NGX_ENABLED/$FRONTEND_DOMAIN"
 ln -sf "$NGX_AVAIL/$API_DOMAIN" "$NGX_ENABLED/$API_DOMAIN"
 nginx -t && systemctl reload nginx
 
-
 # ==== 5. CERTBOT ====
-if [ "$AUTO_CERTS" = "true" ] && command -v certbot >/dev/null; then
+if [ "$AUTO_CERTS" = "true" ] && [ -x "$CERTBOT" ]; then
   if [ ! -d "/etc/letsencrypt/live/$FRONTEND_DOMAIN" ]; then
-    log "Creating cert for $FRONTEND_DOMAIN..."
-    certbot --nginx --non-interactive --agree-tos -m "$LE_EMAIL" -d "$FRONTEND_DOMAIN" -d "www.$FRONTEND_DOMAIN" || log "Certbot failed frontend"
+    log "Obtaining cert for $FRONTEND_DOMAIN"
+    "$CERTBOT" --nginx --non-interactive --agree-tos -m "$LE_EMAIL" -d "$FRONTEND_DOMAIN" -d "www.$FRONTEND_DOMAIN" || log "certbot failed for $FRONTEND_DOMAIN"
   else
     log "Cert exists for $FRONTEND_DOMAIN"
   fi
 
   if [ ! -d "/etc/letsencrypt/live/$API_DOMAIN" ]; then
-    log "Creating cert for $API_DOMAIN..."
-    certbot --nginx --non-interactive --agree-tos -m "$LE_EMAIL" -d "$API_DOMAIN" || log "Certbot failed API"
+    log "Obtaining cert for $API_DOMAIN"
+    "$CERTBOT" --nginx --non-interactive --agree-tos -m "$LE_EMAIL" -d "$API_DOMAIN" || log "certbot failed for $API_DOMAIN"
   else
     log "Cert exists for $API_DOMAIN"
   fi
 
   nginx -t && systemctl reload nginx
 else
-  log "Skipping certbot"
+  log "Skipping certbot (missing or disabled)"
 fi
 
-# ==== DONE ====
 log "✅ Done! Frontend: http://$FRONTEND_DOMAIN  API: http://$API_DOMAIN/health"
