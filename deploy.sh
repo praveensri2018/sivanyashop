@@ -109,23 +109,26 @@ nginx -t && systemctl reload nginx
 
 # ==== 5. CERTBOT ====
 if [ "$AUTO_CERTS" = "true" ] && [ -x "$CERTBOT" ]; then
-  if [ ! -d "/etc/letsencrypt/live/$FRONTEND_DOMAIN" ]; then
-    log "Obtaining cert for $FRONTEND_DOMAIN"
+  log "Checking SSL setup..."
+
+  # Check if nginx has listen 443 blocks
+  if ! grep -q "listen 443" "$NGX_AVAIL/$FRONTEND_DOMAIN" 2>/dev/null; then
+    log "No SSL block found for $FRONTEND_DOMAIN — running certbot..."
     "$CERTBOT" --nginx --non-interactive --agree-tos -m "$LE_EMAIL" -d "$FRONTEND_DOMAIN" -d "www.$FRONTEND_DOMAIN" || log "certbot failed for $FRONTEND_DOMAIN"
   else
-    log "Cert exists for $FRONTEND_DOMAIN"
+    log "SSL block already present for $FRONTEND_DOMAIN"
   fi
 
-  if [ ! -d "/etc/letsencrypt/live/$API_DOMAIN" ]; then
-    log "Obtaining cert for $API_DOMAIN"
+  if ! grep -q "listen 443" "$NGX_AVAIL/$API_DOMAIN" 2>/dev/null; then
+    log "No SSL block found for $API_DOMAIN — running certbot..."
     "$CERTBOT" --nginx --non-interactive --agree-tos -m "$LE_EMAIL" -d "$API_DOMAIN" || log "certbot failed for $API_DOMAIN"
   else
-    log "Cert exists for $API_DOMAIN"
+    log "SSL block already present for $API_DOMAIN"
   fi
 
   nginx -t && systemctl reload nginx
 else
-  log "Skipping certbot (missing or disabled)"
+  log "Skipping certbot (missing binary or AUTO_CERTS disabled)"
 fi
 
-log "✅ Done! Frontend: http://$FRONTEND_DOMAIN  API: http://$API_DOMAIN/health"
+log "✅ Done! HTTPS check complete."
