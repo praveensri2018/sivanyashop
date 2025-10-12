@@ -1,76 +1,164 @@
-<!-- FILE: src/app/admin/product-upload.component.html -->
+<!-- FILE: src/app/admin/product-upload.component.html
+     REPLACE or MERGE into src/app/admin/product-upload.component.html
+     -- ADDED placeholder attributes for all inputs and .variant-input class for styling.
+-->
+
 <div class="admin-container">
-  <h2>🛒 Admin — Product Upload</h2>
+  <h2>🛒 Product Upload & Edit</h2>
 
-  <!-- Step 1: Create product -->
+  <!-- Load / Clear -->
   <section class="card">
-    <h3>Step 1: Create Product</h3>
-    <form [formGroup]="productForm" (ngSubmit)="createProduct()" class="form-grid">
-      <label>Product Name <input formControlName="name" /></label>
-      <label>Description <textarea formControlName="description" rows="2"></textarea></label>
-      <label>Categories
-        <select formControlName="categoryIds" multiple>
-          <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
-        </select>
-      </label>
-      <div class="row-actions">
-        <button class="btn-primary" type="submit">Create Product</button>
-        <button type="button" class="btn-secondary" (click)="productForm.reset()">Reset</button>
-      </div>
-    </form>
+    <h3>Load / Edit Product</h3>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <!-- PLACE: product id input (keeps name pidInput) -->
+      <input #pidInput placeholder="Enter product id to load (e.g. 12345)" />
+      <button class="btn-primary" (click)="loadProductById(pidInput.value)">Load Product</button>
+      <button class="btn-outline" (click)="clearForm()">Clear</button>
+      <button class="btn-outline" (click)="goBack()" style="margin-top:4px">← Back to Products</button>
+    </div>
 
-    <div *ngIf="createdProductId" class="created-info">
-      <small>Created Product ID: <strong>{{ createdProductId }}</strong></small>
+    <div *ngIf="createdProductId" style="margin-top:8px">
+      <small>Editing Product ID: <strong>{{ createdProductId }}</strong></small>
     </div>
   </section>
 
-  <!-- Step 2: Images - only show after product created -->
-  <section *ngIf="createdProductId" class="card">
-    <h3>Step 2: Upload Images (optional)</h3>
-    <input type="file" multiple (change)="onFilesSelected($event)" />
-    <div class="row-actions" style="margin-top:10px">
-      <button class="btn-primary" (click)="uploadImages()" [disabled]="uploading">
-        {{ uploading ? 'Uploading...' : 'Upload Images' }}
-      </button>
-      <button class="btn-outline" (click)="skipToVariants()">Skip to Variants</button>
+  <!-- Product meta -->
+  <section class="card">
+    <h3>Product Details</h3>
+    <form [formGroup]="productForm" (ngSubmit)="$event.preventDefault()" class="form-grid">
+      <!-- PLACE: product name -->
+      <label>Product Name
+        <input formControlName="name" placeholder="e.g. Cotton Polo T-shirt — Navy" />
+      </label>
+
+      <!-- PLACE: description -->
+      <label>Description
+        <textarea formControlName="description" rows="2" placeholder="Short product description (features, material, care)"></textarea>
+      </label>
+
+      <label>Categories</label>
+      <ng-select formControlName="categoryIds"
+                 [items]="categories"
+                 bindLabel="name"
+                 bindValue="id"
+                 [multiple]="true"
+                 [closeOnSelect]="false"
+                 [searchable]="true"
+                 placeholder="Select categories">
+      </ng-select>
+    </form>
+  </section>
+
+  <!-- Images -->
+  <section class="card">
+    <h3>Images</h3>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <label for="addFiles" class="btn-primary" style="cursor:pointer;padding:6px 10px;border-radius:6px;">＋ Add Images</label>
+      <input id="addFiles" type="file" multiple hidden (change)="onFilesSelected($event)" />
+      <button class="btn-primary" (click)="uploadImagesManual()" [disabled]="uploading || !createdProductId || !selectedFiles.length">Upload Selected</button>
     </div>
 
-    <div *ngIf="uploadedImages?.length" class="thumbs">
+    <!-- previews -->
+    <div *ngIf="selectedFiles?.length" style="margin-bottom:12px">
+      <h4>Selected (preview only)</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div *ngFor="let s of selectedFiles; let i = index" style="position:relative;display:inline-block;margin:6px">
+          <button (click)="removePreview(i)" title="Remove preview" style="position:absolute;top:4px;right:4px;border-radius:50%;width:26px;height:26px;border:none;background:#fff;z-index:2">×</button>
+          <img [src]="s.preview" alt="preview" style="display:block;max-width:140px;max-height:140px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.15)" />
+          <small style="display:block;text-align:center;margin-top:4px">{{ s.file.name }}</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- server images -->
+    <div class="thumbs" *ngIf="uploadedImages?.length">
       <h4>Uploaded Images</h4>
       <div class="thumb-row">
-        <div class="thumb" *ngFor="let img of uploadedImages">
-          <img [src]="img.url ?? img.path ?? img" alt="img" />
-          <small class="muted">{{ img.filename ?? img.name ?? '' }}</small>
+        <div class="thumb" *ngFor="let img of uploadedImages; let i=index" style="position:relative;display:inline-block;margin:6px">
+          <button (click)="deleteImage(img)" title="Delete image" style="position:absolute;top:4px;right:4px;z-index:2;border-radius:50%;width:26px;height:26px;border:none;background:#fff">×</button>
+          <img [src]="img.src ?? img.ImageUrl ?? img.imageUrl ?? img.url ?? img.path ?? img" alt="img" style="display:block;max-width:140px;max-height:140px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.15)" />
+          <small style="display:block;text-align:center;margin-top:4px">{{ img.filename ?? img.name ?? (img.Id ? ('ID: '+img.Id) : '') }}</small>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Step 3: Variants -->
-  <section *ngIf="createdProductId" class="card">
-    <h3>Step 3: Add Variant</h3>
-    <form [formGroup]="variantForm" (ngSubmit)="addVariant()" class="form-grid">
-      <label>SKU <input formControlName="sku" /></label>
-      <label>Variant Name <input formControlName="variantName" /></label>
-      <label>Attributes <input formControlName="attributes" /></label>
-      <label>Stock Qty <input type="number" formControlName="stockQty" /></label>
-      <label>Price <input type="number" formControlName="price" /></label>
-      <div class="row-actions">
-        <button class="btn-primary" type="submit">Add Variant</button>
-        <button type="button" class="btn-secondary" (click)="variantForm.reset()">Reset</button>
-      </div>
-    </form>
+  <!-- Variants -->
+  <section class="card">
+    <h3>Variants</h3>
+    <div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px">
+      <button class="btn-primary" (click)="addVariantRow()">＋ Add Variant Row</button>
+      <button class="btn-outline" (click)="variants=[]">Clear All</button>
+    </div>
 
-    <hr />
+    <div *ngIf="variants?.length">
+      <!-- PLACE: variants table. Added placeholder text and .variant-input class for styling -->
 
-    <h4>Update Existing Variant</h4>
-    <form [formGroup]="updateVariantForm" (ngSubmit)="updateVariant()" class="form-grid">
-      <label>Variant ID <input formControlName="variantId" /></label>
-      <label>New Price <input formControlName="price" type="number" /></label>
-      <label>New Stock (optional) <input formControlName="stockQty" type="number" /></label>
-      <div class="row-actions">
-        <button class="btn-warning" type="submit">Update Variant</button>
-      </div>
-    </form>
+<table class="variants-table" style="width:100%;border-collapse:collapse">
+  <thead>
+    <tr>
+      <th>SKU</th>
+      <th>Variant Name</th>
+      <th>Attributes</th>
+      <th>Stock</th>
+      <th>Customer ₹</th>
+      <th>Retailer ₹</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let v of variants; let i = index">
+      <!-- SKU -->
+      <td data-label="SKU">
+        <input class="variant-input" [(ngModel)]="v.sku" name="sku-{{i}}" placeholder="e.g. SKU-001" />
+      </td>
+
+      <!-- Variant Name -->
+      <td data-label="Variant Name">
+        <input class="variant-input" [(ngModel)]="v.variantName" name="variantName-{{i}}" placeholder="Variant name (e.g. Navy / L)" />
+      </td>
+
+      <!-- Attributes -->
+      <td data-label="Attributes">
+        <input class="variant-input" [(ngModel)]="v.attributes" name="attributes-{{i}}" placeholder="color:Red;size:L (semicolon separated)" />
+      </td>
+
+      <!-- Stock -->
+      <td data-label="Stock">
+        <input class="variant-input" type="number" [(ngModel)]="v.stockQty" name="stockQty-{{i}}" placeholder="0" />
+      </td>
+
+      <!-- Customer Price -->
+      <td data-label="Customer ₹">
+        <input class="variant-input" type="number" [(ngModel)]="v.customerPrice" name="customerPrice-{{i}}" placeholder="e.g. 499.00" />
+      </td>
+
+      <!-- Retailer Price -->
+      <td data-label="Retailer ₹">
+        <input class="variant-input" type="number" [(ngModel)]="v.retailerPrice" name="retailerPrice-{{i}}" placeholder="e.g. 450.00" />
+      </td>
+
+      <!-- Actions -->
+      <td class="actions-cell" data-label="Actions" style="vertical-align:middle">
+        <div class="variant-actions">
+          <button class="btn-primary" (click)="addVariantRow(v)">Duplicate</button>
+          <button class="btn-warning" (click)="removeVariantRow(i)">Remove</button>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+    <div *ngIf="!variants?.length" style="color:#777;margin-top:8px">No variants yet — click "Add Variant Row" to start.</div>
+  </section>
+
+  <!-- Final submit -->
+  <section class="card">
+    <div style="display:flex;gap:12px;align-items:center;justify-content:flex-end">
+      <button class="btn-primary" (click)="submitFinal()" [disabled]="processing">
+        {{ processing ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create Product') }}
+      </button>
+    </div>
   </section>
 </div>

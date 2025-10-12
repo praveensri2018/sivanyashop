@@ -1,17 +1,15 @@
 // FILE: src/app/admin/product-list.component.ts
-// Place at: src/app/admin/product-list.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminProductService } from '../services/admin-product.service';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-product-list',
   standalone: true,
   templateUrl: './product-list.component.html',
-  styleUrls: ['./product-list.component.css'],
+  styleUrls: ['./product-list.component.scss'],
   imports: [CommonModule, RouterModule, ReactiveFormsModule]
 })
 export class ProductListComponent implements OnInit {
@@ -20,10 +18,12 @@ export class ProductListComponent implements OnInit {
   editingId: number | null = null;
   editForm!: FormGroup;
   page = 1;
-  limit = 100;
-placeholderImage = '/assets/no-image.jpg'; 
+  limit = 10; // 🔹 show 10 products per page
+  total = 0;
+  totalPages = 1;
+  placeholderImage = '/assets/no-image.jpg';
 
-  constructor(private ps: AdminProductService, private fb: FormBuilder) {}
+  constructor(private ps: AdminProductService, private fb: FormBuilder, private router: Router) {}
 
   ngOnInit(): void {
     this.loadProducts();
@@ -36,30 +36,55 @@ placeholderImage = '/assets/no-image.jpg';
     });
   }
 
-  loadProducts() {
-  this.loading = true;
-  this.ps.fetchProducts(this.page, this.limit).subscribe({
-    next: (res: any) => {
-        console.log(res);
-      // backend returns { success: true, products: [...], total, page, limit }
-      const list = res?.products ?? res?.data ?? (Array.isArray(res) ? res : []);
-      this.products = (list || []).map((p: any) => ({
-        id: p?.ProductId ?? p?.Id ?? p?.id,
-        name: p?.ProductName ?? p?.Name ?? p?.name,
-        description: p?.Description ?? p?.description,
-        imagePath: p?.ImagePath ?? p?.imagePath ?? p?.image ?? '',
-        categoryIds: p?.CategoryIds ?? p?.categoryIds ?? [],
-        isActive: p?.IsActive ?? p?.isActive ?? true,
-        raw: p
-      }));
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error('fetchProducts error', err);
-      this.loading = false;
+  // 🔹 Pagination helpers
+  nextPage() {
+    if (this.page < this.totalPages) {
+      this.page++;
+      this.loadProducts();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  });
-}
+  }
+
+  prevPage() {
+    if (this.page > 1) {
+      this.page--;
+      this.loadProducts();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  // 🔹 Load products from API
+  loadProducts() {
+    this.loading = true;
+    this.ps.fetchProducts(this.page, this.limit).subscribe({
+      next: (res: any) => {
+        console.log('📦 fetchProducts result', res);
+        const list = res?.products ?? res?.data ?? (Array.isArray(res) ? res : []);
+        this.products = (list || []).map((p: any) => ({
+          id: p?.ProductId ?? p?.Id ?? p?.id,
+          name: p?.ProductName ?? p?.Name ?? p?.name,
+          description: p?.Description ?? p?.description,
+          imagePath: p?.ImagePath ?? p?.imagePath ?? p?.image ?? '',
+          categoryIds: p?.CategoryIds ?? p?.categoryIds ?? [],
+          isActive: p?.IsActive ?? p?.isActive ?? true,
+          raw: p
+        }));
+
+        this.total = Number(res?.total ?? list.length ?? 0);
+        this.totalPages = Math.ceil(this.total / this.limit) || 1;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('❌ fetchProducts error', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  editProduct(productId: number) {
+    if (!productId) return;
+    this.router.navigate(['/admin/product-upload'], { queryParams: { id: productId } });
+  }
 
   startEdit(prod: any) {
     this.editingId = prod.id;
@@ -78,29 +103,27 @@ placeholderImage = '/assets/no-image.jpg';
   }
 
   saveEdit(productId: number) {
-  const v = this.editForm.value;
-  // Map UI form values to backend field names
-  const payload = {
-    ProductName: v.name,
-    Description: v.description,
-    ImagePath: v.imagePath,
-    CategoryIds: v.categoryIds || [],
-    IsActive: v.isActive
-  };
+    const v = this.editForm.value;
+    const payload = {
+      ProductName: v.name,
+      Description: v.description,
+      ImagePath: v.imagePath,
+      CategoryIds: v.categoryIds || [],
+      IsActive: v.isActive
+    };
 
-  this.ps.updateProduct(productId, payload).subscribe({
-    next: () => {
-      alert('✅ Product updated');
-      this.editingId = null;
-      this.loadProducts();
-    },
-    error: (err) => {
-      console.error('updateProduct error', err);
-      alert('❌ Update failed: ' + (err?.error?.message || err.message || 'Unknown'));
-    }
-  });
-}
-
+    this.ps.updateProduct(productId, payload).subscribe({
+      next: () => {
+        alert('✅ Product updated');
+        this.editingId = null;
+        this.loadProducts();
+      },
+      error: (err) => {
+        console.error('updateProduct error', err);
+        alert('❌ Update failed: ' + (err?.error?.message || err.message || 'Unknown'));
+      }
+    });
+  }
 
   confirmDelete(productId: number) {
     if (!confirm('Delete this product?')) return;
@@ -117,65 +140,49 @@ placeholderImage = '/assets/no-image.jpg';
   }
 
   toggleActive(prod: any) {
-  const newState = !prod.isActive;
-  // Send minimal payload expected by backend
-  const payload = { IsActive: newState };
+    const newState = !prod.isActive;
+    const payload = { IsActive: newState };
 
-  this.ps.updateProduct(prod.id, payload).subscribe({
-    next: () => {
-      prod.isActive = newState;
-    },
-    error: (err) => {
-      console.error('toggleActive error', err);
-      alert('❌ Toggle failed: ' + (err?.error?.message || err.message || 'Unknown'));
-    }
-  });
-}
-
-
-
-getImage(p: any): string {
-  try {
-    // prefer backend-provided array of URLs
-    const raw = p?.raw ?? p;
-    const imageUrls = raw?.ImageUrls ?? raw?.imageUrls ?? p?.ImageUrls ?? null;
-    if (Array.isArray(imageUrls) && imageUrls.length > 0) {
-      const url = String(imageUrls[0]);
-      console.log('[IMG] using ImageUrls[0] for', p.id ?? raw?.ProductId, url);
-      return this.ensureAbsolute(url);
-    }
-
-    // try ImagePath (could be 'cloudflare' or partial) — only accept if looks like URL
-    const imgPath = raw?.ImagePath ?? raw?.imagePath ?? p?.imagePath;
-    if (imgPath && String(imgPath).trim().toLowerCase().startsWith('http')) {
-      console.log('[IMG] using ImagePath for', p.id ?? raw?.ProductId, imgPath);
-      return String(imgPath);
-    }
-
-    // sometimes backend stores full URLs in ImageUrls property (already handled), else fallback placeholder
-    console.warn('[IMG] no usable image for', p.id ?? raw?.ProductId, 'falling back to placeholder');
-    return this.placeholderImage;
-  } catch (err) {
-    console.error('[IMG] getImage error', err);
-    return this.placeholderImage;
+    this.ps.updateProduct(prod.id, payload).subscribe({
+      next: () => {
+        prod.isActive = newState;
+      },
+      error: (err) => {
+        console.error('toggleActive error', err);
+        alert('❌ Toggle failed: ' + (err?.error?.message || err.message || 'Unknown'));
+      }
+    });
   }
-}
 
-/** Make sure url is absolute. If server returns relative path, convert using api base (if needed) */
-ensureAbsolute(url: string): string {
-  if (!url) return this.placeholderImage;
-  url = String(url);
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  // If backend returns relative path like "/images/..." prepend API base (AppConfig), adjust path as needed.
-  // import AppConfig if required or hardcode base. Example using window.location.origin:
-  return `${window.location.origin}${url.startsWith('/') ? '' : '/'}${url}`;
-}
+  getImage(p: any): string {
+    try {
+      const raw = p?.raw ?? p;
+      const imageUrls = raw?.ImageUrls ?? raw?.imageUrls ?? p?.ImageUrls ?? null;
+      if (Array.isArray(imageUrls) && imageUrls.length > 0) {
+        const url = String(imageUrls[0]);
+        return this.ensureAbsolute(url);
+      }
 
-/** Image onerror handler: replace broken image with placeholder */
-onImgError(event: Event) {
-  const el = event.target as HTMLImageElement;
-  el.src = this.placeholderImage;
-}
+      const imgPath = raw?.ImagePath ?? raw?.imagePath ?? p?.imagePath;
+      if (imgPath && String(imgPath).trim().toLowerCase().startsWith('http')) {
+        return String(imgPath);
+      }
 
+      return this.placeholderImage;
+    } catch {
+      return this.placeholderImage;
+    }
+  }
 
+  ensureAbsolute(url: string): string {
+    if (!url) return this.placeholderImage;
+    url = String(url);
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `${window.location.origin}${url.startsWith('/') ? '' : '/'}${url}`;
+  }
+
+  onImgError(event: Event) {
+    const el = event.target as HTMLImageElement;
+    el.src = this.placeholderImage;
+  }
 }

@@ -42,9 +42,14 @@
   }
             ],
             "styles": [
-              "src/styles.scss"
-            ],
-            "scripts": []
+  "node_modules/select2/dist/css/select2.min.css",
+  "src/styles.scss",
+  "node_modules/@ng-select/ng-select/themes/default.theme.css" 
+],
+"scripts": [
+  "node_modules/jquery/dist/jquery.min.js",
+  "node_modules/select2/dist/js/select2.full.min.js"
+]
           },
           "configurations": {
             "production": {

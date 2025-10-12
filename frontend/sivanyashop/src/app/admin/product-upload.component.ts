@@ -1,111 +1,449 @@
+// src/app/admin/product-upload.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { AdminProductService } from '../services/admin-product.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
+
+interface VariantRow {
+  id?: number | null;
+  sku?: string;
+  variantName?: string;
+  attributes?: string;
+  stockQty?: number;
+  customerPrice?: number;
+  retailerPrice?: number;
+  imageIds?: number[];
+}
 
 @Component({
   selector: 'app-admin-product-upload',
   standalone: true,
   templateUrl: './product-upload.component.html',
-  styleUrls: ['./product-upload.component.css'],
-  imports: [CommonModule, ReactiveFormsModule]
+  styleUrls: ['./product-upload.component.scss'],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, NgSelectModule]
 })
 export class ProductUploadComponent implements OnInit {
   productForm!: FormGroup;
   variantForm!: FormGroup;
-  updateVariantForm!: FormGroup; // for updating existing variant price/stock
-  categories: any[] = [];
-  selectedFiles: File[] = [];
-  createdProductId: number | null = null;
-  uploadedImages: any[] = []; // store returned image info
-  uploading = false;
+  updateVariantForm!: FormGroup;
 
-  constructor(private fb: FormBuilder, private ps: AdminProductService) {}
+  categories: Array<{ id: number | string; name: string }> = [];
+  selectedFiles: Array<{ file: File; preview: string }> = [];
+  uploadedImages: any[] = [];
+  variants: VariantRow[] = [];
+
+  createdProductId: number | null = null;
+  isEditMode = false;
+
+  uploading = false;
+  processing = false;
+
+  removedVariantIds: number[] = [];
+
+  constructor(private fb: FormBuilder, private ps: AdminProductService,
+  private route: ActivatedRoute,
+  private router: Router) {}
 
   ngOnInit(): void {
-    this.productForm = this.fb.group({ name: [''], description: [''], categoryIds: [[]] });
-    this.variantForm = this.fb.group({ sku: [''], variantName: [''], attributes: [''], stockQty: [0], price: [0] });
-    this.updateVariantForm = this.fb.group({ variantId: [''], price: [''], stockQty: [''] });
+    this.productForm = this.fb.group({
+      name: [''],
+      description: [''],
+      categoryIds: [[]]
+    });
+
+    this.variantForm = this.fb.group({
+      sku: [''],
+      variantName: [''],
+      attributes: [''],
+      stockQty: [0],
+      customerPrice: [0],
+      retailerPrice: [0]
+    });
+
+    this.updateVariantForm = this.fb.group({
+      variantId: [''],
+      price: [''],
+      stockQty: ['']
+    });
+
     this.loadCategories();
+    this.addVariantRow();
+
+    this.route.queryParams.subscribe(params => {
+  const id = params['id'];
+  if (id) {
+    this.loadProductById(id);
+  }
+});
   }
 
+
+  goBack() {
+  this.router.navigate(['/admin/products']);
+}
+  /* --------- categories --------- */
   loadCategories() {
     this.ps.fetchCategories().subscribe({
       next: (res: any) => {
         const list = res?.categories ?? res?.data ?? (Array.isArray(res) ? res : []) ?? [];
         this.categories = list.map((c: any) => ({ id: c.Id ?? c.id, name: c.Name ?? c.name }));
       },
-      error: () => (this.categories = [])
-    });
-  }
-
-  createProduct() {
-    const payload = this.productForm.value;
-    this.ps.createProduct(payload).subscribe({
-      next: (res: any) => {
-        const p = res?.product ?? res;
-        this.createdProductId = p?.Id ?? p?.id ?? res?.productId ?? null;
-        alert(`✅ Product created (ID: ${this.createdProductId ?? 'unknown'})`);
-      },
-      error: err => alert(`❌ Create failed: ${err?.error?.message || err.message || 'Unknown'}`)
-    });
-  }
-
-  onFilesSelected(ev: Event) {
-    const input = ev.target as HTMLInputElement;
-    if (!input.files) return;
-    this.selectedFiles = Array.from(input.files);
-  }
-
-  uploadImages() {
-    if (!this.createdProductId) return alert('Create product first!');
-    if (this.selectedFiles.length === 0) return alert('Select images first');
-    this.uploading = true;
-    this.ps.uploadProductImages(this.createdProductId, this.selectedFiles).subscribe({
-      next: (res: any) => {
-        // assume backend returns array of image info or product with images
-        this.uploadedImages = res?.images ?? res?.uploaded ?? res ?? [];
-        this.uploading = false;
-        alert('✅ Images uploaded');
-      },
-      error: err => {
-        console.error(err);
-        this.uploading = false;
-        alert('❌ Upload failed: ' + (err?.error?.message || err.message || ''));
+      error: (err: any) => {
+        console.error('fetchCategories error', err);
+        this.categories = [];
       }
     });
   }
 
-  // Skip images and show variant area
-  skipToVariants() {
-    if (!this.createdProductId) {
-      // allow skipping to variants by forcing createdProductId from form? keep simple:
-      return alert('Create product first to add variants (or create then skip).');
+  /* --------- file previews --------- */
+  onFilesSelected(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    if (!input.files) return;
+    const files = Array.from(input.files);
+    for (const file of files) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => this.selectedFiles.push({ file, preview: e.target.result });
+      reader.readAsDataURL(file);
     }
-    // nothing else needed; UI shows variant form when createdProductId exists
+    input.value = '';
   }
 
-  addVariant() {
-    if (!this.createdProductId) return alert('Create product first!');
-    const payload = { ...this.variantForm.value, productId: this.createdProductId };
-    this.ps.addVariant(payload).subscribe({
-      next: (res: any) => alert('✅ Variant added'),
-      error: (err) => alert('❌ Add variant failed: ' + (err?.error?.message || err.message || ''))
+  removePreview(index: number) {
+    this.selectedFiles.splice(index, 1);
+  }
+
+  /* --------- variants UI --------- */
+  addVariantRow(copy?: VariantRow) {
+    const v: VariantRow = copy ? { ...copy } : { id: null, sku: '', variantName: '', attributes: '', stockQty: 0, customerPrice: 0, retailerPrice: 0, imageIds: [] };
+    this.variants.push(v);
+  }
+
+  removeVariantRow(index: number) {
+  const v = this.variants[index];
+  if (v?.id) {
+    // mark variant for deletion on save
+    this.removedVariantIds.push(v.id);
+  }
+  // just remove from UI now
+  this.variants.splice(index, 1);
+}
+
+private deleteRemovedVariants(): Promise<void> {
+  if (!this.removedVariantIds || this.removedVariantIds.length === 0) return Promise.resolve();
+
+  console.log('Deleting/deactivating variants:', this.removedVariantIds);
+
+  return new Promise((resolve) => {
+    const ids = [...this.removedVariantIds];
+    const seq = (i: number) => {
+      if (i >= ids.length) {
+        this.removedVariantIds = [];
+        resolve();
+        return;
+      }
+      const id = ids[i];
+
+      // Choose between delete or deactivate endpoint
+      if ((this.ps as any).deleteVariant) {
+        (this.ps as any).deleteVariant(id).subscribe({
+          next: () => {
+            console.log(`✅ Deleted variant ${id}`);
+            seq(i + 1);
+          },
+          error: (err: any) => {
+            console.error('❌ deleteVariant error', err);
+            // fallback to deactivate if available
+            if ((this.ps as any).deactivateVariant) {
+              (this.ps as any).deactivateVariant(id).subscribe({
+                next: () => {
+                  console.log(`⚙️ Deactivated variant ${id}`);
+                  seq(i + 1);
+                },
+                error: (err2: any) => {
+                  console.error('❌ deactivateVariant error', err2);
+                  seq(i + 1);
+                }
+              });
+            } else {
+              seq(i + 1);
+            }
+          }
+        });
+      } else if ((this.ps as any).deactivateVariant) {
+        (this.ps as any).deactivateVariant(id).subscribe({
+          next: () => {
+            console.log(`⚙️ Deactivated variant ${id}`);
+            seq(i + 1);
+          },
+          error: (err: any) => {
+            console.error('❌ deactivateVariant error', err);
+            seq(i + 1);
+          }
+        });
+      } else {
+        console.warn('No delete/deactivate API defined in service.');
+        seq(i + 1);
+      }
+    };
+
+    seq(0);
+  });
+}
+
+  /* --------- helpers --------- */
+  clearForm() {
+    this.createdProductId = null;
+    this.isEditMode = false;
+    this.uploadedImages = [];
+    this.selectedFiles = [];
+    this.variants = [];
+    try { this.productForm.reset(); } catch {}
+    try { this.variantForm.reset(); } catch {}
+    try { this.updateVariantForm.reset(); } catch {}
+    this.addVariantRow();
+  }
+
+  private getFilesFromPreviews(): File[] {
+    return this.selectedFiles.map(s => s.file);
+  }
+
+  private normalizeImagesResponse(res: any) {
+    const raw = res?.images ?? res ?? [];
+    const items = Array.isArray(raw) ? raw : [raw];
+    const normalize = (it: any) => {
+      if (!it) return null;
+      const src = it.ImageUrl ?? it.imageUrl ?? it.url ?? it.path ?? it.src ?? null;
+      const filename = it.filename ?? it.name ?? '';
+      return { ...it, src, filename };
+    };
+    return items.map(normalize).filter(Boolean);
+  }
+
+  private uploadSelectedFilesToProduct(productId: number, files: File[]): Promise<any[]> {
+    if (!files || files.length === 0) return Promise.resolve([]);
+    this.uploading = true;
+    return new Promise((resolve, reject) => {
+      this.ps.uploadProductImages(productId, files).subscribe({
+        next: (res: any) => {
+          const normalized = this.normalizeImagesResponse(res);
+          this.uploadedImages = (this.uploadedImages || []).concat(normalized);
+          this.selectedFiles = [];
+          this.uploading = false;
+          resolve(normalized);
+        },
+        error: (err: any) => {
+          this.uploading = false;
+          console.error('uploadProductImages error', err);
+          reject(err);
+        }
+      });
     });
   }
 
-  updateVariant() {
-    const vId = Number(this.updateVariantForm.value.variantId);
-    if (!vId) return alert('Enter variantId to update');
-    const price = Number(this.updateVariantForm.value.price || 0);
-    const stockQty = this.updateVariantForm.value.stockQty;
-    // example: update price then optionally stock (backend endpoints may vary)
-    this.ps.updateVariantPrice?.(vId, 'CUSTOMER', price)?.subscribe?.({
-      next: () => {
-        // If your backend supports stock update, call that endpoint here; otherwise show success
-        alert('✅ Variant price updated');
+  /* --------- load product for edit --------- */
+  loadProductById(productIdInput: string | number) {
+    const id = Number(productIdInput);
+    if (!id) return alert('Enter a valid product id');
+    this.ps.fetchProduct(id).subscribe({
+      next: (res: any) => {
+        const product = res?.product ?? res;
+        if (!product) return alert('Product not found');
+
+        this.productForm.patchValue({
+          name: product.Name ?? product.name ?? '',
+          description: product.Description ?? product.description ?? '',
+          categoryIds: product.CategoryIds ?? product.categoryIds ?? []
+        });
+
+        this.createdProductId = product.Id ?? product.id ?? null;
+        this.isEditMode = !!this.createdProductId;
+
+        const imgs = product.images ?? product.Images ?? res?.images ?? [];
+        this.uploadedImages = this.normalizeImagesResponse(imgs);
+
+        const serverVariants = product.variants ?? product.Variants ?? res?.variants ?? [];
+        this.variants = (Array.isArray(serverVariants) ? serverVariants : []).map((sv: any) => {
+          const pricesArr = sv.prices ?? sv.Prices ?? sv.variantPrices ?? [];
+          const cust = pricesArr.find((p: any) => (p.PriceType ?? p.priceType) === 'CUSTOMER')?.Price
+                     ?? sv.customerPrice ?? sv.customerPriceValue ?? 0;
+          const ret = pricesArr.find((p: any) => (p.PriceType ?? p.priceType) === 'RETAILER')?.Price
+                     ?? sv.retailerPrice ?? sv.retailerPriceValue ?? 0;
+          return {
+            id: sv.Id ?? sv.id ?? null,
+            sku: sv.SKU ?? sv.sku ?? sv.Sku ?? '',
+            variantName: sv.VariantName ?? sv.variantName ?? '',
+            attributes: sv.Attributes ?? sv.attributes ?? '',
+            stockQty: sv.StockQty ?? sv.stockQty ?? 0,
+            customerPrice: cust,
+            retailerPrice: ret,
+            imageIds: sv.imageIds ?? sv.ImageIds ?? []
+          } as VariantRow;
+        });
+
+        if (this.variants.length === 0) this.addVariantRow();
+        //alert('✅ Product loaded for edit (ID: ' + this.createdProductId + ')');
       },
-      error: (err: any) => alert('❌ Update failed: ' + (err?.error?.message || err.message || ''))
-    }) ?? alert('⚠️ No updateVariantPrice endpoint available on service.');
+      error: (err: any) => {
+        console.error('fetchProduct error', err);
+        alert('❌ Failed to load product: ' + (err?.error?.message || err.message || ''));
+      }
+    });
+  }
+
+  /* --------- final create/update flow --------- */
+  async submitFinal() {
+    const payload: any = { ...this.productForm.value };
+    payload.categoryIds = (payload.categoryIds || []).map((v: any) => typeof v === 'string' && /^\d+$/.test(v) ? Number(v) : v);
+
+    if (!payload.name) return alert('Enter product name');
+
+    this.processing = true;
+
+    try {
+      let productId = this.createdProductId;
+
+      if (!this.isEditMode) {
+        const created: any = await this.callCreateProduct(payload);
+        productId = created?.Id ?? created?.id ?? created?.productId ?? null;
+        if (!productId) throw new Error('No product Id returned from create');
+        this.createdProductId = productId;
+        this.isEditMode = true;
+      } else {
+        await this.callUpdateProduct(this.createdProductId!, payload);
+      }
+
+      const files = this.getFilesFromPreviews();
+      if (files.length > 0) {
+        await this.uploadSelectedFilesToProduct(productId!, files);
+      }
+
+      await this.processAllVariants(productId!);
+await this.deleteRemovedVariants();
+      this.processing = false;
+      alert('✅ Product saved successfully.');
+    } catch (err: any) {
+      console.error('submitFinal error', err);
+      this.processing = false;
+      alert('❌ Save failed: ' + (err?.error?.message || err.message || ''));
+    }
+  }
+
+  private callCreateProduct(payload: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.ps.createProduct(payload).subscribe({
+        next: (res: any) => resolve(res?.product ?? res),
+        error: (err: any) => { console.error('createProduct error', err); reject(err); }
+      });
+    });
+  }
+
+  private callUpdateProduct(productId: number, payload: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.ps.updateProduct(productId, payload).subscribe({
+        next: (res: any) => resolve(res),
+        error: (err: any) => { console.error('updateProduct error', err); reject(err); }
+      });
+    });
+  }
+
+  private processAllVariants(productId: number): Promise<void> {
+  return new Promise((resolve) => {
+    const seq = (i: number) => {
+      if (i >= this.variants.length) { resolve(); return; }
+      const v = this.variants[i];
+
+      // NEW: treat a row as empty only if SKU and variantName and both prices are empty/null AND stockQty is null/undefined/NaN
+      const isStockEmpty = v.stockQty === null || v.stockQty === undefined || Number.isNaN(Number(v.stockQty));
+      const empty = (!v.sku || v.sku.toString().trim() === '') &&
+                    (!v.variantName || v.variantName.toString().trim() === '') &&
+                    (!v.customerPrice && v.customerPrice !== 0) &&
+                    (!v.retailerPrice && v.retailerPrice !== 0) &&
+                    isStockEmpty;
+
+      if (empty) { seq(i + 1); return; }
+
+      if (v.id) {
+        // If we have an id, call updateVariant (new service method)
+        const payload = { productId, sku: v.sku, variantName: v.variantName, attributes: v.attributes, stockQty: Number(v.stockQty || 0) };
+
+        if ((this.ps as any).updateVariant) {
+          (this.ps as any).updateVariant(v.id, payload).subscribe({
+            next: () => this.setTwoPricesThenNext(v, seq, i),
+            error: (err: any) => { console.error('updateVariant error', err); this.setTwoPricesThenNext(v, seq, i); }
+          });
+        } else {
+          // fallback (shouldn't normally run if service is implemented)
+          this.ps.addVariant({ ...payload, id: v.id }).subscribe({
+            next: () => this.setTwoPricesThenNext(v, seq, i),
+            error: (err: any) => { console.error('addVariant (fallback) error', err); this.setTwoPricesThenNext(v, seq, i); }
+          });
+        }
+      } else {
+        // create new variant
+        const payload = { productId, sku: v.sku, variantName: v.variantName, attributes: v.attributes, stockQty: Number(v.stockQty || 0) };
+        this.ps.addVariant(payload).subscribe({
+          next: (resp: any) => {
+            const variantCreated = resp?.variant ?? resp ?? {};
+            v.id = variantCreated?.Id ?? variantCreated?.id ?? resp?.variantId ?? null;
+            this.setTwoPricesThenNext(v, seq, i);
+          },
+          error: (err: any) => {
+            console.error('addVariant create error', err);
+            seq(i + 1);
+          }
+        });
+      }
+    };
+
+    seq(0);
+  });
+}
+
+  private setTwoPricesThenNext(v: VariantRow, seq: (n: number) => void, i: number) {
+    const variantId = v.id;
+    const cust = Number(v.customerPrice || 0);
+    const ret = Number(v.retailerPrice || 0);
+
+    const setCustomer = (cb: ()=>void) => {
+      if (cust > 0 && variantId) {
+        this.ps.setVariantPrice(variantId, 'CUSTOMER', cust).subscribe({ next: () => cb(), error: (e: any) => { console.error('set CUSTOMER price error', e); cb(); }});
+      } else cb();
+    };
+
+    const setRetailer = (cb: ()=>void) => {
+      if (ret > 0 && variantId) {
+        this.ps.setVariantPrice(variantId, 'RETAILER', ret).subscribe({ next: () => cb(), error: (e: any) => { console.error('set RETAILER price error', e); cb(); }});
+      } else cb();
+    };
+
+    setCustomer(() => setRetailer(() => seq(i + 1)));
+  }
+
+  /* --------- manual helpers --------- */
+  async uploadImagesManual() {
+    if (!this.createdProductId) return alert('Create or load a product first');
+    try {
+      const files = this.getFilesFromPreviews();
+      await this.uploadSelectedFilesToProduct(this.createdProductId!, files);
+      alert('✅ Images uploaded to product');
+    } catch (err: any) {
+      console.error('uploadImagesManual error', err);
+      alert('❌ Upload failed');
+    }
+  }
+
+  deleteImage(img: any) {
+    if (!img?.Id) return alert('No image id');
+    if (!confirm('Delete?')) return;
+    const prev = [...this.uploadedImages];
+    this.uploadedImages = this.uploadedImages.filter(i => i.Id !== img.Id);
+    this.ps.deleteProductImage(img.Id).subscribe({
+      next: () => {},
+      error: (err: any) => { console.error('deleteProductImage error', err); this.uploadedImages = prev; alert('❌ Delete failed'); }
+    });
   }
 }

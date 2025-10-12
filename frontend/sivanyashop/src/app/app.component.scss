@@ -1,85 +1,41 @@
+/* Place in: src/styles.css (or src/styles.scss) — append these rules at the end */
 
-:host {
-  display: block;
+/* Make root fill the viewport and use column flex layout */
+html, body {
+  height: 100%;
+  margin: 0;
 }
 
-/* Hero */
-.hero {
-  background: linear-gradient(135deg, #fff, #f8fbff);
-  border: 1px solid rgba(0,0,0,0.03);
-  padding: 2rem;
-  overflow: hidden;
+app-root, #app-root {
+  display: block; /* ensure app-root is a block element */
+  min-height: 100vh;
 }
 
-.hero-left h1 {
-  color: #0f172a; /* dark */
-  background: linear-gradient(90deg, #ff7ab6, #6b8cff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Use a flex column layout for whole app so header & footer are outside the scrolling main area */
+app-root > * {
+  box-sizing: border-box;
 }
 
-.hero-right .promo-card {
-  width: 220px;
-  height: 220px;
-  background: linear-gradient(135deg, #ffefef, #f0f8ff);
-  transform: rotate(-6deg);
-  transition: transform .4s ease;
-}
-.hero-right .promo-card:hover { transform: rotate(0deg) scale(1.03); }
-
-/* promo emoji big and animated */
-.promo-emoji {
-  font-size: 4.5rem;
-  animation: float 3s ease-in-out infinite;
+app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* full viewport */
 }
 
-@keyframes float {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-10px) rotate(-4deg); }
-  100% { transform: translateY(0); }
+/* Header stays at top (non-sticky) */
+app-header {
+  flex: 0 0 auto; /* do not grow */
 }
 
-/* animated CTA pulse */
-.animated-pulse {
-  animation: pulse 2.2s infinite;
-  box-shadow: 0 8px 24px rgba(99,102,241,0.15);
-}
-@keyframes pulse {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(99,102,241,0.20); }
-  100% { transform: translateY(0); }
+/* Main area grows and scrolls if content is tall */
+main.app-main {
+  flex: 1 1 auto; /* allow to grow/shrink */
+  /* Add safe padding so content doesn't touch footer on small screens */
+  padding-bottom: 0.75rem;
 }
 
-/* layout tweaks */
-.app-main { max-width: 1200px; }
-
-/* color-rich product grid container (children components will get classes too) */
-.products-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-}
-
-/* subtle floating card shadow used by product cards */
-.colorful-card {
-  border-radius: 12px;
-  padding: 1rem;
-  transition: transform .25s ease, box-shadow .25s ease;
-}
-.colorful-card:hover {
-  transform: translateY(-6px) rotate(-0.5deg);
-  box-shadow: 0 20px 40px rgba(20, 23, 42, 0.08);
-}
-
-/* small utilities */
-.price {
-  font-weight: 700;
-  color: #0b78d1;
-}
-.mrp { text-decoration: line-through; color: #9aa4b2; font-size: 0.85rem; }
-
-/* responsive adjustments */
-@media (max-width: 768px) {
-  .hero { flex-direction: column; gap: 1rem; }
-  .hero-right { display: none !important; }
+/* Footer stays after the main content. Because we use flex layout, footer will be pushed to bottom
+   when main doesn't fill the viewport, and will follow content when it does. */
+app-footer {
+  flex: 0 0 auto; /* fixed height area at the end */
 }

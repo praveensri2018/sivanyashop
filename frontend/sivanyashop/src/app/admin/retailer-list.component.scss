@@ -1,0 +1,237 @@
+/* FILE: src/app/admin/retailer-list.component.scss
+   REPLACE the existing file at src/app/admin/retailer-list.component.scss
+   This mobile-first SCSS ensures the name, status and actions are aligned
+   and responsive. */
+:root{
+  --card-bg: #ffffff;
+  --border: #ececec;
+  --muted: #6b7280;
+  --success-bg: #e6f7ec;
+  --success-color: #157a3a;
+  --danger-bg: #fff3f2;
+  --danger-color: #9b2b2b;
+  --accent: #0d6efd;
+  --radius: 10px;
+  --gap-small: 12px;
+  --gap-medium: 16px;
+}
+
+/* container */
+.retailer-list {
+  padding: 12px 12px 96px; /* bottom padding to avoid mobile footer overlap */
+  box-sizing: border-box;
+  width: 100%;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    h3 { margin: 0; font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .btn { min-height: 40px; padding: 8px 12px; font-size: 0.95rem; }
+  }
+
+  .list-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .list-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      display: flex;
+      gap: var(--gap-small);
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      transition: none; /* keep it simple on mobile */
+      min-height: 60px;
+
+      /* Left: info block */
+      .info {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0; /* allow truncation */
+
+        .line1 {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          justify-content: flex-start;
+          width: 100%;
+
+          /* name takes available space, then status pushed to right */
+          .name {
+            font-weight: 600;
+            font-size: 0.98rem;
+            color: #0f172a;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1 1 auto;
+            min-width: 0;
+          }
+
+          /* keep status at the far right of the info column */
+          .status {
+            flex: 0 0 auto;
+            font-size: 0.74rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            vertical-align: middle;
+            margin-left: 8px;
+            white-space: nowrap;
+          }
+          .status.active {
+            background: var(--success-bg);
+            color: var(--success-color);
+            border-color: #d6f0d9;
+          }
+          .status.inactive {
+            background: var(--danger-bg);
+            color: var(--danger-color);
+            border-color: #ffd8d6;
+          }
+        } /* .line1 */
+
+        .line2 {
+          font-size: 0.86rem;
+          color: var(--muted);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      } /* .info */
+
+      /* Right: actions */
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 96px; /* ensure consistent column width */
+      }
+
+      /* style Edit as a small link and Delete as a red button */
+      .actions button,
+      .actions .link-btn {
+        font-size: 0.88rem;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .actions .link-btn {
+        color: var(--accent);
+        background: transparent;
+      }
+
+      .actions .delete-btn {
+        background: #ef4444;
+        color: #fff;
+        border: none;
+        box-shadow: none;
+        padding: 8px 10px;
+        min-width: 84px;
+        border-radius: 8px;
+      }
+    } /* .list-item */
+  } /* .list-group */
+
+  /* form-card under list */
+  .form-card {
+    margin-top: 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    padding: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+
+    h5 { margin: 0 0 8px 0; font-size: 1rem; }
+    .error { color: #b00020; font-size: 0.9rem; margin-top: 6px; }
+  }
+
+  /* smaller screens: make action buttons line up neatly */
+  @media (max-width: 520px) {
+    .list-group .list-item {
+      padding: 10px;
+      gap: 10px;
+
+      .actions {
+        gap: 6px;
+        align-items: flex-end;
+        width: 88px;
+        min-width: 88px;
+      }
+
+      .actions .delete-btn { min-width: 72px; padding: 7px 8px; }
+      .info .line1 .name { font-size: 0.98rem; }
+      .info .line2 { font-size: 0.85rem; }
+    }
+  }
+
+  /* medium and up: place actions side-by-side (compact) */
+  @media (min-width: 720px) {
+    padding: 16px;
+    .list-group .list-item {
+      padding: 14px;
+      align-items: center;
+      .actions { flex-direction: row; min-width: 160px; gap: 8px; align-items: center; justify-content: flex-end; }
+      .actions .link-btn { padding: 6px 10px; }
+      .actions .delete-btn { padding: 8px 10px; min-width: 90px; border-radius: 8px; }
+      .info { gap: 4px; }
+      .info .line1 .name { font-size: 1rem; }
+      .info .line2 { font-size: 0.9rem; }
+    }
+  }
+
+  /* accessibility focus */
+  button:focus, .link-btn:focus, input:focus {
+    outline: 3px solid rgba(13,110,253,0.12);
+    outline-offset: 2px;
+  }
+}
+
+/* badge helpers (kept separate for easier overrides) */
+.retailer-list .badge.status {
+  cursor: pointer;
+  user-select: none;
+  transition: transform .06s ease, box-shadow .08s ease;
+  display: inline-block;
+  min-width: 56px;
+  text-align: center;
+  font-size: 0.74rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-left: 8px;
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.retailer-list .badge.status.active {
+  background: #e6f7ec;
+  color: #128a3d;
+  border-color: #d6f0d9;
+  box-shadow: 0 1px 0 rgba(18,138,61,0.04) inset;
+}
+
+.retailer-list .badge.status.inactive {
+  background: #fff3f2;
+  color: #a12b2b;
+  border-color: #ffd8d6;
+  box-shadow: 0 1px 0 rgba(161,43,43,0.02) inset;
+}
+
+/* small press effect */
+.retailer-list .badge.status:active { transform: scale(0.98); }

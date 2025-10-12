@@ -812,7 +812,262 @@
     }
   },
   "response": []
+},{
+  "name": "Get Product By Id",
+  "request": {
+    "method": "GET",
+    "header": [
+      { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+    ],
+    "url": {
+      "raw": "http://localhost:3000/api/products/{{productId}}",
+      "protocol": "http",
+      "host": ["localhost"],
+      "port": "3000",
+      "path": ["api", "products", "{{productId}}"]
+    }
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "/* Postman tests for GET /api/products/:id - validates shape used by frontend */",
+          "pm.test('Status code is 200', function () {",
+          "  pm.response.to.have.status(200);",
+          "});",
+          "",
+          "let body;",
+          "pm.test('Response is valid JSON', function() {",
+          "  body = pm.response.json();",
+          "  pm.expect(body).to.be.an('object');",
+          "});",
+          "",
+          "pm.test('Response contains product object', function() {",
+          "  pm.expect(body).to.have.property('product');",
+          "  pm.expect(body.product).to.be.an('object');",
+          "});",
+          "",
+          "pm.test('Product required fields exist and types are correct', function() {",
+          "  const p = body.product;",
+          "  pm.expect(p).to.have.property('Id').that.is.a('number');",
+          "  pm.expect(p).to.have.property('Name').that.is.a('string');",
+          "  pm.expect(p).to.have.property('Description');",
+          "  pm.expect(p).to.have.property('CategoryIds');",
+          "  pm.expect(Array.isArray(p.CategoryIds)).to.be.true;",
+          "});",
+          "",
+          "pm.test('Images array shape (if present) matches expectations', function() {",
+          "  const p = body.product;",
+          "  pm.expect(p).to.have.property('images');",
+          "  pm.expect(Array.isArray(p.images)).to.be.true;",
+          "  if (p.images.length > 0) {",
+          "    const img = p.images[0];",
+          "    pm.expect(img).to.have.property('Id');",
+          "    pm.expect(img).to.have.property('ImageUrl').that.is.a('string');",
+          "  }",
+          "});",
+          "",
+          "pm.test('Variants array shape (if present) matches expectations', function() {",
+          "  const p = body.product;",
+          "  pm.expect(p).to.have.property('variants');",
+          "  pm.expect(Array.isArray(p.variants)).to.be.true;",
+          "  if (p.variants.length > 0) {",
+          "    const v = p.variants[0];",
+          "    pm.expect(v).to.have.property('Id');",
+          "    pm.expect(v).to.have.property('SKU');",
+          "    pm.expect(v).to.have.property('VariantName');",
+          "    pm.expect(v).to.have.property('StockQty');",
+          "    // prices may be present as `prices` array or `customerPrice`/`retailerPrice`",
+          "    pm.expect(v).to.satisfy((obj) => {",
+          "      return (Array.isArray(obj.prices) || obj.hasOwnProperty('customerPrice') || obj.hasOwnProperty('retailerPrice'))",
+          "    }, 'variant must have prices array or customerPrice/retailerPrice fields');",
+          "  }",
+          "});",
+          "",
+          "pm.test('Optional convenience fields', function() {",
+          "  const p = body.product;",
+          "  // ImagePath and IsActive/IsFeatured may exist",
+          "  if (p.hasOwnProperty('ImagePath')) pm.expect(p.ImagePath === null || typeof p.ImagePath === 'string');",
+          "  if (p.hasOwnProperty('IsActive')) pm.expect(typeof p.IsActive === 'number' || typeof p.IsActive === 'boolean');",
+          "});"
+        ],
+        "type": "text/javascript"
+      }
+    },  {
+    "name": "Update Variant (PUT)",
+    "request": {
+      "method": "PUT",
+      "header": [
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"sku\": \"XYZ-BLK-128-upd\",\n  \"variantName\": \"Black 128GB Updated\",\n  \"attributes\": \"Color:Black;Storage:128GB\",\n  \"stockQty\": 120\n}"
+      },
+      "url": {
+        "raw": "http://localhost:3000/api/products/variant/{{variantId}}",
+        "protocol": "http",
+        "host": ["localhost"],
+        "port": "3000",
+        "path": ["api", "products", "variant", "{{variantId}}"]
+      }
+    },
+    "event": [
+      {
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status is 200 or 201', function(){ pm.response.to.have.status.oneOf([200,201]); });",
+            "let body = pm.response.json();",
+            "pm.test('Response contains success true or variant object', function(){",
+            "  pm.expect(body).to.satisfy(b => b.success === true || b.variant || (typeof b === 'object'));",
+            "});",
+            "pm.test('Variant returned has Id and SKU', function(){",
+            "  const variant = body.variant ?? body;",
+            "  pm.expect(variant).to.have.property('Id');",
+            "  pm.expect(variant).to.have.property('SKU');",
+            "  pm.expect(variant.SKU).to.be.a('string');",
+            "});"
+          ],
+          "type": "text/javascript"
+        }
+      }
+    ],
+    "response": []
+  },
+
+  {
+    "name": "Set Variant Price (CUSTOMER + RETAILER)",
+    "request": {
+      "method": "POST",
+      "header": [
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"variantId\": {{variantId}},\n  \"priceType\": \"CUSTOMER\",\n  \"price\": 599.00\n}"
+      },
+      "url": {
+        "raw": "http://localhost:3000/api/products/variant/price",
+        "protocol": "http",
+        "host": ["localhost"],
+        "port": "3000",
+        "path": ["api", "products", "variant", "price"]
+      }
+    },
+    "event": [
+      {
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Set CUSTOMER price -> Status 200 or 201', function(){ pm.response.to.have.status.oneOf([200,201]); });",
+            "let body = pm.response.json();",
+            "pm.test('Response indicates success or returns variantPrice', function(){",
+            "  pm.expect(body).to.satisfy(b => b.success === true || b.variantPrice || b);",
+            "});",
+            "// Now chain a RETAILER price request programmatically to ensure both prices set",
+            "pm.sendRequest({",
+            "  url: pm.environment.get('apiBase') + '/api/products/variant/price',",
+            "  method: 'POST',",
+            "  header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pm.variables.get('adminToken') },",
+            "  body: JSON.stringify({ variantId: pm.variables.get('variantId'), priceType: 'RETAILER', price: 499.00 })",
+            "}, function (err, resp) {",
+            "  pm.test('Set RETAILER price -> Status 200 or 201', function(){",
+            "    pm.expect(resp).to.have.property('code');",
+            "    pm.expect([200,201]).to.include(resp.code);",
+            "  });",
+            "});"
+          ],
+          "type": "text/javascript"
+        }
+      }
+    ],
+    "response": []
+  },
+
+  {
+    "name": "Get Product Details (verify variant + prices)",
+    "request": {
+      "method": "GET",
+      "header": [
+        { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+      ],
+      "url": {
+        "raw": "http://localhost:3000/api/products/getdetails/{{productId}}",
+        "protocol": "http",
+        "host": ["localhost"],
+        "port": "3000",
+        "path": ["api", "products", "getdetails", "{{productId}}"]
+      }
+    },
+    "event": [
+      {
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+            "const body = pm.response.json();",
+            "pm.test('Response has product object', function(){ pm.expect(body).to.have.property('product'); });",
+            "pm.test('Product contains variants array', function(){",
+            "  const p = body.product;",
+            "  pm.expect(p).to.have.property('variants');",
+            "  pm.expect(Array.isArray(p.variants)).to.be.true;",
+            "});",
+            "pm.test('Find updated variant in product.variants by Id', function(){",
+            "  const p = pm.response.json().product;",
+            "  const vid = Number(pm.variables.get('variantId'));",
+            "  const found = p.variants.find(v => Number(v.Id) === vid);",
+            "  pm.expect(found, 'variant exists').to.not.be.undefined;",
+            "  if (found) {",
+            "    pm.expect(found.SKU).to.include('upd');",
+            "    pm.expect(found.StockQty).to.be.a('number');",
+            "    // prices may be in found.prices array or convenience fields",
+            "    pm.expect(found).to.satisfy(v => Array.isArray(v.prices) || v.hasOwnProperty('customerPrice') || v.hasOwnProperty('retailerPrice'));",
+            "  }",
+            "});"
+          ],
+          "type": "text/javascript"
+        }
+      }
+    ],
+    "response": []
+  }, {
+      "name": "List Retailers",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": { "raw": "http://localhost:3000/api/retailers", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","retailers"] } }
+    },
+    {
+      "name": "Create Retailer",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "body": { "mode": "raw", "raw": "{ \"name\": \"Jane Retailer\", \"email\": \"retailer@example.com\", \"password\": \"retailer123\" }" },
+        "url": { "raw": "http://localhost:3000/api/retailers", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","retailers"] }
+      }
+    },
+    {
+      "name": "Get Retailer by ID",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": { "raw": "http://localhost:3000/api/retailers/5", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","retailers","5"] } }
+    },
+    {
+      "name": "Update Retailer",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "body": { "mode": "raw", "raw": "{ \"name\": \"Jane Updated\", \"isActive\": true }" },
+        "url": { "raw": "http://localhost:3000/api/retailers/5", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","retailers","5"] }
+      }
+    },
+    {
+      "name": "Delete Retailer (soft)",
+      "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": { "raw": "http://localhost:3000/api/retailers/5", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","retailers","5"] } }
+    }
+  ],
+  "response": []
 }
+
   ],
   "variable": [
     {

@@ -13,10 +13,13 @@
 
   <div *ngIf="!loading" class="prod-list">
     <div class="prod-card" *ngFor="let p of products">
-      <img class="thumb"
-     [src]="getImage(p)"
-     alt="{{ p.name || 'product' }}"
-     (error)="onImgError($event)" />
+      <img
+        class="thumb"
+        [src]="getImage(p)"
+        alt="{{ p.name || 'product' }}"
+        (error)="onImgError($event)"
+      />
+
       <div class="prod-info">
         <h4>{{ p.name }}</h4>
         <p class="muted">{{ p.description }}</p>
@@ -26,8 +29,10 @@
         </div>
 
         <div *ngIf="editingId !== p.id" class="card-actions">
-          <button class="btn-sm btn-primary" (click)="startEdit(p)">Edit</button>
-          <button class="btn-sm btn-outline" (click)="toggleActive(p)">{{ p.isActive ? 'Deactivate' : 'Activate' }}</button>
+          <button class="btn-sm btn-primary" (click)="editProduct(p.id)">Edit</button>
+          <button class="btn-sm btn-outline" (click)="toggleActive(p)">
+            {{ p.isActive ? 'Deactivate' : 'Activate' }}
+          </button>
           <button class="btn-sm btn-danger" (click)="confirmDelete(p.id)">Delete</button>
         </div>
 
@@ -44,5 +49,26 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- 🟢 PAGINATION -->
+  <div *ngIf="!loading && total > limit" class="pagination">
+    <button
+      class="btn-sm btn-outline"
+      [disabled]="page === 1"
+      (click)="prevPage()"
+    >
+      ‹ Prev
+    </button>
+
+    <span>Page {{ page }} / {{ totalPages }}</span>
+
+    <button
+      class="btn-sm btn-outline"
+      [disabled]="page >= totalPages"
+      (click)="nextPage()"
+    >
+      Next ›
+    </button>
   </div>
 </div>

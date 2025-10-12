@@ -1,5 +1,6 @@
 // => PLACE: backend/controllers/productController.js
 const productService = require('../services/productService');
+const categoryService = require('../services/categoryService');
 
 async function createCategory(req, res, next) {
   try {
@@ -206,8 +207,124 @@ async function getProductsByCategory(req, res, next) {
   }
 }
 
-module.exports = {
+async function getProductById(req, res, next) {
+  try {
+    const productId = parseInt(req.params.id, 10);
+    if (isNaN(productId) || productId <= 0) {
+      return res.status(400).json({ error: 'Invalid product id' });
+    }
 
+    const product = await productService.getProductById(productId);
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+
+    // Return shape expected by frontend: { product: { Id, Name, Description, CategoryIds, images, variants } }
+    return res.json({ product });
+  } catch (err) {
+    next(err);
+  }
+}
+
+
+async function updateVariant(req, res, next) {
+  try {
+    const variantId = parseInt(req.params.id, 10);
+    if (isNaN(variantId) || variantId <= 0) return res.status(400).json({ success: false, message: 'Invalid variant id' });
+
+    const { sku, variantName, attributes, stockQty } = req.body;
+    const updated = await productService.updateVariant({ variantId, sku, variantName, attributes, stockQty: Number(stockQty || 0) });
+
+    if (!updated) return res.status(404).json({ success: false, message: 'Variant not found' });
+    res.json({ success: true, variant: updated });
+  } catch (err) { next(err); }
+}
+
+
+async function deleteVariant(req, res, next) {
+  try {
+    const variantId = parseInt(req.params.id, 10);
+    if (isNaN(variantId) || variantId <= 0) return res.status(400).json({ success: false, message: 'Invalid variant id' });
+
+    await productService.deleteVariant(variantId); // implement in service/repo (hard delete)
+    res.json({ success: true, variantId });
+  } catch (err) { next(err); }
+}
+
+async function deactivateVariant(req, res, next) {
+  try {
+    const variantId = parseInt(req.params.id, 10);
+    if (isNaN(variantId) || variantId <= 0) return res.status(400).json({ success: false, message: 'Invalid variant id' });
+
+    const updated = await productService.deactivateVariant(variantId); // implement in service/repo (soft delete)
+    res.json({ success: true, variant: updated });
+  } catch (err) { next(err); }
+}
+
+
+async function listPublic(req, res, next) {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 24;
+    const q = req.query.q ? String(req.query.q) : undefined;
+    const result = await productService.listPublic({ page, limit, q });
+    res.json({ success: true, items: result.items, total: result.total, page, limit });
+  } catch (err) { next(err); }
+}
+
+async function listForUser(req, res, next) {
+  try {
+    // req.user set by verifyToken middleware
+    const user = req.user || {};
+    const role = (user.role || '').toString().toUpperCase();
+    const userId = user.id || null;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 24;
+    const q = req.query.q ? String(req.query.q) : undefined;
+
+    const result = await productService.listForUser({ page, limit, q, userId, role });
+    res.json({ success: true, items: result.items, total: result.total, page, limit });
+  } catch (err) { next(err); }
+}
+
+async function getProductPublic(req, res, next) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ success: false, message: 'Invalid id' });
+
+    const product = await productService.getProductPublic(id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    res.json({ success: true, product });
+  } catch (err) { next(err); }
+}
+
+async function getProductForUser(req, res, next) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ success: false, message: 'Invalid id' });
+
+    const user = req.user || {};
+    const role = (user.role || '').toString().toUpperCase();
+    const userId = user.id || null;
+
+    const product = await productService.getProductForUser({ productId: id, userId, role });
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    res.json({ success: true, product });
+  } catch (err) { next(err); }
+}
+
+
+
+module.exports = {
+  listPublic,
+  listForUser,
+  getProductPublic,
+  getProductForUser,
+  
+    deleteVariant,
+  deactivateVariant,
+updateVariant,
   updateCategory, deleteCategory, getCategoryTree, getProductsByCategory ,
   recentlyViewedProducts,
   getTopSellingProducts,
@@ -216,4 +333,4 @@ module.exports = {
   bulkUploadProducts,
   markProductFeatured,
   deleteProductCategories,
-  deleteProduct,getProductsPaginated,updateProduct,getAllCategories, getAllProducts, createCategory, createProduct, createVariant, setPrice, updatePrice };
+  deleteProduct,getProductsPaginated,updateProduct,getAllCategories, getAllProducts, createCategory, createProduct, createVariant, setPrice, updatePrice,getProductById };

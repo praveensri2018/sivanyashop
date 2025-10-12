@@ -1,0 +1,52 @@
+<div class="customer-products container py-3">
+
+  <!-- Loading / Empty states -->
+  <div *ngIf="loading" class="loading">Loading products…</div>
+  <div *ngIf="!loading && products.length === 0" class="empty muted">No products found.</div>
+
+  <!-- Product Grid -->
+  <div class="grid" *ngIf="!loading && products.length">
+    <article class="card" *ngFor="let p of products" (click)="openProduct(p)" role="button" tabindex="0">
+      <div class="img-wrap">
+        <img [src]="p.image" alt="{{ p.name }}" (error)="onImgError($event)" />
+      </div>
+
+      <div class="meta">
+        <h5 class="title">{{ p.name }}</h5>
+
+        <p class="desc" *ngIf="p.raw?.Description || p.raw?.description">
+          {{ p.raw?.Description ?? p.raw?.description }}
+        </p>
+
+        <div class="bottom-row">
+          <div class="left">
+            <div class="price" *ngIf="p.price !== undefined">₹ {{ p.price | number:'1.0-0' }}</div>
+            <div class="no-price muted" *ngIf="p.price === undefined">Price unavailable</div>
+          </div>
+        </div>
+
+        <!-- Sizes -->
+        <div class="sizes" *ngIf="p.sizes && p.sizes.length">
+          <small class="muted">Sizes:</small>
+          <button
+            type="button"
+            class="size"
+            *ngFor="let s of p.sizes"
+            (click)="selectSize(p.id, s.variantId); $event.stopPropagation();"
+            [class.selected]="isSizeSelected(p.id, s.variantId)">
+            {{ s.label }}
+            <span *ngIf="s.price !== undefined" class="price-badge">₹{{ s.price }}</span>
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- Pagination -->
+  <nav *ngIf="pages.length > 1" class="pagination" aria-label="Product pages">
+    <button class="page-btn" (click)="prev()" [disabled]="page<=1">‹ Prev</button>
+    <button *ngFor="let pg of pages" class="page-num" [class.active]="pg===page" (click)="loadPage(pg)">{{ pg }}</button>
+    <button class="page-btn" (click)="next()" [disabled]="page>=pages.length">Next ›</button>
+  </nav>
+
+</div>

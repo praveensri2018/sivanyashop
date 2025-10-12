@@ -12,17 +12,27 @@ async function uploadProductImages(req, res, next) {
 
     const savedImages = [];
     for (const file of files) {
+      // PLACE: upload file to R2 (this returns the public URL string)
       const imageUrl = await uploadToR2(file); // this now returns PUBLIC_URL
+
+      // PLACE: insert DB record (returns { Id: <insertedId> } currently)
       const image = await productImageRepo.addProductImage(productId, imageUrl);
-      savedImages.push(image);
+
+      // PLACE: push a richer object (include ImageUrl, filename etc) so frontend can show the image immediately
+      savedImages.push({
+        Id: image?.Id ?? image?.id ?? null,   // preserve whatever ID shape your repo returns
+        ImageUrl: imageUrl,                  // <-- IMPORTANT: frontend looks for ImageUrl / imageUrl / url
+        filename: file.originalname,         // optional: useful for the UI
+        createdAt: new Date().toISOString()  // optional metadata
+      });
     }
 
-    res.json({ success: true, images: savedImages });
+    // PLACE: return success and the enriched image objects
+    return res.json({ success: true, images: savedImages });
   } catch (err) {
     next(err);
   }
 }
-
 async function deleteProductImage(req, res, next) {
   try {
     const imageId = parseInt(req.params.id, 10);

@@ -16,6 +16,21 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+
+router.get('/public', productController.listPublic);          // paginated public listing
+router.get('/public/:id', productController.getProductPublic); // public product details
+
+// AUTHENTICATED endpoints (token required)
+router.get('/user', verifyToken, productController.listForUser);        // paginated authenticated listing (user-based pricing)
+router.get('/user/:id', verifyToken, productController.getProductForUser)
+
+
+router.delete('/variant/:id', verifyToken, ensureAdmin, productController.deleteVariant);
+router.put('/variant/:id/deactivate', verifyToken, ensureAdmin, productController.deactivateVariant);
+
+router.get('/getdetails/:id', verifyToken, ensureAdmin, productController.getProductById);
+router.put('/variant/:id', verifyToken, ensureAdmin, productController.updateVariant);
+
 // Admin-only product management
 router.post('/category', verifyToken, ensureAdmin, productController.createCategory);
 router.post('/product', verifyToken, ensureAdmin, productController.createProduct);
@@ -28,6 +43,9 @@ router.put('/product/:id', verifyToken, ensureAdmin, productController.updatePro
 router.get('/', verifyToken, ensureAdmin, productController.getProductsPaginated);
 router.delete('/:id', verifyToken, ensureAdmin, productController.deleteProduct);
 router.delete('/:id/categories', verifyToken, ensureAdmin, productController.deleteProductCategories);
+
+router.put('/category/:id', verifyToken, ensureAdmin, productController.updateCategory);
+router.delete('/category/:id', verifyToken, ensureAdmin, productController.deleteCategory);
 
 router.get('/top-selling', verifyToken, ensureAdmin, productController.getTopSellingProducts);
 //router.get('/recently-viewed', verifyToken, productController.getRecentlyViewedProducts);

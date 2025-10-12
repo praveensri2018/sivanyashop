@@ -1,7 +1,89 @@
+/* FILE: src/styles.css
+   Place: replace existing header/footer rules with this block.
+   Purpose: make header/footer fixed, give them explicit height so layout doesn't recalc.
+*/
 
-body {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  background-color: #f5f7fb; /* subtle background */
+/* PLACE IN: src/styles.css (append or replace related rules) */
+
+/* ---------- variables ---------- */
+:root{
+  --app-header-height: 56px;  /* adjust to your header visual height */
+  --app-footer-height: 56px;  /* adjust to your footer visual height */
 }
 
+/* ---------- base / viewport ---------- */
+html, body, app-root { height: 100%; margin: 0; padding: 0; }
+
+/* Use the JS-calculated --vh to avoid mobile address-bar jumps */
+.app-vh { /* optional helper class on root if you want */
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+/* ---------- header: fixed top ---------- */
+app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--app-header-height);
+  z-index: 1200;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  will-change: transform, top;
+  padding-top: env(safe-area-inset-top);
+}
+
+/* ---------- footer: fixed bottom ---------- */
+app-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--app-footer-height);
+  z-index: 1200;
+  background: #fff;
+  border-top: 1px solid #e9ecef;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  will-change: transform, bottom;
+}
+
+/* ---------- main scrollable area between header & footer ---------- */
+main.app-main {
+  box-sizing: border-box;
+  /* use --vh to calculate height minus header+footer; keeps fixed elements stable */
+  height: calc(var(--vh, 1vh) * 100 - var(--app-header-height) - var(--app-footer-height));
+  padding-top: calc(var(--app-header-height) + 0.5rem);
+  padding-bottom: calc(var(--app-footer-height) + 0.5rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ---------- utility classes to show/hide by viewport ---------- */
+/* Desktop: show when width >= 768px */
+.desktop-only { display: none !important; }
+.mobile-only  { display: flex !important; } /* footers usually flex row */
+
+/* Small screens = mobile */
+@media (min-width: 768px) {
+  .desktop-only { display: flex !important; }
+  .mobile-only  { display: none !important; }
+}
+
+/* ---------- basic footer nav styling (tweak to match your layout) ---------- */
+.meesho-footer .container { padding: 0 1rem; }
+.mf-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.25rem; }
+.mf-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 0.35rem 0.5rem; min-width: 56px; }
+.mf-item i { font-size: 1.05rem; display: block; }
+.mf-badge { position: absolute; margin-top: -10px; margin-left: 8px; background: #ff3b30; color: white; padding: 2px 6px; border-radius: 999px; font-size: 0.7rem; }
+
+/* small tweak if some ancestor has transform we can't remove — ensure body is transform-free
+   (if you already have transforms on ancestors, try removing them or moving header outside that element) */
+html, body, app-root { transform: none !important; }
+
+
+/* Bootstrap import (if you use it) */
 @import 'bootstrap/dist/css/bootstrap.min.css';

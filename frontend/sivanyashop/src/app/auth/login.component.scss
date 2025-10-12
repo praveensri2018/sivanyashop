@@ -1,4 +1,4 @@
-/* Place file at: src/app/auth/login.component.scss */
-.auth-card { margin-top: 3.5rem; }
-.auth-card .card-body { padding: 1.5rem; }
-.auth-card .card-title { font-weight: 600; }
+.auth-card { 
+  .card-body { padding: 18px; }
+  h4 { font-weight: 600; }
+}

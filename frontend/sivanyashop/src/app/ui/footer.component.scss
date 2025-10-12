@@ -1,2 +1,64 @@
-/* Place file at: src/app/ui/footer.component.scss */
-footer { font-size: 0.95rem; color: #6b7280; }
+/* Place file at: src/app/ui/footer.component.scss
+   Mobile bottom navigation styles (Meesho-like)
+*/
+.meesho-footer {
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+  border-top: 1px solid #eee;
+  z-index: 55;
+  .container { padding:0 12px; }
+  .mf-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    gap: 6px;
+  }
+  .mf-item {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: #111827;
+    padding: 6px 4px;
+    font-size: 11px;
+    border-radius: 8px;
+    background: transparent;
+    border: 0;
+  }
+  .mf-item svg { color: #111827; }
+  .mf-badge {
+    background: #ff3b30;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-size: 11px;
+    margin-top: -6px;
+  }
+}
+
+/* hide footer on larger screens (optional) */
+@media (min-width: 768px) {
+  .meesho-footer { display: none; }
+}
+
+.mh-icon-btn i,
+.mf-item i,
+.mh-search-left i,
+.mh-user-btn i {
+  font-size: 18px; /* adjust if you prefer larger/smaller */
+  line-height: 1;
+  display: inline-block;
+  width: 22px;     /* keep consistent footprint like svg */
+  text-align: center;
+}
+
+/* small adjustment for header search-left icon */
+.mh-search-left i { font-size:16px; width:18px; }
+
+/* ensure icons inherit text color where needed */
+.mh-icon-btn i, .mf-item i { color: inherit; }

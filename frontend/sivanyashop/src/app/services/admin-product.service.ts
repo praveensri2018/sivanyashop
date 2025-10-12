@@ -6,7 +6,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap,map } from 'rxjs/operators';
 import { AppConfig } from '../app.config';
 
 export interface Product {
@@ -33,9 +33,27 @@ export class AdminProductService {
       .pipe(tap(res => console.log('[API] fetchProducts response:', res)));
   }
 
-  fetchProduct(productId: number | string): Observable<Product> {
-    return this.http.get<Product>(`${this.base}/products/${productId}`)
-      .pipe(tap(res => console.log('[API] fetchProduct response:', res)));
+  
+  fetchProduct(productId: number | string): Observable<any> {
+    // build url to match your backend route
+    const url = `${this.base}/products/getdetails/${productId}`;
+
+    return this.http.get(url).pipe(
+      tap(res => console.log('[API] fetchProduct (getdetails) response:', res)),
+      map((res: any) => {
+        // Backend returns { product: { ... } } — normalize for frontend convenience
+        const product = res?.product ?? res ?? null;
+
+        // Defensive normalization: ensure CategoryIds is an array
+        if (product) {
+          product.CategoryIds = product.CategoryIds ?? product.categoryIds ?? [];
+          product.images = product.images ?? product.Images ?? [];
+          product.variants = product.variants ?? product.Variants ?? [];
+        }
+
+        return { product, raw: res };
+      })
+    );
   }
 
   fetchCategories(): Observable<any> {
@@ -47,6 +65,18 @@ export class AdminProductService {
     return this.http.post(`${this.base}/products/category`, payload)
       .pipe(tap(res => console.log('[API] createCategory response:', res)));
   }
+
+updateCategory(categoryId: number, payload: { name: string; parentCategoryId?: number | null }) {
+  return this.http.put(`${this.base}/products/category/${categoryId}`, payload)
+    .pipe(tap(res => console.log('[API] updateCategory response:', res)));
+}
+
+// Delete category
+deleteCategory(categoryId: number) {
+  return this.http.delete(`${this.base}/products/category/${categoryId}`)
+    .pipe(tap(res => console.log('[API] deleteCategory response:', res)));
+}
+
 
   createProduct(payload: any) {
     return this.http.post(`${this.base}/products/product`, payload)
@@ -63,6 +93,10 @@ export class AdminProductService {
       .pipe(tap(res => console.log('[API] deleteProduct response for id', productId, ':', res)));
   }
 
+  deleteProductImage(imageId: number) {
+  // PLACE: ensure `this.base` contains your API base URL
+  return this.http.delete(`${this.base}/product-images/${imageId}`);
+}
   /* -------------------------
      Variants & prices
      ------------------------- */
@@ -98,5 +132,22 @@ export class AdminProductService {
     files.forEach(f => fd.append('images', f, f.name));
     return this.http.post(`${this.base}/product-images/upload`, fd)
       .pipe(tap(res => console.log('[API] uploadProductImages response:', res)));
+  }
+
+  updateVariant(variantId: number, payload: any) {
+    // PUT /api/products/variant/:id  (must match backend route)
+    return this.http.put(`${this.base}/products/variant/${variantId}`, payload)
+      .pipe(tap(res => console.log('[API] updateVariant response:', res)));
+  }
+
+    deleteVariant(variantId: number) {
+    return this.http.delete(`${this.base}/products/variant/${variantId}`)
+      .pipe(tap(res => console.log('[API] deleteVariant response:', res)));
+  }
+
+  // Soft-delete (if using deactivate route)
+  deactivateVariant(variantId: number) {
+    return this.http.put(`${this.base}/products/variant/${variantId}/deactivate`, {})
+      .pipe(tap(res => console.log('[API] deactivateVariant response:', res)));
   }
 }

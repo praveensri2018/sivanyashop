@@ -1,4 +1,3 @@
-<!-- Place file at: src/app/auth/login.component.html -->
 <div class="auth-card card mx-auto mt-5" style="max-width:420px;">
   <div class="card-body">
     <h4 class="card-title mb-3">Sign in</h4>
@@ -19,7 +18,7 @@
           <input class="form-check-input" type="checkbox" id="remember" [(ngModel)]="remember" name="remember" />
           <label class="form-check-label" for="remember">Remember me</label>
         </div>
-        <a routerLink="/forgot" class="small">Forgot?</a>
+        <a (click)="goToRegister()" class="small" style="cursor:pointer;">Create account</a>
       </div>
 
       <div *ngIf="error" class="alert alert-danger py-2">{{ error }}</div>

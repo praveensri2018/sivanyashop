@@ -96,7 +96,111 @@ async function fetchRecentlyViewedProducts(userId, limit = 10) {
     return productRepo.getRecentlyViewed(userId, limit);
 }
 
+async function getProductById(productId) {
+  // repo returns raw rows; assemble normalized object
+  const productRow = await productRepo.getProductRowById(productId);
+  if (!productRow) return null;
+
+  const categoryIds = await productRepo.getCategoryIdsForProduct(productId);
+  const images = await productRepo.getImagesForProduct(productId);
+  const variants = await productRepo.getVariantsForProduct(productId);
+
+  // fetch prices for all variant ids (if any)
+  const variantIds = variants.map(v => v.Id).filter(Boolean);
+  const priceMap = variantIds.length ? await productRepo.getActivePricesForVariants(variantIds) : {};
+
+  // map prices into variant objects and pick customer/retailer price convenience fields
+  const variantsNormalized = variants.map(v => {
+    const prices = priceMap[v.Id] || [];
+    const customerPrice = prices.find(p => p.PriceType === 'CUSTOMER')?.Price ?? null;
+    const retailerPrice = prices.find(p => p.PriceType === 'RETAILER')?.Price ?? null;
+
+    return {
+      Id: v.Id,
+      SKU: v.SKU,
+      VariantName: v.VariantName,
+      Attributes: v.Attributes,
+      StockQty: v.StockQty,
+      imageIds: v.ImageIds || [],
+      customerPrice,
+      retailerPrice,
+      prices // full array
+    };
+  });
+
+  return {
+    Id: productRow.Id,
+    Name: productRow.Name,
+    Description: productRow.Description,
+    CategoryIds: categoryIds,
+    images,
+    variants: variantsNormalized,
+    // keep other useful fields if helpful
+    ImagePath: productRow.ImagePath,
+    IsActive: productRow.IsActive,
+    IsFeatured: productRow.IsFeatured,
+    CreatedAt: productRow.CreatedAt
+  };
+}
+
+async function updateVariant({ variantId, sku, variantName, attributes, stockQty }) {
+  return productRepo.updateProductVariant({ variantId, sku, variantName, attributes, stockQty });
+}
+
+
+
+async function deleteVariant(variantId) {
+  return productRepo.deleteProductVariant(variantId); // hard delete
+}
+
+async function deactivateVariant(variantId) {
+  return productRepo.deactivateProductVariant(variantId); // soft delete (set IsActive = 0)
+}
+
+
+async function listPublic({ page = 1, limit = 24, q } = {}) {
+  // repo returns items + total
+  const { items, total } = await productRepo.fetchProductsForPriceType({ page, limit, q, priceType: 'CUSTOMER' });
+  return { items, total };
+}
+
+/**
+ * Authenticated listing: choose priceType based on role
+ * - RETAILER -> RETAILER price
+ * - anyone else (CUSTOMER) -> CUSTOMER price
+ */
+async function listForUser({ page = 1, limit = 24, q, userId = null, role = 'CUSTOMER' } = {}) {
+  const priceType = role === 'RETAILER' ? 'RETAILER' : 'CUSTOMER';
+  // you may pass userId to repo if you want to compute user-specific offers/discounts
+  const { items, total } = await productRepo.fetchProductsForPriceType({ page, limit, q, priceType, userId });
+  return { items, total };
+}
+
+/**
+ * Public product details: show CUSTOMER price for variants
+ */
+async function getProductPublic(productId) {
+  const product = await productRepo.getProductDetailsWithPrice({ productId, priceType: 'CUSTOMER' });
+  return product;
+}
+
+/**
+ * Authenticated product details: choose priceType based on role
+ */
+async function getProductForUser({ productId, userId = null, role = 'CUSTOMER' }) {
+  const priceType = (role === 'RETAILER') ? 'RETAILER' : 'CUSTOMER';
+  const product = await productRepo.getProductDetailsWithPrice({ productId, priceType, userId });
+  return product;
+}
+
 module.exports = {
+    listPublic,
+  listForUser,
+  getProductPublic,
+  getProductForUser,
+    deleteVariant,
+  deactivateVariant,
+    updateVariant,
    addRecentlyViewedProduct,
     fetchRecentlyViewedProducts,
   fetchTopSellingProducts,
@@ -110,5 +214,5 @@ module.exports = {
   addProduct,
   addVariant,
   setVariantPrice,
-  updateVariantPrice
+  updateVariantPrice,getProductById
 };
