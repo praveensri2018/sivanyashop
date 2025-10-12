@@ -30,6 +30,7 @@ const categoryRoutes = require('./routes/category');
 const stockRoutes = require('./routes/stock');
 const retailerRoutes = require('./routes/retailer');
 
+const cartRoutes = require('./routes/cartRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -37,6 +38,7 @@ app.use('/api/product-images', productImageRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/retailers', retailerRoutes);
+app.use('/api/cart', cartRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 

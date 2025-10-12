@@ -157,7 +157,47 @@ async function deactivateVariant(variantId) {
   return productRepo.deactivateProductVariant(variantId); // soft delete (set IsActive = 0)
 }
 
+
+async function listPublic({ page = 1, limit = 24, q } = {}) {
+  // repo returns items + total
+  const { items, total } = await productRepo.fetchProductsForPriceType({ page, limit, q, priceType: 'CUSTOMER' });
+  return { items, total };
+}
+
+/**
+ * Authenticated listing: choose priceType based on role
+ * - RETAILER -> RETAILER price
+ * - anyone else (CUSTOMER) -> CUSTOMER price
+ */
+async function listForUser({ page = 1, limit = 24, q, userId = null, role = 'CUSTOMER' } = {}) {
+  const priceType = role === 'RETAILER' ? 'RETAILER' : 'CUSTOMER';
+  // you may pass userId to repo if you want to compute user-specific offers/discounts
+  const { items, total } = await productRepo.fetchProductsForPriceType({ page, limit, q, priceType, userId });
+  return { items, total };
+}
+
+/**
+ * Public product details: show CUSTOMER price for variants
+ */
+async function getProductPublic(productId) {
+  const product = await productRepo.getProductDetailsWithPrice({ productId, priceType: 'CUSTOMER' });
+  return product;
+}
+
+/**
+ * Authenticated product details: choose priceType based on role
+ */
+async function getProductForUser({ productId, userId = null, role = 'CUSTOMER' }) {
+  const priceType = (role === 'RETAILER') ? 'RETAILER' : 'CUSTOMER';
+  const product = await productRepo.getProductDetailsWithPrice({ productId, priceType, userId });
+  return product;
+}
+
 module.exports = {
+    listPublic,
+  listForUser,
+  getProductPublic,
+  getProductForUser,
     deleteVariant,
   deactivateVariant,
     updateVariant,

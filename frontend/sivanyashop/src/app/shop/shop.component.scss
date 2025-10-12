@@ -1,22 +1,240 @@
-/* Place file at: src/app/shop/shop.component.scss */
-.shop-page { padding: 0.5rem 0; }
+/* Place file at: src/app/shop/shop.component.scss
+   Full SCSS for Shop page (desktop + mobile), styled like modern retail (Meesho/Amazon).
+   - Grid responsive cards
+   - Clean card shadows, image crop, title/price layout
+   - Reusable .size buttons (same look as product-detail)
+   - Mobile friendly, accessible focus states
+   - Replace color vars to match your brand if needed
+*/
 
+:root {
+  --shop-max-width: 1180px;
+  --card-radius: 12px;
+  --card-bg: #fff;
+  --surface: #f8fafc;
+  --muted: #6b7280;
+  --accent: #0d6efd;
+  --accent-600: #0b5ed7;
+  --shadow-sm: 0 4px 14px rgba(15,23,42,0.06);
+  --shadow-md: 0 18px 40px rgba(15,23,42,0.09);
+}
+
+/* Page shell */
+.shop-page {
+  max-width: var(--shop-max-width);
+  margin: 0 auto;
+  padding: 16px;
+  box-sizing: border-box;
+  color: #111827;
+}
+
+/* Header row */
+.shop-page .d-flex {
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Grid */
 .products-grid {
   display: grid;
-  gap: 1rem;
+  gap: 18px;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  margin-top: 8px;
 }
 
+/* Card base */
 .colorful-card {
-  border-radius: 12px;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
   overflow: hidden;
-  padding: 0;
-  transition: transform .25s ease, box-shadow .25s ease;
+  display: flex;
+  flex-direction: column;
+  transition: transform .18s ease, box-shadow .18s ease;
+  border: 1px solid rgba(15,23,42,0.04);
+  box-shadow: var(--shadow-sm);
+  min-height: 360px; /* keeps cards even-ish */
 }
-.colorful-card img {
-  width: 100%;
+
+/* card hover */
+.colorful-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Link inside card should cover content but not wrap interactive buttons */
+.colorful-card .stretched-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* image area */
+.card-img-top {
+  background: var(--surface);
   height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+.card-img-top img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
-.card-body { padding: .8rem; }
+
+/* body */
+.card-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+}
+
+/* title & desc */
+.card-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+.card-body .small.text-muted {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* price block */
+.price {
+  margin-top: 6px;
+  font-weight: 800;
+  color: var(--accent);
+  font-size: 1.05rem;
+}
+
+/* when price missing */
+.no-price {
+  color: #9ca3af;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Sizes list within card (same style family as detail page) */
+.size-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* size button - intentionally NOT using Bootstrap .btn to avoid overrides */
+.shop-page .size {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: linear-gradient(180deg,#fff,#fbfdff);
+  border: 1px solid #e6eef8;
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  box-shadow: 0 4px 12px rgba(16,24,40,0.03);
+  line-height: 1;
+}
+
+/* price inside size */
+.shop-page .size .price-badge {
+  font-weight: 700;
+  font-size: 0.92rem;
+  background: rgba(245,247,250,0.9);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* hover and selected */
+.shop-page .size:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(15,23,42,0.06);
+  border-color: rgba(13,110,253,0.06);
+}
+.shop-page .size.selected {
+  background: linear-gradient(180deg, rgba(13,110,253,0.06), rgba(13,110,253,0.03));
+  border-color: rgba(13,110,253,0.16);
+  color: var(--accent-600);
+  box-shadow: 0 12px 30px rgba(13,110,253,0.06);
+}
+
+/* disabled/out of stock */
+.shop-page .size:disabled,
+.shop-page .size.out-of-stock {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(0.02);
+  pointer-events: none;
+}
+
+/* card footer area to keep spacing */
+.card-body .bottom-row {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* small helpers */
+.muted { color: var(--muted); }
+.muted-2 { color: #9ca3af; }
+
+/* responsive tweaks */
+@media (max-width: 920px) {
+  .card-img-top { height: 160px; }
+  .colorful-card { min-height: 320px; }
+}
+@media (max-width: 640px) {
+  .products-grid { gap: 12px; grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+  .card-img-top { height: 140px; }
+  .card-body { padding: 10px; }
+  .shop-page .size { padding: 8px 10px; font-size: 0.95rem; border-radius: 8px; }
+}
+
+/* large screens: more columns */
+@media (min-width: 1280px) {
+  .products-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+}
+
+/* accessibility / focus */
+.shop-page .size:focus,
+.colorful-card a:focus {
+  outline: 3px solid rgba(13,110,253,0.12);
+  outline-offset: 2px;
+}
+
+/* Load more button area */
+.shop-page .mt-4 {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+/* optional: tiny animation for images */
+.colorful-card img {
+  transition: transform .35s ease;
+}
+.colorful-card:hover img { transform: scale(1.03); }
+
+/* Utility: ensure our .size wins over bootstrap */
+body .shop-page .size,
+.app-root .shop-page .size {
+  /* re-enforce */
+  background: linear-gradient(180deg,#fff,#fbfdff) !important;
+  border: 1px solid #e6eef8 !important;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.03) !important;
+}

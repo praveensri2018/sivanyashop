@@ -66,6 +66,18 @@ export class AdminProductService {
       .pipe(tap(res => console.log('[API] createCategory response:', res)));
   }
 
+updateCategory(categoryId: number, payload: { name: string; parentCategoryId?: number | null }) {
+  return this.http.put(`${this.base}/products/category/${categoryId}`, payload)
+    .pipe(tap(res => console.log('[API] updateCategory response:', res)));
+}
+
+// Delete category
+deleteCategory(categoryId: number) {
+  return this.http.delete(`${this.base}/products/category/${categoryId}`)
+    .pipe(tap(res => console.log('[API] deleteCategory response:', res)));
+}
+
+
   createProduct(payload: any) {
     return this.http.post(`${this.base}/products/product`, payload)
       .pipe(tap(res => console.log('[API] createProduct response:', res)));

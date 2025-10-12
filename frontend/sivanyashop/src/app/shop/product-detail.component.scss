@@ -1,4 +1,193 @@
-/* Place file at: src/app/shop/product-detail.component.scss */
-.product-detail img { width: 100%; height: auto; object-fit: contain; border-radius: 8px; }
-.product-detail h2 { margin-bottom: .5rem; }
-.product-detail .btn { min-width: 140px; }
+/* Place file at: src/app/shop/product-detail.component.scss
+   Full SCSS for product detail page (desktop + mobile).
+   Fixes button visibility and includes variant styles.
+*/
+
+:root {
+  --bg: #ffffff;
+  --muted: #6b7280;
+  --muted-2: #9ca3af;
+  --card-bg: #ffffff;
+  --surface: #f8fafc;
+  --accent: #0d6efd;        /* primary brand color */
+  --accent-600: #0b5ed7;
+  --accent-contrast: #ffffff; /* text color on accent */
+  --danger: #ef4444;
+  --glass: rgba(15,23,42,0.04);
+  --radius: 10px;
+  --shadow-sm: 0 1px 2px rgba(16,24,40,0.04);
+  --shadow-md: 0 8px 24px rgba(15,23,42,0.08);
+  --max-content-width: 1180px;
+  --text-muted: #374151;
+  --btn-padding-y: 10px;
+  --btn-padding-x: 16px;
+}
+
+/* Container */
+.product-detail {
+  background: var(--bg);
+  color: #111827;
+  padding: 20px 16px;
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Toolbar */
+.product-detail .toolbar { margin-bottom: 12px; display:flex; align-items:center; }
+
+/* Grid */
+.product-detail .detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+@media (min-width: 980px) {
+  .product-detail .detail-grid { grid-template-columns: 640px 1fr; column-gap: 28px; align-items: start; }
+}
+
+/* Images */
+.product-detail .main-image {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid #eef2f7;
+  box-shadow: var(--shadow-sm);
+  height: 520px;
+  display:flex; align-items:center; justify-content:center;
+}
+.product-detail .main-image img { width:100%; height:100%; object-fit:contain; display:block; }
+
+/* Thumbs */
+.product-detail .thumb-row { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+.product-detail .thumb { width:64px; height:64px; padding:4px; border-radius:8px; background:#fff; border:1px solid transparent; overflow:hidden; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+.product-detail .thumb img { width:100%; height:100%; object-fit:cover; border-radius:6px; }
+
+/* Info */
+.product-detail .prod-title { margin:0 0 6px 0; font-size:1.5rem; font-weight:700; color:#0f172a; }
+.product-detail .text-muted { color:var(--muted); margin-bottom:8px; }
+.product-detail .price-row { display:flex; align-items:baseline; gap:12px; margin:10px 0; }
+.product-detail .price { color:var(--accent); font-weight:800; font-size:1.45rem; }
+.product-detail .no-price { color:var(--muted-2); font-weight:600; }
+
+/* VARIANTS / SIZES */
+.product-detail .variants { margin-top:10px; }
+.product-detail .variants small.muted { color:var(--muted); display:block; margin-bottom:6px; font-size:.9rem; }
+
+/* Size buttons (high specificity to avoid bootstrap override) */
+.product-detail .variants .sizes {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+/* Reset default button appearance then style */
+.product-detail .variants .sizes .size,
+.product-detail .variants .sizes button.size {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  background: linear-gradient(180deg,#fff,#fbfdff) !important;
+  border: 1px solid #e6eef8 !important;
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  min-width:160px !important;
+  color:#0f172a !important;
+  font-weight:600 !important;
+  cursor:pointer !important;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.03) !important;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease !important;
+  text-align:left !important;
+  line-height:1 !important;
+}
+
+/* hover / selected / out-of-stock */
+.product-detail .variants .sizes .size:hover:not([disabled]) { transform: translateY(-4px) !important; box-shadow: 0 12px 30px rgba(15,23,42,0.06) !important; border-color: rgba(13,110,253,0.08) !important; }
+.product-detail .variants .sizes .size.active,
+.product-detail .variants .sizes .size.selected {
+  background: linear-gradient(180deg, rgba(13,110,253,0.06), rgba(13,110,253,0.02)) !important;
+  border-color: rgba(13,110,253,0.18) !important;
+  box-shadow: 0 12px 30px rgba(13,110,253,0.08) !important;
+  color: var(--accent-600) !important;
+}
+.product-detail .variants .sizes .size.out-of-stock,
+.product-detail .variants .sizes .size:disabled {
+  opacity:0.55 !important; cursor:not-allowed !important; filter:grayscale(0.02) !important; pointer-events:none !important;
+}
+
+/* size inner */
+.product-detail .variants .sizes .size .size-left { display:flex; flex-direction:column; gap:4px; align-items:flex-start; }
+.product-detail .variants .sizes .size .size-label { font-size:.95rem; font-weight:700; }
+.product-detail .variants .sizes .size .size-meta { font-size:.78rem; color:var(--muted) !important; }
+.product-detail .variants .sizes .size .price-badge { font-weight:800; font-size:.95rem; background:rgba(245,247,250,0.9); padding:4px 8px; border-radius:8px; color:#111827; border:1px solid rgba(15,23,42,0.02); }
+
+/* responsive: full width on small screens */
+@media (max-width:640px) {
+  .product-detail .variants .sizes .size { width:100% !important; min-width:unset !important; padding:12px !important; border-radius:10px !important; }
+}
+
+/* ACTIONS (qty + add to cart) */
+.product-detail .actions-row { margin-top:14px; display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+.product-detail .qty { min-width:120px; display:flex; flex-direction:column; gap:6px; }
+.product-detail .qty label { font-size:.85rem; color:var(--muted); }
+.product-detail .qty .qty-input { width:120px; padding:10px 12px; border-radius:8px; border:1px solid #e6eef8; background:#fff; box-shadow:var(--shadow-sm); }
+
+/* BUTTON RULES: ensure visibility and contrast (fixing your issue) */
+/* Scoped to component but high-specificity to beat other rules */
+.product-detail .btn {
+  border-radius: 8px;
+  padding: var(--btn-padding-y) var(--btn-padding-x);
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+}
+
+/* Primary CTA — strong, accessible contrast */
+.product-detail .btn-primary,
+.product-detail button.btn-primary {
+  background: var(--accent) !important;
+  color: var(--accent-contrast) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+  box-shadow: 0 8px 24px rgba(13,110,253,0.12) !important;
+}
+
+/* outline / focus */
+.product-detail .btn-primary:hover { background: var(--accent-600) !important; transform: translateY(-2px); }
+.product-detail .btn-primary:active { transform: translateY(0); }
+.product-detail .btn:focus { outline: 3px solid rgba(13,110,253,0.12); outline-offset: 2px; }
+
+/* If other rules set color to white on white, this forces text visibility */
+.product-detail .btn,
+.product-detail .btn * { color: inherit !important; }
+
+/* Sticky buy-box (desktop) */
+@media (min-width:1100px) {
+  .product-detail > .detail-grid > :nth-child(2) { position: sticky; top:24px; align-self:start; }
+}
+
+/* Product description */
+.product-detail .product-description { margin-top:18px; padding:16px; border-radius:10px; background:linear-gradient(180deg,#fbfdff,#fff); border:1px solid #f1f5f9; color:var(--text-muted); line-height:1.6; }
+
+/* Mobile CTA bar (fixed) */
+@media (max-width:720px) {
+  .product-detail .mobile-cta { position:fixed; bottom:0; left:0; width:100%; background:#fff; box-shadow:0 -2px 8px rgba(15,23,42,0.06); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; z-index:999; }
+  .product-detail .mobile-cta .price { font-size:1.2rem; color:var(--accent); font-weight:700; }
+  .product-detail .mobile-cta .btn-primary { flex:1; margin-left:10px; }
+}
+
+/* small adjustments for small screens */
+@media (max-width:719px) {
+  .product-detail { padding:12px 10px; }
+  .product-detail .prod-title { font-size:1.25rem; }
+  .product-detail .price { font-size:1.15rem; }
+  .product-detail .main-image { height:320px; }
+}

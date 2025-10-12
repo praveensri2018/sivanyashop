@@ -21,10 +21,10 @@ export class PublicRedirectGuard implements CanActivate {
     }
 
     if (role === 'RETAILER') {
-      return this.router.createUrlTree(['/retailer']);
+      return this.router.createUrlTree(['/product']);
     }
 
     // Default: assume customer
-    return this.router.createUrlTree(['/dashboard']);
+    return this.router.createUrlTree(['/product']);
   }
 }

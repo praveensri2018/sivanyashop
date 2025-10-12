@@ -1,5 +1,6 @@
 // => PLACE: backend/controllers/productController.js
 const productService = require('../services/productService');
+const categoryService = require('../services/categoryService');
 
 async function createCategory(req, res, next) {
   try {
@@ -259,7 +260,68 @@ async function deactivateVariant(req, res, next) {
 }
 
 
+async function listPublic(req, res, next) {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 24;
+    const q = req.query.q ? String(req.query.q) : undefined;
+    const result = await productService.listPublic({ page, limit, q });
+    res.json({ success: true, items: result.items, total: result.total, page, limit });
+  } catch (err) { next(err); }
+}
+
+async function listForUser(req, res, next) {
+  try {
+    // req.user set by verifyToken middleware
+    const user = req.user || {};
+    const role = (user.role || '').toString().toUpperCase();
+    const userId = user.id || null;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 24;
+    const q = req.query.q ? String(req.query.q) : undefined;
+
+    const result = await productService.listForUser({ page, limit, q, userId, role });
+    res.json({ success: true, items: result.items, total: result.total, page, limit });
+  } catch (err) { next(err); }
+}
+
+async function getProductPublic(req, res, next) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ success: false, message: 'Invalid id' });
+
+    const product = await productService.getProductPublic(id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    res.json({ success: true, product });
+  } catch (err) { next(err); }
+}
+
+async function getProductForUser(req, res, next) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ success: false, message: 'Invalid id' });
+
+    const user = req.user || {};
+    const role = (user.role || '').toString().toUpperCase();
+    const userId = user.id || null;
+
+    const product = await productService.getProductForUser({ productId: id, userId, role });
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    res.json({ success: true, product });
+  } catch (err) { next(err); }
+}
+
+
+
 module.exports = {
+  listPublic,
+  listForUser,
+  getProductPublic,
+  getProductForUser,
+  
     deleteVariant,
   deactivateVariant,
 updateVariant,

@@ -95,6 +95,7 @@ async function fetchAllProductsWithImagesAndCategories() {
            WHERE pi.ProductId = p.Id), ''
         ) AS ImageUrls
     FROM dbo.Products p
+    where p.isdelete = 0
     ORDER BY p.Id DESC
   `);
 
@@ -111,19 +112,25 @@ async function fetchAllCategories() {
   return result.recordset;
 }
 
-async function updateProductDetails({ productId, name, description, imagePath }) {
+async function updateProductDetails({ productId, name, description, imagePath, isActive }) {
   const result = await query(`
-    UPDATE dbo.Products 
-    SET Name = @name, Description = @description, ImagePath = @imagePath
+    UPDATE dbo.Products
+    SET 
+      Name = COALESCE(@name, Name),
+      Description = COALESCE(@description, Description),
+      ImagePath = COALESCE(@imagePath, ImagePath),
+      IsActive = COALESCE(@isActive, IsActive)
     OUTPUT INSERTED.*
-    WHERE Id = @productId`,
-    {
-      productId: { type: sql.Int, value: productId },
-      name: { type: sql.NVarChar, value: name },
-      description: { type: sql.NVarChar, value: description },
-      imagePath: { type: sql.NVarChar, value: imagePath }
-    }
-  );
+    WHERE Id = @productId
+  `,
+  {
+    productId: { type: sql.Int, value: productId },
+    name: { type: sql.NVarChar, value: name ?? null },
+    description: { type: sql.NVarChar, value: description ?? null },
+    imagePath: { type: sql.NVarChar, value: imagePath ?? null },
+    isActive: { type: sql.Bit, value: typeof isActive === 'boolean' ? isActive : null }
+  });
+
   return result.recordset[0];
 }
 
@@ -140,6 +147,7 @@ async function fetchProductsPaginated({ page, limit }) {
       ISNULL((SELECT STRING_AGG(pc.CategoryId, ',') FROM dbo.ProductCategories pc WHERE pc.ProductId = p.Id), '') AS CategoryIds,
       ISNULL((SELECT STRING_AGG(pi.ImageUrl, ',') FROM dbo.ProductImages pi WHERE pi.ProductId = p.Id), '') AS ImageUrls
     FROM dbo.Products p
+    where isdelete = 0 and isactive = 1
     ORDER BY p.Id DESC
     OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY`,
     {
@@ -148,7 +156,7 @@ async function fetchProductsPaginated({ page, limit }) {
     }
   );
 
-  const countResult = await query('SELECT COUNT(*) AS total FROM dbo.Products');
+  const countResult = await query('SELECT COUNT(*) AS total FROM dbo.Products where isdelete = 0 and isactive = 1');
   const total = countResult.recordset[0].total;
 
   return {
@@ -180,7 +188,7 @@ async function softDeleteProduct(productId) {
   // 1) mark product as inactive
   const updated = await query(`
     UPDATE dbo.Products
-    SET IsActive = 0
+    SET IsActive = 0,isdelete = 1
     OUTPUT INSERTED.*
     WHERE Id = @productId
   `, { productId: { type: sql.Int, value: productId } });
@@ -263,7 +271,7 @@ async function getRecentlyViewed(userId, limit = 10) {
     const result = await query(
         `SELECT TOP (@limit) p.Id, p.Name, p.Description, p.ImagePath
          FROM dbo.RecentlyViewedProducts rv
-         INNER JOIN dbo.Products p ON p.Id = rv.ProductId
+         INNER JOIN dbo.Products p ON p.Id = rv.ProductId and p.isactive = 1 and p.isdelete = 0
          WHERE rv.UserId = @userId
          ORDER BY rv.ViewedAt DESC`,
         { userId: { type: sql.Int, value: userId }, limit: { type: sql.Int, value: limit } }
@@ -354,7 +362,7 @@ async function getActivePricesForVariants(variantIds) {
         IsActive,
         ROW_NUMBER() OVER (PARTITION BY VariantId, PriceType ORDER BY Id DESC) AS rn
       FROM dbo.VariantPrices
-      WHERE VariantId IN (${idsList}) AND IsActive = 1
+      WHERE VariantId IN (${idsList}) AND IsActive = 1 and isdelete = 0
     )
     SELECT Id, VariantId, PriceType, Price, EffectiveFrom, EffectiveTo, IsActive
     FROM RankedPrices
@@ -418,7 +426,183 @@ async function deactivateProductVariant(variantId) {
   return result.recordset[0] || null;
 }
 
+function buildSearchClause(q) {
+  if (!q) return { clause: '', params: {} };
+  const clause = `WHERE (p.Name LIKE @q OR p.Description LIKE @q)`;
+  return { clause, params: { q: { type: sql.NVarChar, value: `%${q}%` } } };
+}
+
+/**
+ * Fetch paginated products returning:
+ * { items: [ { ProductId, ProductName, Description, ImageUrls: [...], variants: [...] } ], total }
+ *
+ * For each variant include latest active price of the requested priceType (if exists).
+ *
+ * Uses ROW_NUMBER over VariantPrices partition to pick latest active price per variant.
+ */async function fetchProductsForPriceType({ page = 1, limit = 24, q = null, priceType = 'CUSTOMER', userId = null }) {
+  const offset = (page - 1) * limit;
+
+  const params = {
+    offset: { type: sql.Int, value: offset },
+    limit: { type: sql.Int, value: limit },
+    priceType: { type: sql.NVarChar, value: priceType },
+    q: { type: sql.NVarChar, value: q ? `%${q.trim()}%` : null }
+  };
+
+  // 1️⃣ Fetch paginated products — direct inline filter
+  const productsSql = `
+    SELECT 
+      p.Id AS ProductId,
+      p.Name AS ProductName,
+      p.Description,
+      p.ImagePath,
+      ISNULL((
+        SELECT STRING_AGG(pi.ImageUrl, ',')
+        FROM dbo.ProductImages pi
+        WHERE pi.ProductId = p.Id
+      ), '') AS ImageUrls
+    FROM dbo.Products AS p
+    WHERE (@q IS NULL OR p.Name LIKE @q OR p.Description LIKE @q) and isdelete = 0 and isactive = 1
+    ORDER BY p.Id DESC
+    OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;
+  `;
+
+  const prRes = await query(productsSql, params);
+  const itemsRaw = prRes.recordset || [];
+
+  // 2️⃣ Fetch variants with latest price for requested priceType
+  const productIds = itemsRaw.map(r => r.ProductId).filter(Boolean);
+  const variantsMap = {};
+
+  if (productIds.length) {
+    const idsList = productIds.join(',');
+
+    const variantsSql = `
+      WITH LatestPrice AS (
+        SELECT vp.Id, vp.VariantId, vp.PriceType, vp.Price,
+               ROW_NUMBER() OVER (PARTITION BY vp.VariantId ORDER BY vp.Id DESC) AS rn
+        FROM dbo.VariantPrices vp
+        WHERE vp.PriceType = @priceType AND vp.IsActive = 1
+      )
+      SELECT 
+        v.Id AS VariantId, 
+        v.ProductId, 
+        v.SKU, 
+        v.VariantName, 
+        v.Attributes, 
+        v.StockQty,
+        lp.Price AS Price
+      FROM dbo.ProductVariants v
+      LEFT JOIN LatestPrice lp ON lp.VariantId = v.Id AND lp.rn = 1
+      WHERE v.ProductId IN (${idsList})
+      ORDER BY v.Id ASC;
+    `;
+
+    const vRes = await query(variantsSql, { priceType: params.priceType });
+    const vRows = vRes.recordset || [];
+
+    for (const vr of vRows) {
+      const pid = vr.ProductId;
+      if (!variantsMap[pid]) variantsMap[pid] = [];
+      variantsMap[pid].push({
+        Id: vr.VariantId,
+        SKU: vr.SKU,
+        VariantName: vr.VariantName,
+        Attributes: vr.Attributes,
+        StockQty: vr.StockQty,
+        price: vr.Price != null ? Number(vr.Price) : null
+      });
+    }
+  }
+
+  // 3️⃣ Assemble final product list
+  const items = itemsRaw.map(p => ({
+    ProductId: p.ProductId,
+    ProductName: p.ProductName,
+    Description: p.Description,
+    ImagePath: p.ImagePath,
+    ImageUrls: p.ImageUrls ? p.ImageUrls.split(',').filter(Boolean) : [],
+    variants: variantsMap[p.ProductId] || []
+  }));
+
+  // 4️⃣ Total count — same inline logic
+  const countSql = `
+    SELECT COUNT(*) AS total
+    FROM dbo.Products AS p
+    WHERE (@q IS NULL OR p.Name LIKE @q OR p.Description LIKE @q)  and isdelete = 0 and isactive = 1;
+  `;
+  const countRes = await query(countSql, params);
+  const total =
+    countRes.recordset && countRes.recordset[0]
+      ? Number(countRes.recordset[0].total)
+      : 0;
+
+  return { items, total };
+}
+
+
+/**
+ * Get product details with variants and latest active price per variant for requested priceType.
+ * If priceType not found for a variant, Price will be null.
+ */
+async function getProductDetailsWithPrice({ productId, priceType = 'CUSTOMER', userId = null }) {
+  // product row
+  const pRes = await query('SELECT Id AS ProductId, Name AS ProductName, Description, ImagePath, IsActive FROM dbo.Products WHERE Id = @productId ', {
+    productId: { type: sql.Int, value: productId }
+  });
+  const p = pRes.recordset && pRes.recordset[0];
+  if (!p) return null;
+
+  // images
+  const imgsRes = await query('SELECT Id, ImageUrl, IsPrimary FROM dbo.ProductImages WHERE ProductId = @productId ORDER BY IsPrimary DESC, Id ASC', {
+    productId: { type: sql.Int, value: productId }
+  });
+  const images = (imgsRes.recordset || []).map(r => ({ Id: r.Id, ImageUrl: r.ImageUrl, IsPrimary: r.IsPrimary }));
+
+  // variants + latest price for priceType
+  const variantsSql = `
+    WITH LatestPrice AS (
+      SELECT vp.Id, vp.VariantId, vp.PriceType, vp.Price,
+             ROW_NUMBER() OVER (PARTITION BY vp.VariantId ORDER BY vp.Id DESC) AS rn
+      FROM dbo.VariantPrices vp
+      WHERE vp.PriceType = @priceType AND vp.IsActive = 1
+    )
+    SELECT v.Id AS VariantId, v.SKU, v.VariantName, v.Attributes, v.StockQty, lp.Price
+    FROM dbo.ProductVariants v
+    LEFT JOIN LatestPrice lp ON lp.VariantId = v.Id AND lp.rn = 1
+    WHERE v.ProductId = @productId
+    ORDER BY v.Id ASC;
+  `;
+  const vs = await query(variantsSql, { productId: { type: sql.Int, value: productId }, priceType: { type: sql.NVarChar, value: priceType } });
+  const variants = (vs.recordset || []).map(r => ({
+    Id: r.VariantId,
+    SKU: r.SKU,
+    VariantName: r.VariantName,
+    Attributes: r.Attributes,
+    StockQty: r.StockQty,
+    price: r.Price != null ? Number(r.Price) : null
+  }));
+
+  // categories
+  const catsRes = await query('SELECT pc.CategoryId FROM dbo.ProductCategories pc WHERE pc.ProductId = @productId', { productId: { type: sql.Int, value: productId } });
+  const CategoryIds = (catsRes.recordset || []).map(x => x.CategoryId);
+
+  return {
+    ProductId: p.ProductId,
+    ProductName: p.ProductName,
+    Description: p.Description,
+    ImagePath: p.ImagePath,
+    images,
+    variants,
+    CategoryIds,
+    IsActive: p.IsActive
+  };
+}
+
+
 module.exports = {
+  fetchProductsForPriceType,
+  getProductDetailsWithPrice,
   deleteProductVariant,
   deactivateProductVariant,
     updateProductVariant,

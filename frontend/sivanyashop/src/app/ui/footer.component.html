@@ -1,64 +1,76 @@
-<!-- PLACE IN: src/app/ui/footer.component.html (REPLACE existing file) -->
-
 <footer class="meesho-footer">
-
   <div class="container">
 
-    <!-- MOBILE FOOTER: simple icon bar (mobile-only) -->
+    <!-- ADMIN FOOTER -->
     <nav class="mf-nav mobile-only" *ngIf="designVariant === 'admin'">
-      <!-- ADMIN mobile footer (admin quick links) -->
-      <a routerLink="/admin" class="mf-item"><i class="fas fa-tachometer-alt"></i><span>Dash</span></a>
-      <a routerLink="/admin/orders" class="mf-item"><i class="fas fa-box-open"></i><span>Orders</span></a>
-      <a routerLink="/admin/retailers" class="mf-item"><i class="fas fa-users"></i><span>Users</span></a>
-      <a routerLink="/admin/settings" class="mf-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+      <a routerLink="/admin" class="mf-item">
+        <i class="fas fa-tachometer-alt"></i><span>Dash</span>
+      </a>
+      <a routerLink="/admin/orders" class="mf-item">
+        <i class="fas fa-box-open"></i><span>Orders</span>
+      </a>
+      <a routerLink="/admin/retailers" class="mf-item">
+        <i class="fas fa-users"></i><span>Users</span>
+      </a>
+      <a routerLink="/admin/settings" class="mf-item">
+        <i class="fas fa-cog"></i><span>Settings</span>
+      </a>
     </nav>
 
+    <!-- CUSTOMER / RETAILER FOOTER -->
     <nav class="mf-nav mobile-only" *ngIf="designVariant === 'customer'">
-      <!-- CUSTOMER / RETAILER mobile footer -->
-      <a routerLink="/" class="mf-item"><i class="fas fa-home"></i><span>Home</span></a>
-      <button class="mf-item" (click)="toggleMobileCategories()"><i class="fas fa-th-large"></i><span>Cat</span></button>
-      <a routerLink="/cart" class="mf-item"><i class="fas fa-shopping-cart"></i><span>Cart</span>
+      <a routerLink="/" routerLinkActive="active" class="mf-item">
+        <i class="fas fa-home"></i><span>Home</span>
+      </a>
+      <a routerLink="/cart" routerLinkActive="active" class="mf-item">
+        <i class="fas fa-shopping-cart"></i><span>Cart</span>
         <strong class="mf-badge" *ngIf="(cartCount$ | async) as c">{{ c }}</strong>
       </a>
-      <a routerLink="/offers" class="mf-item"><i class="fas fa-tags"></i><span>Offers</span></a>
-      <a routerLink="/account" class="mf-item"><i class="fas fa-user"></i><span>Acct</span></a>
+      <a routerLink="/orders" routerLinkActive="active" class="mf-item">
+        <i class="fas fa-box-open"></i><span>Orders</span>
+      </a>
+      <a routerLink="/account" routerLinkActive="active" class="mf-item">
+        <i class="fas fa-user"></i><span>Account</span>
+      </a>
     </nav>
 
+    <!-- GUEST FOOTER -->
     <nav class="mf-nav mobile-only" *ngIf="designVariant === 'guest'">
-      <!-- GUEST mobile footer -->
-      <a routerLink="/" class="mf-item"><i class="fas fa-home"></i><span>Home</span></a>
-      <button class="mf-item" (click)="toggleMobileCategories()"><i class="fas fa-th-large"></i><span>Cat</span></button>
-      <a routerLink="/cart" class="mf-item"><i class="fas fa-shopping-cart"></i><span>Cart</span></a>
-      <a routerLink="/offers" class="mf-item"><i class="fas fa-tags"></i><span>Offers</span></a>
-      <a routerLink="/login" class="mf-item"><i class="fas fa-sign-in-alt"></i><span>Login</span></a>
+      <a routerLink="/" routerLinkActive="active" class="mf-item">
+        <i class="fas fa-home"></i><span>Home</span>
+      </a>
+      <a routerLink="/cart" routerLinkActive="active" class="mf-item">
+        <i class="fas fa-shopping-cart"></i><span>Cart</span>
+      </a>
+      <a routerLink="/login" routerLinkActive="active" class="mf-item">
+        <i class="fas fa-sign-in-alt"></i><span>Login</span>
+      </a>
     </nav>
 
-    <!-- DESKTOP FOOTER: richer content (desktop-only) -->
+    <!-- DESKTOP FOOTER -->
     <nav class="mf-nav desktop-only">
       <div style="display:flex; gap:1.5rem; align-items:center;">
-        <!-- left column -->
         <a routerLink="/" class="mf-item"><i class="fas fa-home"></i><span>Home</span></a>
-        <a routerLink="/categories" class="mf-item"><i class="fas fa-th-large"></i><span>Categories</span></a>
-        <a routerLink="/offers" class="mf-item"><i class="fas fa-tags"></i><span>Offers</span></a>
+        <a routerLink="/orders" class="mf-item"><i class="fas fa-box-open"></i><span>Orders</span></a>
       </div>
 
       <div style="display:flex; gap:1rem; align-items:center;">
-        <a routerLink="/cart" class="mf-item"><i class="fas fa-shopping-cart"></i><span>Cart</span>
+        <a routerLink="/cart" class="mf-item">
+          <i class="fas fa-shopping-cart"></i><span>Cart</span>
           <strong class="mf-badge" *ngIf="(cartCount$ | async) as c">{{ c }}</strong>
         </a>
 
-        <ng-container *ngIf="designVariant === 'admin'">
-          <a routerLink="/admin" class="mf-item"><i class="fas fa-user-shield"></i><span>Admin</span></a>
+        <ng-container *ngIf="role; else showLoginDesktop">
+          <a routerLink="/account" class="mf-item">
+            <i class="fas fa-user"></i><span>{{ (currentUser?.name | slice:0:10) || 'Account' }}</span>
+          </a>
         </ng-container>
 
-        <ng-container *ngIf="designVariant !== 'admin'">
-          <ng-container *ngIf="role; else showLoginDesktop">
-            <a routerLink="/account" class="mf-item"><i class="fas fa-user"></i><span>{{ (currentUser?.name | slice:0:12) || 'Account' }}</span></a>
-          </ng-container>
-          <ng-template #showLoginDesktop>
-            <a routerLink="/login" class="mf-item"><i class="fas fa-sign-in-alt"></i><span>Login</span></a>
-          </ng-template>
-        </ng-container>
+        <ng-template #showLoginDesktop>
+          <a routerLink="/login" class="mf-item">
+            <i class="fas fa-sign-in-alt"></i><span>Login</span>
+          </a>
+        </ng-template>
       </div>
     </nav>
 
