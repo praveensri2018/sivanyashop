@@ -5,13 +5,37 @@ const cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 3000;
-
+/*
 const corsOptions = {
   origin: process.env.CLIENT_ORIGIN || 'http://localhost:4200',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
   optionsSuccessStatus: 204
+};*/
+
+const allowedOrigins = (process.env.CLIENT_ORIGINS || 'http://localhost:4200')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);  // remove empty strings
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // <-- handle no-origin requests (like curl or mobile native)
+    if (!origin) return callback(null, true);
+
+    // <-- check if origin is in the list from .env
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);  // allowed
+    }
+
+    // <-- reject anything else (will show CORS error in browser)
+    return callback(new Error('CORS not allowed for origin: ' + origin), false);
+  },
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'], // <-- allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'], // <-- allowed headers
+  credentials: true,          // <-- allow cookies / auth headers
+  optionsSuccessStatus: 204   // <-- preflight success status
 };
 
 // CORS (preflight included by default)
