@@ -55,6 +55,7 @@ const stockRoutes = require('./routes/stock');
 const retailerRoutes = require('./routes/retailer');
 
 const cartRoutes = require('./routes/cartRoutes');
+const paymentsRoutes = require('./routes/paymentsRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -63,18 +64,21 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/retailers', retailerRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/payments', paymentsRoutes); 
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Global error handler
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || 'Internal server error',
-  });
-});
-
+app.use(express.json({
+  verify: (req, res, buf, encoding) => {
+    // Attach rawBody only when body exists (buf may be empty for GET)
+    if (buf && buf.length) {
+      req.rawBody = buf.toString(encoding || 'utf8');
+    } else {
+      req.rawBody = '';
+    }
+  }
+}));
 app.listen(port, () => {
   console.log(`🚀 Server running at http://localhost:${port}`);
 });
