@@ -1,3 +1,4 @@
+// Place file at: backend/services/cartService.js
 const cartRepo = require('../repositories/cartRepo');
 const productRepo = require('../repositories/productRepo'); // to look up price if needed
 
@@ -15,7 +16,6 @@ async function addToCart({ userId, productId, variantId = null, qty = 1, price =
   // If price not provided, attempt to fetch latest price for variant (customer price)
   let unitPrice = price;
   if (unitPrice == null) {
-    // prefer price from VariantPrices (customer)
     const p = await productRepo.getVariantLatestPrice(variantId || null, 'CUSTOMER');
     unitPrice = p != null ? Number(p) : null;
   }
@@ -31,14 +31,33 @@ async function addToCart({ userId, productId, variantId = null, qty = 1, price =
   return newItem;
 }
 
+/**
+ * Return cart for user in consistent shape: { items: [...], total: number }
+ */
 async function getCartForUser(userId) {
-  const cart = await cartRepo.getCartWithItems(userId);
-  return cart;
+  const items = await cartRepo.getCartWithItems(userId); // repo returns array of rows
+  const computedItems = Array.isArray(items) ? items : [];
+  const total = computedItems.reduce((s, it) => {
+    const unit = Number(it.Price ?? it.price ?? 0);
+    const qty = Number(it.Qty ?? it.qty ?? 1);
+    return s + unit * qty;
+  }, 0);
+  return { items: computedItems, total };
 }
 
 async function removeCartItem(userId, cartItemId) {
-  // validate ownership
-  await cartRepo.deleteCartItem(userId, cartItemId);
+  // validate ownership & delete (repo enforces ownership by join with Carts)
+  const result = await cartRepo.deleteCartItem(userId, cartItemId);
+  // Optionally check affected rows, but repo returns the query result. If you want to throw on 0 rows:
+  if (result && typeof result.rowsAffected !== 'undefined') {
+    const totalDeleted = Array.isArray(result.rowsAffected) ? result.rowsAffected.reduce((a,b)=>a+b,0) : (result.rowsAffected || 0);
+    if (totalDeleted === 0) {
+      const e = new Error('Cart item not found or not owned by user');
+      e.status = 404;
+      throw e;
+    }
+  }
+  return;
 }
 
 module.exports = { addToCart, getCartForUser, removeCartItem };

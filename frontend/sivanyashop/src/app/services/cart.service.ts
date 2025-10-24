@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap, switchMap } from 'rxjs/operators';
 import { AppConfig } from '../app.config';
 import { AuthService } from '../auth/auth.service';
+import { forkJoin } from 'rxjs';
 
 export interface CartItem {
   id?: number;        // cart item id when persisted on server
@@ -108,51 +109,78 @@ export class CartService {
   }
 
   update(cartItemId: number, patch: Partial<CartItem>): Observable<any> {
-    const headers = this.authHeaders();
-    if (!headers) {
-      // update local
-      const arr = this.getLocalItems();
-      const idx = arr.findIndex(i => i.id === cartItemId);
-      if (idx >= 0) {
-        arr[idx] = { ...arr[idx], ...patch };
-        localStorage.setItem('local_cart', JSON.stringify(arr));
-        this.itemsSubject.next(arr);
-      }
-      return of({ success: true, local: true, item: arr[idx] });
+  const headers = this.authHeaders();
+  if (!headers) {
+    // update local
+    const arr = this.getLocalItems();
+    const idx = arr.findIndex(i => i.id === cartItemId);
+    if (idx >= 0) {
+      arr[idx] = { ...arr[idx], ...patch };
+      localStorage.setItem('local_cart', JSON.stringify(arr));
+      this.itemsSubject.next(arr);
     }
-    // server doesn't define an update endpoint earlier — implement client-side as delete + add or expect backend to support PUT/PATCH.
-    // Try PATCH /api/cart/:id
-    return this.http.patch<any>(`${this.serverUrl}/${cartItemId}`, patch, { headers }).pipe(
-      tap(() => this.reloadFromServer().subscribe()),
-      catchError(err => {
-        console.error('Cart update failed', err);
-        return throwError(() => err);
-      })
-    );
+    return of({ success: true, local: true, item: arr[idx] });
   }
 
-  clear(): Observable<any> {
-    const headers = this.authHeaders();
-    if (!headers) {
-      localStorage.removeItem('local_cart');
-      this.itemsSubject.next([]);
-      return of({ success: true, local: true });
-    }
-    // If backend has no clear endpoint, delete each item
-    return this.get().pipe(
-      switchMap(res => {
-        const items = res.items || [];
-        const deletes = items.map((it: any) => this.http.delete(`${this.serverUrl}/${it.id}`, { headers }).pipe(catchError(() => of(null))));
-        // run deletions sequentially (or parallel). We'll parallelize here:
-        return (deletes.length ? (window as any).PromiseAllObservable ? (window as any).PromiseAllObservable(deletes) : (of(null).pipe(map(()=>null))) : of(null));
-      }),
-      tap(() => this.reloadFromServer().subscribe()),
-      catchError(err => {
-        console.warn('Cart clear failed', err);
-        return throwError(() => err);
-      })
-    );
+  // Use PUT (backend has updateCartItemQty) — server expects { qty, price? }
+  const body: any = {};
+  if (typeof patch.qty !== 'undefined') body.qty = patch.qty;
+  if (typeof patch.price !== 'undefined') body.price = patch.price;
+
+  return this.http.put<any>(`${this.serverUrl}/${cartItemId}`, body, { headers }).pipe(
+    tap(res => {
+      // If server returns items+total, reload or normalize directly
+      if (res && Array.isArray(res.items)) {
+        const items = this.normalizeServerItems(res.items);
+        this.itemsSubject.next(items);
+      } else {
+        // fallback: reload entire cart to ensure consistent state
+        this.reloadFromServer().subscribe();
+      }
+    }),
+    catchError(err => {
+      console.error('Cart update failed', err);
+      return throwError(() => err);
+    })
+  );
+}
+
+ clear(): Observable<any> {
+  const headers = this.authHeaders();
+  if (!headers) {
+    localStorage.removeItem('local_cart');
+    this.itemsSubject.next([]);
+    return of({ success: true, local: true });
   }
+
+  // fetch latest items (ensures we have correct ids)
+  return this.get().pipe(
+    switchMap(res => {
+      const items = res.items || [];
+      if (!items.length) return of({ success: true, items: [] });
+
+      // build array of delete observables
+      const deletes = items.map((it: any) => this.http.delete(`${this.serverUrl}/${it.id}`, { headers }).pipe(
+        catchError(err => {
+          console.warn('single item delete failed', it.id, err);
+          return of(null);
+        })
+      ));
+
+      // run them in parallel
+      return forkJoin(deletes).pipe(
+        tap(() => {
+          // reload final state from server
+          this.reloadFromServer().subscribe();
+        })
+      );
+    }),
+    catchError(err => {
+      console.warn('Cart clear failed', err);
+      return throwError(() => err);
+    })
+  );
+}
 
   // -------------------------
   // Internal helpers
