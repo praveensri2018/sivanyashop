@@ -1,3 +1,4 @@
+// Place file at: backend/controllers/cartController.js
 const cartService = require('../services/cartService');
 
 async function addToCart(req, res, next) {
@@ -16,7 +17,9 @@ async function addToCart(req, res, next) {
       price: price == null ? null : Number(price)
     });
 
-    res.json({ success: true, cartItem: item });
+    // Return updated cart (items + total) so frontend can update state immediately
+    const cart = await cartService.getCartForUser(Number(user.id));
+    return res.json({ success: true, cartItem: item, items: cart.items, total: cart.total });
   } catch (err) { next(err); }
 }
 
@@ -26,7 +29,7 @@ async function getCart(req, res, next) {
     if (!user || !user.id) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
     const cart = await cartService.getCartForUser(Number(user.id));
-    res.json({ success: true, items: cart });
+    return res.json({ success: true, items: cart.items, total: cart.total });
   } catch (err) { next(err); }
 }
 
@@ -39,7 +42,10 @@ async function removeFromCart(req, res, next) {
     if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid cart item id' });
 
     await cartService.removeCartItem(Number(user.id), id);
-    res.json({ success: true });
+
+    // Return updated cart so frontend can set items + total
+    const cart = await cartService.getCartForUser(Number(user.id));
+    return res.json({ success: true, items: cart.items, total: cart.total });
   } catch (err) { next(err); }
 }
 
