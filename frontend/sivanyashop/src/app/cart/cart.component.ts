@@ -1,15 +1,14 @@
-// Place file at: src/app/cart/cart.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { CartService } from '../services/cart.service'; // ensure path correct
-import { PaymentService } from '../services/payment.service'; // ensure you added this service
 import { take } from 'rxjs/operators';
+import { CartService } from '../services/cart.service'; 
+import { PaymentService } from '../services/payment.service'; 
 
-declare const Razorpay: any; // razorpay checkout script exposes global
+declare const Razorpay: any; 
 
 @Component({
   selector: 'app-cart',
@@ -19,9 +18,9 @@ declare const Razorpay: any; // razorpay checkout script exposes global
   styleUrls: ['./cart.component.scss']
 })
 export class CartComponent implements OnInit {
-  items$!: Observable<any[]>;   // stream of cart items (normalized by CartService)
-  total$!: Observable<number>;  // stream of running total (CartService provides)
-  loading = false;             // simple UI flag used to disable actions if needed
+  items$!: Observable<any[]>;   
+  total$!: Observable<number>;  
+  loading = false;             
   error: string | null = null;
 
   constructor(
@@ -31,11 +30,8 @@ export class CartComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // wire observables from CartService
     this.items$ = this.cart.items$;
     this.total$ = this.cart.total$;
-
-    // ensure fresh data on init
     this.cart.get().subscribe({
       next: () => {},
       error: (err) => {
@@ -66,7 +62,7 @@ export class CartComponent implements OnInit {
   updateQty(item: any, delta: number) {
     const currentQty = Number(item?.qty ?? item?.Qty ?? 1);
     const newQty = currentQty + delta;
-
+    
     if (newQty <= 0) {
       const idToRemove = item?.id ?? item?.CartItemId;
       this.removeItem(idToRemove);
@@ -115,17 +111,22 @@ export class CartComponent implements OnInit {
     });
   }
 
-  // ---------- NEW: Checkout flow that opens Razorpay ----------
-  // Click Checkout -> create order on server -> open Razorpay -> verify -> finalize
   checkout() {
     this.error = null;
     this.loading = true;
 
-    // Get current cart items snapshot (CartService exposes items$ not a direct getter).
-    // If CartService exposes itemsSubject you can read directly; otherwise take 1 from observable.
+    // Get current cart items and total
+    let cartItems: any[] = [];
     let amountInRupees = 0;
-    // get latest total once
-    this.total$.pipe(take(1)).subscribe(total => amountInRupees = Number(total || 0));
+
+    // Use take(1) to get current values from observables
+    this.items$.pipe(take(1)).subscribe(items => {
+      cartItems = items;
+    });
+
+    this.total$.pipe(take(1)).subscribe(total => {
+      amountInRupees = Number(total || 0);
+    });
 
     if (!amountInRupees || amountInRupees <= 0) {
       this.loading = false;
@@ -133,10 +134,14 @@ export class CartComponent implements OnInit {
       return;
     }
 
-    // create Razorpay order on backend (amount in rupees)
-this.paymentSvc.createOrder(amountInRupees, { notes: { purpose: 'Cart payment' } }).pipe(
+    this.paymentSvc.createOrder(amountInRupees, { 
+      notes: { 
+        purpose: 'Cart payment',
+        items_count: cartItems.length
+      } 
+    }).pipe(
       finalize(() => {
-        // do not prematurely clear loading — loading will be cleared in handlers
+        // Loading state handled in individual callbacks
       })
     ).subscribe({
       next: (res) => {
@@ -146,21 +151,21 @@ this.paymentSvc.createOrder(amountInRupees, { notes: { purpose: 'Cart payment' }
           return;
         }
 
-        const order = res.order; // contains id, amount (in paise), currency
-        // Prepare checkout options
+        const order = res.order; 
         const options: any = {
-          key: (window as any).__RAZORPAY_KEY_ID || (res.order.key_id || (window as any).RAZORPAY_KEY_ID) || '', // try multiple places
-          amount: order.amount, // amount in paise returned by server
+          key: (window as any).__RAZORPAY_KEY_ID || (res.order.key_id || (window as any).RAZORPAY_KEY_ID) || '', 
+          amount: order.amount, 
           currency: order.currency || 'INR',
-          name: 'Your Shop',
+          name: 'Sivanuya Trends Tops',
           description: 'Order Payment',
           order_id: order.id,
           handler: (response: any) => {
-            // On successful payment, verify server-side
-            this.verifyPayment(response);
+            this.verifyPayment(response, cartItems);
           },
           prefill: {
-            name: '', email: '', contact: ''
+            name: '', 
+            email: '', 
+            contact: ''
           },
           theme: { color: '#0b5cff' }
         };
@@ -171,9 +176,9 @@ this.paymentSvc.createOrder(amountInRupees, { notes: { purpose: 'Cart payment' }
             console.error('Razorpay payment failed', err);
             this.loading = false;
             this.error = err?.error?.description || 'Payment failed';
+            alert('Payment failed: ' + (err?.error?.description || 'Unknown error'));
           });
           rzp.open();
-          // Keep loading true until we either verify or failure occurs
         } catch (err) {
           console.error('Error opening Razorpay', err);
           this.loading = false;
@@ -188,45 +193,104 @@ this.paymentSvc.createOrder(amountInRupees, { notes: { purpose: 'Cart payment' }
     });
   }
 
-  private verifyPayment(response: any) {
-    // response contains razorpay_order_id, razorpay_payment_id, razorpay_signature
-    const payload = {
-      razorpay_order_id: response.razorpay_order_id,
-      razorpay_payment_id: response.razorpay_payment_id,
-      razorpay_signature: response.razorpay_signature
-    };
+private verifyPayment(response: any, cartItems: any[]) {
+  console.log('🔄 Starting payment verification...', response);
+  console.log('📦 Cart items to process:', cartItems);
 
-    this.paymentSvc.verifyPayment(payload).pipe(
-      finalize(() => {
-        // finalize handler will executed after verify observable completes
-      })
-    ).subscribe({
-      next: (res) => {
-        this.loading = false;
-        if (res && res.success) {
-          // Payment verified. Clear cart and navigate to confirmation.
-          // Use server-side clear if CartService.clear() implements it; otherwise it will remove items one-by-one.
-          this.cart.clear().subscribe({
-            next: () => {
-              // navigate to order confirmation page (create this route/page)
-              this.router.navigate(['/order-confirmation']);
-            },
-            error: (err) => {
-              console.warn('Cart clear after payment failed', err);
-              // still navigate to confirmation but warn user
+  const payload = {
+    razorpay_order_id: response.razorpay_order_id,
+    razorpay_payment_id: response.razorpay_payment_id,
+    razorpay_signature: response.razorpay_signature,
+    cartItems: cartItems
+  };
+
+  console.log('📤 Sending verification payload to backend:', payload);
+
+  this.paymentSvc.verifyPaymentAndCreateOrder(payload).pipe(
+    finalize(() => {
+      this.loading = false;
+    })
+  ).subscribe({
+    next: (res) => {
+      console.log('✅ Backend verification response:', res);
+      
+      if (res && res.success) {
+        console.log('🎉 Payment successful! Order ID:', res.orderId, 'Payment ID:', res.paymentId);
+        
+        // Clear cart after successful order creation
+        this.cart.clear().subscribe({
+          next: () => {
+            console.log('🛒 Cart cleared successfully');
+            if (res.orderId) {
+              console.log('📍 Navigating to order confirmation with order ID:', res.orderId);
+              this.router.navigate(['/order-confirmation', res.orderId], {
+                queryParams: {
+                  paymentId: res.paymentId,
+                  message: 'Order placed successfully!'
+                }
+              });
+            } else {
+              console.warn('⚠️ No orderId in response, navigating to generic confirmation');
+              this.router.navigate(['/order-confirmation'], {
+                queryParams: {
+                  message: 'Order placed successfully!'
+                }
+              });
+            }
+          },
+          error: (err) => {
+            console.warn('❌ Cart clear failed:', err);
+            if (res.orderId) {
+              this.router.navigate(['/order-confirmation', res.orderId]);
+            } else {
               this.router.navigate(['/order-confirmation']);
             }
-          });
-        } else {
-          console.warn('verifyPayment returned failure', res);
-          this.error = res?.message || 'Payment verification failed';
-        }
-      },
-      error: (err) => {
-        console.error('verifyPayment error', err);
-        this.loading = false;
-        this.error = 'Payment verification failed (network)';
+          }
+        });
+      } else {
+        console.error('❌ Verification failed:', res);
+        this.error = res?.message || 'Payment verification failed';
+        alert('Payment verification failed: ' + (res?.message || 'Unknown error'));
       }
+    },
+    error: (err) => {
+      console.error('❌ Verification request failed:', err);
+      console.error('Error details:', err.error);
+      this.error = 'Payment verification failed (network)';
+      alert('Payment verification failed. Please check console for details.');
+    }
+  });
+}
+
+
+ testOrderCreation() {
+    console.log('🧪 Testing order creation without payment...');
+    
+    // Get current cart items
+    let cartItems: any[] = [];
+    this.items$.pipe(take(1)).subscribe(items => {
+      cartItems = items;
     });
+
+    if (cartItems.length === 0) {
+      alert('Cart is empty. Add some items first.');
+      return;
+    }
+
+    this.loading = true;
+
+    // Create test payment data (simulate Razorpay response)
+    const testPaymentData = {
+      razorpay_order_id: 'test_order_' + Date.now(),
+      razorpay_payment_id: 'test_payment_' + Date.now(), 
+      razorpay_signature: 'test_signature_' + Date.now()
+    };
+
+    console.log('🧪 Test payment data:', testPaymentData);
+    console.log('🧪 Cart items:', cartItems);
+
+    // Call verifyPayment directly with test data
+    this.verifyPayment(testPaymentData, cartItems);
   }
+
 }

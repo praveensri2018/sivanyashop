@@ -1,11 +1,71 @@
-/* Place file at: src/app/cart/cart.component.scss */
-.cart-page { padding-top: 1rem; }
+.cart-container {
+  min-height: 60vh;
+  
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+  }
+  
+  .empty-cart {
+    background: #f8f9fa;
+    border-radius: 8px;
+    
+    h4 {
+      color: #6c757d;
+    }
+  }
+  
+  .cart-item {
+    &:last-child {
+      border-bottom: none !important;
+    }
+    
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      button {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+      }
+      
+      span {
+        min-width: 30px;
+        text-align: center;
+      }
+    }
+  }
+  
+  .cart-summary {
+    position: sticky;
+    top: 20px;
+    
+    .form-select {
+      font-size: 0.9rem;
+    }
+  }
 
-.cart-thumb {
-  width: 72px;
-  height: 72px;
-  object-fit: cover;
-  display: block;
+  .cart-thumb {
+  width: 60px;      /* smaller width */
+  height: 60px;     /* smaller height */
+  object-fit: cover; /* ensures images are cropped nicely */
+  border-radius: 6px;
+  border: 1px solid #e0e0e0; /* subtle border */
+  background-color: #fff;
+}
 }
 
-.list-group-item { border-radius: 8px; }
+.cart-thumb {
+  width: 60px;      /* smaller width */
+  height: 60px;     /* smaller height */
+  object-fit: cover; /* ensures images are cropped nicely */
+  border-radius: 6px;
+  border: 1px solid #e0e0e0; /* subtle border */
+  background-color: #fff;
+}

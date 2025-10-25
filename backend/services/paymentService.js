@@ -1,6 +1,7 @@
 // Place file at: backend/services/paymentService.js
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const orderService = require('./orderService');
 
 const key_id = process.env.RAZORPAY_KEY_ID;
 const key_secret = process.env.RAZORPAY_KEY_SECRET;
@@ -50,4 +51,137 @@ function verifyWebhookSignature(rawBody, signature, webhookSecret = process.env.
   return expected === signature;
 }
 
-module.exports = { razorpay, createOrder, verifyPaymentSignature, verifyWebhookSignature };
+
+
+async function createOrderFromCart({ userId, retailerId, shippingAddressId, cartItems, paymentGatewayOrderId, paymentGatewayPaymentId }) {
+  // Calculate total amount from cart items
+  const totalAmount = cartItems.reduce((total, item) => {
+    return total + (Number(item.Price || item.price || 0) * Number(item.Qty || item.qty || 1));
+  }, 0);
+
+  console.log('💵 Creating order with total:', totalAmount);
+
+  // Create order - MAKE SURE THIS RETURNS THE CREATED ORDER
+  const order = await orderRepo.createOrder({
+    userId: userId,
+    retailerId: retailerId || null,
+    shippingAddressId: shippingAddressId || null,
+    totalAmount: totalAmount,
+    status: 'CONFIRMED',
+    paymentStatus: 'PAID'
+  });
+
+  console.log('📦 Order created in DB:', order);
+
+  if (!order || !order.Id) {
+    throw new Error('Order repository did not return order with Id');
+  }
+
+  // Add order items
+  for (const item of cartItems) {
+    await orderRepo.createOrderItem({
+      orderId: order.Id,
+      productId: item.ProductId || item.productId,
+      variantId: item.VariantId || item.variantId,
+      qty: item.Qty || item.qty,
+      price: item.Price || item.price
+    });
+  }
+
+  console.log('✅ Order items created for order ID:', order.Id);
+
+  return order;
+}
+
+/**
+ * Complete order after successful payment
+ */
+// In services/paymentService.js
+async function completeOrderAfterPayment({ razorpay_order_id, razorpay_payment_id, userId, cartItems, shippingAddressId, retailerId }) {
+  try {
+    console.log('🔄 Starting order creation in completeOrderAfterPayment');
+    
+    // Calculate total amount
+    const totalAmount = cartItems.reduce((total, item) => {
+      const price = item.Price || item.price || 0;
+      const qty = item.Qty || item.qty || 1;
+      return total + (Number(price) * Number(qty));
+    }, 0);
+
+    console.log('💰 Total amount calculated:', totalAmount);
+
+    // Create order - MAKE SURE THIS RETURNS AN ORDER WITH Id PROPERTY
+    const order = await orderService.createOrderFromCart({
+      userId,
+      retailerId,
+      shippingAddressId,
+      cartItems,
+      paymentGatewayOrderId: razorpay_order_id,
+      paymentGatewayPaymentId: razorpay_payment_id
+    });
+
+    console.log('✅ Order created:', order);
+    console.log('✅ Order ID:', order.Id); // Check if this exists
+
+    if (!order || !order.Id) {
+      throw new Error('Order creation failed - no order ID returned');
+    }
+
+    // Create payment record
+    const payment = await orderService.createPaymentRecord({
+      orderId: order.Id,
+      amount: totalAmount,
+      method: 'RAZORPAY',
+      paymentGateway: 'razorpay',
+      transactionRef: razorpay_payment_id,
+      status: 'PAID'
+    });
+
+    console.log('✅ Payment created:', payment);
+
+    // Update stock
+    await orderService.updateStockForOrder(order.Id);
+
+    // Clear user cart
+    await orderService.clearUserCart(userId);
+
+    return { order, payment };
+  } catch (error) {
+    console.error('❌ Error in completeOrderAfterPayment:', error);
+    throw error;
+  }
+}
+
+/**
+ * Handle failed payment
+ */
+async function handleFailedPayment({ razorpay_order_id, razorpay_payment_id, userId }) {
+  try {
+    // Create order with failed status
+    const order = await orderService.createFailedOrder({
+      userId,
+      paymentGatewayOrderId: razorpay_order_id,
+      paymentGatewayPaymentId: razorpay_payment_id,
+      status: 'FAILED',
+      paymentStatus: 'FAILED'
+    });
+
+    // Create failed payment record
+    const payment = await orderService.createPaymentRecord({
+      orderId: order.Id,
+      amount: 0, // or the intended amount
+      method: 'RAZORPAY',
+      paymentGateway: 'razorpay',
+      transactionRef: razorpay_payment_id,
+      status: 'FAILED'
+    });
+
+    return { order, payment };
+  } catch (error) {
+    console.error('Error handling failed payment:', error);
+    throw error;
+  }
+}
+
+module.exports = { razorpay, createOrder, verifyPaymentSignature, verifyWebhookSignature,  completeOrderAfterPayment,
+  handleFailedPayment,createOrderFromCart };

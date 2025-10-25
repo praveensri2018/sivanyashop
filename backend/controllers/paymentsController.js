@@ -25,25 +25,74 @@ async function createOrder(req, res, next) {
  */
 async function verifyPayment(req, res, next) {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ success: false, message: 'Missing parameters' });
-    }
-
-    const ok = paymentService.verifyPaymentSignature({
-      order_id: razorpay_order_id,
-      payment_id: razorpay_payment_id,
-      signature: razorpay_signature
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, cartItems } = req.body;
+    
+    console.log('🔍 Payment verification request:', {
+      razorpay_order_id,
+      razorpay_payment_id,
+      cartItemsCount: cartItems ? cartItems.length : 0,
+      userId: req.user.id
     });
 
-    if (!ok) return res.status(400).json({ success: false, message: 'Signature verification failed' });
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ success: false, message: 'Missing payment details' });
+    }
 
-    // Optional: fetch payment details from Razorpay to confirm status
-    // const payment = await paymentService.razorpay.payments.fetch(razorpay_payment_id);
+    // Verify payment signature
+    const verified = paymentService.verifyPaymentSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+    
+    if (!verified) {
+      console.error('❌ Payment signature verification failed');
+      await paymentService.handleFailedPayment({
+        razorpay_order_id,
+        razorpay_payment_id,
+        userId: req.user.id
+      });
+      return res.status(400).json({ success: false, message: 'Signature verification failed' });
+    }
 
-    // TODO: mark order as paid in your DB, reduce stock, create invoice, etc.
-    return res.json({ success: true, message: 'Payment verified', paymentId: razorpay_payment_id });
+    console.log('✅ Payment signature verified');
+
+    // Get user's cart items if not provided in request
+    let itemsToProcess = cartItems;
+    if (!itemsToProcess || itemsToProcess.length === 0) {
+      console.log('🛒 Fetching cart items from database');
+      const cart = await cartService.getCartForUser(req.user.id);
+      itemsToProcess = cart.items || [];
+    }
+
+    if (!itemsToProcess || itemsToProcess.length === 0) {
+      console.error('❌ No cart items found');
+      return res.status(400).json({ success: false, message: 'Cart is empty' });
+    }
+
+    console.log('📦 Processing cart items:', itemsToProcess.length);
+
+    // Complete order creation - MAKE SURE THIS RETURNS THE ORDER OBJECT WITH Id
+    const { order, payment } = await paymentService.completeOrderAfterPayment({
+      razorpay_order_id,
+      razorpay_payment_id,
+      userId: req.user.id,
+      cartItems: itemsToProcess,
+      shippingAddressId: req.body.shippingAddressId,
+      retailerId: req.body.retailerId
+    });
+
+    console.log('✅ Order created successfully:', {
+      orderId: order.Id, // Check if this is defined
+      order: order, // Log the full order object
+      paymentId: payment.Id
+    });
+
+    // RETURN BOTH orderId AND paymentId
+    return res.json({ 
+      success: true, 
+      message: 'Payment verified and order created', 
+      orderId: order.Id, // Make sure this is included
+      paymentId: payment.Id
+    });
   } catch (err) {
+    console.error('❌ Error in verifyPayment:', err);
     next(err);
   }
 }

@@ -40,4 +40,20 @@
       <div class="alert alert-info">Your cart is empty. <a routerLink="/">Continue shopping</a></div>
     </ng-template>
   </div>
+
+   <div class="mb-3">
+    <button class="btn btn-warning btn-sm" (click)="testOrderCreation()" [disabled]="loading">
+      🧪 Test Order Creation (No Payment)
+    </button>
+    <small class="text-muted ms-2">For testing order flow without actual payment</small>
+  </div>
+
+  <div *ngIf="(items$ | async) as items">
+    <div *ngIf="items.length > 0; else empty">
+      <!-- ... rest of your cart HTML ... -->
+    </div>
+    <ng-template #empty>
+      <div class="alert alert-info">Your cart is empty. <a routerLink="/">Continue shopping</a></div>
+    </ng-template>
+  </div>
 </div>

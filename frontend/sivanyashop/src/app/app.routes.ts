@@ -5,9 +5,7 @@ import { CartComponent } from './cart/cart.component';
 import { AdminComponent } from './admin/admin.component';
 import { RetailerDashboardComponent } from './retailer/retailer-dashboard.component';
 import { CustomerDashboardComponent } from './customer/customer-dashboard.component';
-
 import { CustomerProductsComponent } from './customer/customer-products.component';
-
 import { RoleGuard } from './auth/role.guard';
 import { PublicRedirectGuard } from './auth/public-redirect.guard';
 import { LoginComponent } from './auth/login.component';
@@ -16,21 +14,23 @@ import { CategoryManagementComponent } from './admin/category-management.compone
 import { ProductListComponent } from './admin/product-list.component';
 import { AdminRetailerListComponent } from './admin/retailer-list.component';
 import { RegisterComponent } from './auth/register.component';
+import { OrderConfirmationComponent } from './order-confirmation/order-confirmation.component'; // Add this import
 
 export const routes: Routes = [
   { path: '', component: ShopComponent, canActivate: [PublicRedirectGuard] },
   { path: 'product/:id', component: ProductDetailComponent },
   { path: 'cart', component: CartComponent, canActivate: [RoleGuard], data: { roles: ['customer','retailer'] } },
   { path: 'dashboard', component: CustomerDashboardComponent, canActivate: [RoleGuard], data: { roles: ['customer'] } },
-  
   { path: 'product', component: CustomerProductsComponent, canActivate: [RoleGuard], data: { roles: ['customer','retailer'] } },
   { path: 'retailer', component: RetailerDashboardComponent, canActivate: [RoleGuard], data: { roles: ['retailer'] } },
   { path: 'admin', component: AdminComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
   { path: 'login', component: LoginComponent },
   { path: 'admin/product-upload', component: ProductUploadComponent, canActivate: [RoleGuard], data: { roles: ['admin'] }},
   { path: 'admin/categories', component: CategoryManagementComponent, canActivate: [RoleGuard], data: { roles: ['admin'] } },
-    { path: 'admin/products', component: ProductListComponent, canActivate: [RoleGuard], data: { roles: ['admin'] }  },
-    { path: 'admin/retailers', component: AdminRetailerListComponent, canActivate: [RoleGuard], data: { roles: ['admin']  }},
+  { path: 'admin/products', component: ProductListComponent, canActivate: [RoleGuard], data: { roles: ['admin'] }  },
+  { path: 'admin/retailers', component: AdminRetailerListComponent, canActivate: [RoleGuard], data: { roles: ['admin']  }},
   { path: 'register', component: RegisterComponent },
+  { path: 'order-confirmation/:id', component: OrderConfirmationComponent, canActivate: [RoleGuard], data: { roles: ['customer','retailer'] } },
+  { path: 'order-confirmation', component: OrderConfirmationComponent, canActivate: [RoleGuard], data: { roles: ['customer','retailer'] } },
   { path: '**', redirectTo: '' }
 ];

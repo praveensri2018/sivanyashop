@@ -59,5 +59,57 @@ async function removeCartItem(userId, cartItemId) {
   }
   return;
 }
+async function verifyPayment(req, res, next) {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, shippingAddressId, retailerId = null } = req.body;
+    
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ success: false, message: 'Missing parameters' });
+    }
 
-module.exports = { addToCart, getCartForUser, removeCartItem };
+    // Verify payment signature
+    const ok = paymentService.verifyPaymentSignature({
+      order_id: razorpay_order_id,
+      payment_id: razorpay_payment_id,
+      signature: razorpay_signature
+    });
+
+    if (!ok) {
+      // Handle failed payment
+      await paymentService.handleFailedPayment({
+        razorpay_order_id,
+        razorpay_payment_id,
+        userId: req.user.id
+      });
+      
+      return res.status(400).json({ success: false, message: 'Signature verification failed' });
+    }
+
+    // Get user's cart items
+    const cart = await cartService.getCartForUser(req.user.id);
+    
+    if (!cart.items || cart.items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Cart is empty' });
+    }
+
+    // Complete order creation
+    const { order, payment } = await paymentService.completeOrderAfterPayment({
+      razorpay_order_id,
+      razorpay_payment_id,
+      userId: req.user.id,
+      cartItems: cart.items,
+      shippingAddressId,
+      retailerId
+    });
+
+    return res.json({ 
+      success: true, 
+      message: 'Payment verified and order created', 
+      orderId: order.Id,
+      paymentId: payment.Id 
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+module.exports = { addToCart, getCartForUser, removeCartItem,verifyPayment };
