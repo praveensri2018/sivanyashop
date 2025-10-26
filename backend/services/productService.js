@@ -1,5 +1,7 @@
 // => PLACE: backend/services/productService.js
 const productRepo = require('../repositories/productRepo');
+const stockRepo = require('../repositories/stockRepo');
+const stockService = require('../services/stockService');
 
 async function addCategory(name, parentCategoryId) {
   return productRepo.createCategory(name, parentCategoryId);
@@ -18,9 +20,81 @@ async function addProduct({ name, description, imagePath, createdById, categoryI
   return product;
 }
 
-async function addVariant({ productId, sku, variantName, attributes, stockQty }) {
-  return productRepo.createProductVariant({ productId, sku, variantName, attributes, stockQty });
+async function addVariant({ productId, sku, variantName, attributes, stockQty = 0 }) {
+  const variant = await productRepo.createProductVariant({ 
+    productId, 
+    sku, 
+    variantName, 
+    attributes, 
+    stockQty 
+  });
+
+  // ✅ ADD THIS: Create initial stock ledger entry
+  try {
+    await stockService.createInitialStockLedger({
+      productId,
+      variantId: variant.Id,
+      initialStock: stockQty
+    });
+  } catch (stockError) {
+    console.error('Failed to create stock ledger entry:', stockError);
+    // Don't throw - variant was created successfully
+  }
+
+  return variant;
 }
+
+async function updateVariantStock(
+  variantId,
+  newStockQty,
+  movementType = 'MANUAL_ADJUST',
+  options = {}
+) {
+  const usedStockRepo = options.stockRepo || stockRepo;
+  const usedProductRepo = options.productRepo || productRepo;
+  const logger = options.logger || console;
+
+  logger.debug?.(`[STOCK] Start updateVariantStock | variantId=${variantId} | newQty=${newStockQty} | type=${movementType}`);
+
+  if (variantId == null) throw new Error('variantId required');
+  if (!Number.isFinite(newStockQty) || newStockQty < 0) throw new Error('Invalid newStockQty');
+
+  if (!usedStockRepo?.getVariantStockById || !usedStockRepo?.insertStockLedger)
+    throw new Error('Invalid stockRepo');
+  if (!usedProductRepo?.updateVariantStock)
+    throw new Error('Invalid productRepo');
+
+  try {
+    const currentStock = await usedStockRepo.getVariantStockById(variantId);
+    logger.debug?.(`[STOCK] Current qty=${currentStock?.StockQty ?? 0}`);
+
+    const previousQty = currentStock?.StockQty ?? 0;
+    const productId = currentStock?.ProductId ?? null;
+    const stockChange = newStockQty - previousQty;
+
+    logger.debug?.(`[STOCK] Change=${stockChange} (${stockChange > 0 ? 'IN' : stockChange < 0 ? 'OUT' : 'NO CHANGE'})`);
+
+    if (stockChange !== 0) {
+      await usedStockRepo.insertStockLedger({
+        productId,
+        variantId,
+        quantity: Math.abs(stockChange),
+        movementType: stockChange > 0 ? 'STOCK_IN' : 'STOCK_OUT'
+      });
+      logger.debug?.(`[STOCK] Ledger inserted for variant ${variantId}`);
+    }
+
+    const result = await usedProductRepo.updateVariantStock(variantId, newStockQty);
+    logger.debug?.(`[STOCK] Variant updated | newQty=${newStockQty}`);
+
+    logger.info?.(`[STOCK] Done variantId=${variantId} | Δ=${stockChange}`);
+    return result;
+  } catch (err) {
+    logger.error?.(`[STOCK] Failed variantId=${variantId} | msg=${err.message}`);
+    throw err;
+  }
+}
+
 
 async function setVariantPrice({ variantId, priceType, price }) {
   return productRepo.createVariantPrice({ variantId, priceType, price });
@@ -52,6 +126,8 @@ async function updateProduct({ productId, name, description, imagePath, category
 
   return product;
 }
+
+
 async function getProductsPaginated({ page, limit }) {
   return productRepo.fetchProductsPaginated({ page, limit });
 }
@@ -214,5 +290,5 @@ module.exports = {
   addProduct,
   addVariant,
   setVariantPrice,
-  updateVariantPrice,getProductById
+  updateVariantPrice,getProductById,updateVariantStock
 };

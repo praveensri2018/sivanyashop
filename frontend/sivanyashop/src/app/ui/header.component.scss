@@ -1,482 +1,527 @@
-/* Place file at: src/app/ui/header.component.scss
-   REPLACE existing header.component.scss with this file.
-
-   This SCSS:
-   - Mobile-first responsive header (guest / admin / customer variants)
-   - Polished user dropdown styled like modern e-commerce (Meesho/Amazon-like)
-   - Animated open/close, subtle shadows, caret, avatar placeholder, accessible focus states
-   - Extra z-index + tap-friendly adjustments for mobile
-   - Comments included to show where to place and why certain rules exist
-*/
-
-/* ----------------------
-   Theme variables
-   ---------------------- */
+// src/app/ui/header.component.scss
 :root {
-  --mh-primary: #ff6f61;
-  --mh-accent: #0f1724; /* near-black accent */
-  --mh-bg: #ffffff;
-  --mh-muted: #6b7280;
-  --mh-text: #111827;
-  --mh-radius: 12px;
-  --mh-radius-sm: 8px;
-  --mh-footer-height: 68px;
-  --mh-shadow-lg: 0 14px 40px rgba(12,13,20,0.12);
-  --mh-shadow-sm: 0 6px 18px rgba(12,13,20,0.06);
-  --mh-trans: 180ms;
+  --header-bg: #ffffff;
+  --header-text: #000;
+  --header-border: #e5e7eb;
+  --primary-color: #dc2626;
+  --accent-color: #2563eb;
+  --badge-color: #ef4444;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --sidebar-width: 280px;
 }
 
-/* ----------------------
-   Base / Container
-   ---------------------- */
+/* Base Header Styles */
 .meesho-header {
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: var(--mh-bg);
-  border-bottom: 1px solid #eee;
-  color: var(--mh-text);
-
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
   position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1200;
-  background: rgba(255,255,255,0.98);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: padding var(--mh-trans) ease, box-shadow var(--mh-trans) ease, transform var(--mh-trans) ease;
-  will-change: padding, box-shadow;
+  z-index: 1000;
+  transition: all 0.3s ease;
+
+  &.scrolled {
+    box-shadow: var(--shadow);
+  }
 }
 
-/* promo / slim top */
-.meesho-header .mh-promo {
-  background: var(--mh-primary);
-  color: #fff;
-  font-weight: 600;
-  text-align: center;
-  padding: 6px 10px;
-  font-size: 12px;
-  transition: height var(--mh-trans) ease, opacity var(--mh-trans) ease, padding var(--mh-trans) ease, margin var(--mh-trans) ease;
+/* Header Top Section */
+.header-top {
+  padding: 0.75rem 0;
 }
 
-/* main row layout */
-.meesho-header .mh-row {
+.header-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
-/* icon button base */
-.meesho-header .mh-icon-btn {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  padding: 6px;
-  border-radius: 8px;
-  color: var(--mh-text);
-  display: inline-flex;
+/* Header Left - Hamburger & Brand */
+.header-left {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 1rem;
+  flex-shrink: 0;
 }
 
-/* brand */
-.meesho-header .mh-brand img {
-  height: 34px;
+.hamburger-btn span {
+  background-color: #000 !important; /* solid black test color */
+  border: none !important;
+  height: 3px !important;
+  width: 22px !important;
+  display: block !important;
+  opacity: 1 !important;
+  margin: 3px 0;
+}
+
+/* small-screen tweak */
+@media (max-width: 480px) {
+  .meesho-header .hamburger-btn span {
+    width: 20px;
+    height: 3.2px;
+  }
+}
+
+
+
+.brand-logo img {
+  height: 32px;
   width: auto;
-  display: block;
-  object-fit: contain;
-  transition: height var(--mh-trans) ease, transform var(--mh-trans) ease;
 }
 
-/* search */
-.meesho-header .mh-search {
+/* Header Center - Search */
+.header-center {
+  flex: 1;
+  max-width: 600px;
+}
+
+.search-form {
   display: flex;
-  align-items: center;
-  flex: 1 1 auto;
-  background: #f7f8fa;
-  border-radius: 999px;
-  padding: 6px 8px;
-  gap: 6px;
-  transition: padding var(--mh-trans);
+  background: #f9fafb;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+
+  &:focus-within {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
 }
 
-.meesho-header .mh-search-input {
-  flex: 1 1 auto;
-  border: 0;
+.search-input {
+  flex: 1;
+  border: none;
   background: transparent;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
   outline: none;
-  font-size: 14px;
-  color: var(--mh-text);
-  padding: 6px 6px;
+
+  &::placeholder {
+    color: #6b7280;
+  }
 }
 
-/* right controls */
-.meesho-header .mh-controls {
+.search-btn {
+  background: var(--header-text);
+  border: none;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #374151;
+  }
+}
+
+/* Header Right - Controls */
+.header-right {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
 }
 
-/* rounded red badge for cart */
-.meesho-header .mh-badge {
-  background: #ff3b30;
-  color: #fff;
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 999px;
-  margin-left: 4px;
+.nav-icon {
   position: relative;
-  top: -6px;
-}
+  padding: 0.5rem;
+  border-radius: 6px;
+  color: var(--header-text);
+  text-decoration: none;
+  transition: background-color 0.2s;
 
-/* ---------- user area (menu + button) ---------- */
-/* MASTER container: raised z-index to avoid accidental taps hitting underlying anchors */
-.mh-user {
-  position: relative;
-  z-index: 3200; /* raised so taps hit the user button, not overlapping elements */
-  display: inline-block;
-  -webkit-tap-highlight-color: transparent;
-
-  /* user button */
-  .mh-user-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: transparent;
-    border: 0;
-    padding: 6px 10px;
-    border-radius: var(--mh-radius-sm);
-    font-size: 14px;
-    cursor: pointer;
-    color: var(--mh-accent);
-    line-height: 1;
-    transition: background var(--mh-trans), transform var(--mh-trans);
-    position: relative;
-    z-index: 3300;
+  &:hover {
+    background: #f3f4f6;
   }
 
-  .mh-user-btn:focus { outline: none; box-shadow: 0 0 0 4px rgba(15,23,36,0.06); }
-
-  /* small avatar glyph */
-  .mh-user-btn i {
-    font-size: 16px;
-    width: 28px;
-    height: 28px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: #f1f5f9;
-    color: var(--mh-accent);
-    flex-shrink: 0;
-  }
-
-  .mh-username {
-    display: inline-block;
-    max-width: 110px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* caret (small triangle) */
-  .mh-user-btn::after {
-    content: "";
-    display: inline-block;
-    margin-left: 4px;
-    width: 8px;
-    height: 8px;
-    transform: rotate(45deg);
-    border-right: 2px solid transparent;
-    border-bottom: 2px solid transparent;
-    vertical-align: middle;
-    transition: transform var(--mh-trans);
-    background: transparent;
-  }
-
-  /* popped menu - hidden by default (also accessible via aria-hidden attr added in template) */
-  .mh-user-menu {
-    display: none;
+  .badge {
     position: absolute;
+    top: 0;
     right: 0;
-    top: calc(100% + 10px);
-    min-width: 200px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: var(--mh-shadow-lg);
-    border: 1px solid rgba(15,23,36,0.06);
-    padding: 8px;
-    list-style: none;
-    transform-origin: top right;
-    transform: translateY(-6px) scale(0.98);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--mh-trans) ease, transform var(--mh-trans) ease;
-  }
-
-  /* show menu when parent has .open */
-  &.open {
-    .mh-user-menu {
-      display: block;
-      transform: translateY(0) scale(1);
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .mh-user-btn::after {
-      transform: rotate(225deg);
-    }
-  }
-
-  /* menu items */
-  .mh-user-menu li {
-    padding: 6px 0;
-  }
-
-  .mh-user-menu a,
-  .mh-user-menu .link-like {
+    background: var(--badge-color);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border-radius: 10px;
-    text-decoration: none;
-    color: var(--mh-accent);
-    font-weight: 500;
-    font-size: 14px;
-    width: 100%;
-  }
-
-  .mh-user-menu a:hover,
-  .mh-user-menu .link-like:hover {
-    background: #f4f6f8;
-  }
-
-  /* icon in menu item */
-  .mh-user-menu i {
-    width: 28px;
-    height: 28px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    background: #fff;
-    border: 1px solid rgba(15,23,36,0.03);
-    flex-shrink: 0;
-  }
-
-  /* primary CTA (logout) */
-  .mh-user-menu .logout-btn {
-    color: #fff;
-    background: var(--mh-primary);
-    border-radius: 10px;
-    padding: 8px 12px;
     justify-content: center;
     font-weight: 600;
   }
 }
 
-/* small visual divider and profile summary at top of dropdown for admin */
-.mh-user .mh-user-menu .mh-profile {
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(255,111,97,0.04), rgba(255,111,97,0.02));
-  margin-bottom: 8px;
+/* User Menu */
+.user-menu {
+  position: relative;
+
+  &.open .user-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+.user-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--header-text);
+  transition: background-color 0.2s;
 
-.mh-user .mh-user-menu .mh-profile .mh-quick {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.mh-user .mh-user-menu .mh-profile .mh-quick .name {
-  font-weight: 700;
-  color: var(--mh-accent);
-  font-size: 14px;
-}
-
-.mh-user .mh-user-menu .mh-profile .mh-quick .role {
-  font-size: 12px;
-  color: var(--mh-muted);
-}
-
-/* ----------------------
-   Scrolled state (shrink)
-   ---------------------- */
-.meesho-header.scrolled {
-  padding-top: 4px;
-  padding-bottom: 4px;
-  box-shadow: var(--mh-shadow-sm);
-}
-
-.meesho-header.scrolled .mh-brand img {
-  height: 30px;
-}
-
-.meesho-header.scrolled .mh-search {
-  padding: 4px 6px;
-}
-
-/* ----------------------
-   Icon sizes & inheritance
-   ---------------------- */
-.mh-icon-btn i,
-.mf-item i,
-.mh-search-left i,
-.mh-user-btn i,
-.mh-user-menu i {
-  font-size: 18px;
-  line-height: 1;
-  display: inline-block;
-  width: 22px;
-  text-align: center;
-}
-
-/* ----------------------
-   Variant tweaks: guest / admin / customer
-   ---------------------- */
-.design-guest .mh-login {
-  border: 1px solid var(--mh-primary);
-  color: var(--mh-primary);
-  padding: 6px 8px;
-  border-radius: 8px;
-}
-
-.design-admin .mh-search { padding: 6px; }
-@media (min-width: 768px) {
-  .design-admin .mh-search-go { display: inline-block; }
-}
-
-.design-customer .mh-search-go { display: none; }
-
-/* ----------------------
-   Responsive adjustments (mobile-first)
-   ---------------------- */
-@media (min-width: 768px) {
-  .meesho-header .mh-search-go { display: inline-block; }
-  .meesho-header .mh-brand img { height: 40px; }
-}
-
-/* mobile tweaks */
-@media (max-width: 767px) {
-  .meesho-header { padding-left: 8px; padding-right: 8px; }
-  .meesho-header .mh-row { gap: 6px; }
-  .meesho-header .mh-brand img { height: 30px; }
-  .meesho-header .mh-promo { font-size: 12px; padding: 6px 8px; }
-  .meesho-header.scrolled .mh-brand img { height: 28px; }
-  .mh-search-input { font-size: 14px; }
-
-  /* mobile: make menu expand full-width below header for easier tap targets */
-  .mh-user .mh-user-menu {
-    left: 6px;
-    right: 6px;
-    top: calc(100% + 8px);
-    min-width: auto;
-    border-radius: 12px;
-    padding: 10px;
+  &:hover {
+    background: #f3f4f6;
   }
 
-  /* increase tappable area of username on small screens */
-  .mh-user .mh-user-btn { padding: 10px 12px; border-radius: 12px; }
+  .username {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .dropdown-arrow {
+    font-size: 0.75rem;
+    transition: transform 0.2s;
+  }
 }
 
-/* ----------------------
-   Focus states & accessibility
-   ---------------------- */
-.mh-search-input:focus { outline: none; box-shadow: none; }
-.mh-icon-btn:focus, .mh-user-btn:focus, .mh-close:focus {
-  outline: 2px solid rgba(0,0,0,0.06);
-  outline-offset: 2px;
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
   border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  min-width: 240px;
+  padding: 0.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  z-index: 1001;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
 }
 
-/* allow hover to open menu on desktop for convenience (non-invasive) */
-@media (hover: hover) {
-  .mh-user:hover .mh-user-menu { display: block; transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
-}
-
-/* ----------------------
-   Small helpers for menu contents (Dashboard + Logout styling)
-   ---------------------- */
-
-/* Replace the simple list with a more structured dropdown in template:
-   <ul class="mh-user-menu" [attr.aria-hidden]="!isUserMenuOpen">
-     <li class="mh-profile">
-       <div class="avatar"><i class="fas fa-user-circle"></i></div>
-       <div class="mh-quick">
-         <span class="name">PB</span>
-         <span class="role">Admin</span>
-       </div>
-     </li>
-     <li><a routerLink="/admin" (click)="closeUserMenu()"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-     <li><a routerLink="/admin/insights" (click)="closeUserMenu()"><i class="fas fa-chart-line"></i> Insights</a></li>
-     <li><button class="link-like logout-btn" (click)="logout(); closeUserMenu()"><i class="fas fa-sign-out-alt"></i> Logout</button></li>
-   </ul>
-*/
-
-/* ----------------------
-   Utilities
-   ---------------------- */
-.link-like {
-  background: transparent;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-}
-
-/* keep the overall header compact on wide screens */
-@media (min-width: 1200px) {
-  .meesho-header .mh-row { padding-left: 24px; padding-right: 24px; }
-}
-
-
-.mh-search-go {
-  background: #111827; /* black / deep gray */
-  color: #fff; /* white text */
-  border: none;
-  border-radius: 999px;
-  padding: 8px 18px;
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 0.3px;
-  cursor: pointer;
-  transition: background 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
-  box-shadow: 0 4px 10px rgba(17, 24, 39, 0.25); /* soft dark shadow */
-  display: inline-flex;
+.user-info {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  white-space: nowrap;
+  gap: 0.75rem;
+  padding: 0.75rem;
+
+  i {
+    font-size: 2rem;
+    color: #6b7280;
+  }
+
+  .user-details {
+    display: flex;
+    flex-direction: column;
+
+    strong {
+      font-size: 0.875rem;
+    }
+
+    .user-role {
+      font-size: 0.75rem;
+      color: #6b7280;
+      text-transform: capitalize;
+    }
+  }
 }
 
-/* Hover and Active states */
-.mh-search-go:hover {
-  background: #000; /* pure black on hover */
-  box-shadow: 0 5px 12px rgba(17, 24, 39, 0.35);
-  transform: translateY(-1px);
+.dropdown-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0.5rem 0;
 }
 
-.mh-search-go:active {
-  background: #222;
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(17, 24, 39, 0.25);
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  background: none;
+  text-decoration: none;
+  color: var(--header-text);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 0.875rem;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  i {
+    width: 16px;
+    text-align: center;
+  }
+
+  &.logout-btn {
+    color: #ef4444;
+
+    &:hover {
+      background: #fef2f2;
+    }
+  }
 }
 
-/* Focus ring for accessibility */
-.mh-search-go:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.3);
+.login-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #b91c1c;
+  }
+
+  .login-text {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
 }
 
-/* Compact version on mobile */
-@media (max-width: 767px) {
-  .mh-search-go {
-    padding: 6px 14px;
-    font-size: 13px;
-    box-shadow: none;
+/* Desktop Navigation */
+.desktop-nav {
+  border-top: 1px solid var(--header-border);
+  background: #f9fafb;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  padding: 0.75rem 0;
+}
+
+.nav-link {
+  color: var(--header-text);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--accent-color);
+  }
+
+  &.active {
+    color: var(--accent-color);
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -0.75rem;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-color);
+    }
+  }
+}
+
+/* Mobile Sidebar */
+.mobile-sidebar {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: white;
+  z-index: 2000;
+  transition: left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+
+  &.open {
+    left: 0;
+  }
+}
+
+.sidebar-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--header-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--header-text);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  i {
+    font-size: 2.5rem;
+    color: #6b7280;
+  }
+
+  .sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+
+    strong {
+      font-size: 0.875rem;
+    }
+
+    span {
+      font-size: 0.75rem;
+      color: #6b7280;
+      text-transform: capitalize;
+    }
+  }
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 0;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--header-text);
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  position: relative;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  i {
+    width: 20px;
+    text-align: center;
+  }
+
+  .sidebar-badge {
+    background: var(--badge-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+  }
+
+  &.logout-link {
+    color: #ef4444;
+
+    &:hover {
+      background: #fef2f2;
+    }
+  }
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0.5rem 1rem;
+}
+
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-top {
+    padding: 0.5rem 0;
+  }
+
+  .brand-logo img {
+    height: 28px;
+  }
+
+  .search-form {
+    margin: 0 0.5rem;
+  }
+
+  .search-input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .search-btn {
+    padding: 0.5rem 1rem;
+  }
+
+  .header-right {
+    gap: 0.5rem;
+  }
+
+  .user-btn .username {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-center {
+    display: none;
   }
 }

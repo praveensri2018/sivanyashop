@@ -14,6 +14,16 @@ async function getProductStock(productId) {
   return stockRepo.fetchProductStock(productId);
 }
 
+async function createInitialStockLedger({ productId, variantId, initialStock = 0, movementType = 'ADD' }) {
+  await stockRepo.insertStockLedger({ 
+    productId, 
+    variantId, 
+    quantity: initialStock, 
+    movementType 
+  });
+  console.log(`📦 Stock ledger created: Product ${productId}, Variant ${variantId}, Qty: ${initialStock}`);
+}
+
 async function checkAvailability(items = []) {
   const results = [];
 
@@ -67,5 +77,5 @@ async function checkAvailability(items = []) {
   return results;
 }
 
-module.exports = { adjustStock, getStockLedger, getProductStock ,
+module.exports = { adjustStock, getStockLedger, getProductStock ,createInitialStockLedger,
   checkAvailability };

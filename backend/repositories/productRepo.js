@@ -12,6 +12,30 @@ async function createCategory(name, parentCategoryId = null) {
   return result.recordset[0];
 }
 
+async function updateVariantStock(variantId, stockQty) {
+  const result = await query(
+    `UPDATE dbo.ProductVariants 
+     SET StockQty = @stockQty, UpdatedAt = SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time'
+     WHERE Id = @variantId`,
+    {
+      variantId: { type: sql.Int, value: variantId },
+      stockQty: { type: sql.Int, value: stockQty }
+    }
+  );
+  
+  // Return the updated variant
+  const updatedVariant = await query(
+    `SELECT Id, ProductId, SKU, VariantName, Attributes, StockQty, IsActive
+     FROM dbo.ProductVariants 
+     WHERE Id = @variantId`,
+    {
+      variantId: { type: sql.Int, value: variantId }
+    }
+  );
+  
+  return updatedVariant.recordset[0];
+}
+
 async function createProduct({ name, description, imagePath, createdById }) {
   const result = await query(
     'INSERT INTO dbo.Products (Name, Description, ImagePath, CreatedById) OUTPUT INSERTED.Id VALUES (@name, @description, @imagePath, @createdById)',
@@ -624,5 +648,5 @@ module.exports = {
   getCategoryIdsForProduct,
   getImagesForProduct,
   getVariantsForProduct,
-  getActivePricesForVariants,
+  getActivePricesForVariants,updateVariantStock
 };

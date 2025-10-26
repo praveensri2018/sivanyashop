@@ -1,17 +1,21 @@
-<!-- src/app/customer/order-history.component.html -->
 <div class="container mt-4">
   <div class="row">
     <div class="col-12">
-      <h2>Order History</h2>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ isAdmin ? 'All Orders' : 'My Orders' }}</h2>
+        <div class="text-muted">
+          Total: {{ totalOrders }} orders
+        </div>
+      </div>
       
       <!-- Filters -->
       <div class="card mb-4">
         <div class="card-body">
-          <div class="row">
-            <div class="col-md-6">
-              <label class="form-label">Filter by Status</label>
-              <select class="form-select" [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
-                <option value="">All Orders</option>
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Order Status</label>
+              <select class="form-select" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+                <option value="">All Statuses</option>
                 <option value="PENDING">Pending</option>
                 <option value="CONFIRMED">Confirmed</option>
                 <option value="PROCESSING">Processing</option>
@@ -20,70 +24,139 @@
                 <option value="CANCELLED">Cancelled</option>
               </select>
             </div>
+            
+            <div class="col-md-3">
+              <label class="form-label">Payment Status</label>
+              <select class="form-select" [(ngModel)]="paymentStatusFilter" (change)="onFilterChange()">
+                <option value="">All Payment Statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="PAID">Paid</option>
+                <option value="FAILED">Failed</option>
+                <option value="REFUNDED">Refunded</option>
+                <option value="PARTIALLY_REFUNDED">Partially Refunded</option>
+              </select>
+            </div>
+
+            <!-- Admin only filter -->
+            <div class="col-md-3" *ngIf="isAdmin">
+              <label class="form-label">User ID</label>
+              <input type="number" class="form-control" [(ngModel)]="userIdFilter" 
+                     placeholder="Filter by User ID" (input)="onFilterChange()">
+            </div>
+            
+            <div class="col-md-3 d-flex align-items-end">
+              <button class="btn btn-outline-secondary w-100" (click)="loadOrders()" [disabled]="loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Loading -->
-      <div *ngIf="loading" class="text-center">
-        <div class="spinner-border" role="status">
+      <div *ngIf="loading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
+        <p class="mt-2 text-muted">Loading orders...</p>
       </div>
 
-      <!-- Orders List -->
-      <div *ngIf="!loading && orders.length === 0" class="text-center py-5">
-        <h4>No orders found</h4>
-        <p>You haven't placed any orders yet.</p>
-        <a routerLink="/shop" class="btn btn-primary">Start Shopping</a>
-      </div>
-
-      <div *ngIf="!loading && orders.length > 0">
-        <div class="card mb-3" *ngFor="let order of orders">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-              <strong>Order #{{order.orderNumber}}</strong>
-              <span class="badge ms-2" [ngClass]="getStatusClass(order.status)">
-                {{order.status}}
-              </span>
-            </div>
-            <div>
-              <small class="text-muted">{{order.createdAt | date:'medium'}}</small>
-              <a [routerLink]="['/order', order.id]" class="btn btn-sm btn-outline-primary ms-2">
-                View Details
-              </a>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6">
-                <p class="mb-1"><strong>Total Amount: ₹{{order.totalAmount}}</strong></p>
-                <p class="text-muted mb-0">{{order.itemsCount}} item(s)</p>
-              </div>
-              <div class="col-md-6 text-end">
-                <div *ngIf="order.status === 'DELIVERED'" class="mt-2">
-                  <button class="btn btn-sm btn-warning" 
-                          [routerLink]="['/order', order.id, 'refund']">
-                    Request Refund
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+       <!-- Orders List -->
+      <div *ngIf="!loading">
+        <div *ngIf="orders.length === 0" class="alert alert-info text-center">
+          <i class="fas fa-box-open fa-2x mb-3 text-muted"></i>
+          <h5>No orders found</h5>
+          <p *ngIf="!isAdmin">You haven't placed any orders yet.</p>
+          <p *ngIf="isAdmin">No orders match your filters.</p>
+          <a *ngIf="!isAdmin" routerLink="/" class="btn btn-primary mt-2">Start Shopping</a>
         </div>
 
+<div *ngFor="let order of orders" class="card mb-3 order-card">
+  <div class="card-body">
+    <div class="row align-items-center">
+      <div class="col-md-3">
+        <div class="d-flex align-items-center">
+          <div class="order-icon me-3">
+            <i class="fas fa-box text-primary"></i>
+          </div>
+          <div>
+            <strong class="d-block">#{{ getOrderNumber(order) }}</strong>
+            <small class="text-muted">
+              {{ getCreatedAt(order) | date:'medium' }}
+            </small>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-2">
+        <span class="badge" [ngClass]="getStatusBadgeClass(getStatus(order))">
+          {{ getStatus(order) }}
+        </span>
+      </div>
+      
+      <div class="col-md-2">
+        <span class="badge" [ngClass]="getPaymentStatusBadgeClass(getPaymentStatus(order))">
+          {{ getPaymentStatus(order) }}
+        </span>
+      </div>
+      
+      <div class="col-md-2">
+        <strong class="text-success">₹{{ getTotalAmount(order) | number }}</strong>
+        <div class="text-muted small">
+          {{ getItemsCount(order) }} items
+        </div>
+      </div>
+      
+      <div class="col-md-3 text-end">
+        <a [routerLink]="['/order-details', getOrderId(order)]" 
+           class="btn btn-outline-primary btn-sm me-2">
+          <i class="fas fa-eye me-1"></i>Details
+        </a>
+        
+        <button *ngIf="getPaymentStatus(order) === 'FAILED'"
+                class="btn btn-warning btn-sm me-2"
+                (click)="retryPayment(order)">
+          <i class="fas fa-redo me-1"></i>Retry Payment
+        </button>
+
+        <button *ngIf="getStatus(order) === 'DELIVERED'"
+                class="btn btn-outline-info btn-sm"
+                [routerLink]="['/refund', getOrderId(order)]">
+          <i class="fas fa-undo me-1"></i>Refund
+        </button>
+      </div>
+    </div>
+    
+    <!-- Admin only user info -->
+    <div *ngIf="isAdmin && order.user" class="mt-2 pt-2 border-top">
+      <small class="text-muted">
+        <i class="fas fa-user me-1"></i>
+        Customer: {{ order.user.name }} ({{ order.user.email }})
+      </small>
+    </div>
+  </div>
+</div>
+
         <!-- Pagination -->
-        <nav *ngIf="totalPages > 1">
+        <nav *ngIf="totalPages > 1" aria-label="Order pagination">
           <ul class="pagination justify-content-center">
             <li class="page-item" [class.disabled]="page === 1">
-              <a class="page-link" (click)="onPageChange(page - 1)">Previous</a>
+              <button class="page-link" (click)="onPageChange(page - 1)" [disabled]="page === 1">
+                <i class="fas fa-chevron-left"></i> Previous
+              </button>
             </li>
-            <li *ngFor="let p of [].constructor(totalPages); let i = index" 
-                class="page-item" [class.active]="page === i + 1">
-              <a class="page-link" (click)="onPageChange(i + 1)">{{i + 1}}</a>
+            
+            <li *ngFor="let p of getPages()" 
+                class="page-item" 
+                [class.active]="page === p">
+              <button class="page-link" (click)="onPageChange(p)">{{ p }}</button>
             </li>
+            
             <li class="page-item" [class.disabled]="page === totalPages">
-              <a class="page-link" (click)="onPageChange(page + 1)">Next</a>
+              <button class="page-link" (click)="onPageChange(page + 1)" [disabled]="page === totalPages">
+                Next <i class="fas fa-chevron-right"></i>
+              </button>
             </li>
           </ul>
         </nav>

@@ -14,8 +14,12 @@ import { CategoryManagementComponent } from './admin/category-management.compone
 import { ProductListComponent } from './admin/product-list.component';
 import { AdminRetailerListComponent } from './admin/retailer-list.component';
 import { RegisterComponent } from './auth/register.component';
-import { OrderConfirmationComponent } from './order-confirmation/order-confirmation.component'; // Add this import
+import { OrderConfirmationComponent } from './order-confirmation/order-confirmation.component';
 import { ShippingAddressComponent } from './checkout/shipping-address.component';
+import { OrderHistoryComponent } from './customer/order-history.component';
+import { PaymentHistoryComponent } from './payments/payment-history.component';
+import { OrderDetailsComponent } from './order-details/order-details.component'; // Add this import
+import { AdminOrderManagementComponent } from './admin/order-management.component';
 
 export const routes: Routes = [
   { path: '', component: ShopComponent, canActivate: [PublicRedirectGuard] },
@@ -34,5 +38,9 @@ export const routes: Routes = [
   { path: 'checkout', component: CartComponent, canActivate: [RoleGuard], data: { roles: ['customer','retailer'] } },
   { path: 'order-confirmation/:id', component: OrderConfirmationComponent, canActivate: [RoleGuard], data: { roles: ['customer','retailer'] } },
   { path: 'order-confirmation', component: OrderConfirmationComponent, canActivate: [RoleGuard], data: { roles: ['customer','retailer'] } },
+  { path: 'orders', component: OrderHistoryComponent, canActivate: [RoleGuard], data: { roles: ['customer', 'admin', 'retailer'] } },
+  { path: 'payment-history', component: PaymentHistoryComponent, canActivate: [RoleGuard], data: { roles: ['customer', 'admin', 'retailer'] } },
+  { path: 'order-details/:id', component: OrderDetailsComponent, canActivate: [RoleGuard], data: { roles: ['customer', 'admin', 'retailer'] } },
+  { path: 'admin/orders', component: AdminOrderManagementComponent,  canActivate: [RoleGuard],  data: { roles: ['admin'] } },
   { path: '**', redirectTo: '' }
 ];

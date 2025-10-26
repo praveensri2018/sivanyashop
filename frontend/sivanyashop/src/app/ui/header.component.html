@@ -1,105 +1,167 @@
-<!-- Place file at: src/app/ui/header.component.html
-     REPLACE existing file. Uses Font Awesome icons (free). -->
+<!-- FILE: src/app/ui/header.component.html
+     REPLACE the existing file at src/app/ui/header.component.html with this content.
+     (This adds an Admin "Dashboard" link in desktop nav and ensures consistency with mobile sidebar.)
+-->
+<header class="meesho-header" [class.scrolled]="isScrolled" [class.mobile-menu-open]="isMobileMenuOpen">
+  <!-- Top Bar -->
+  <div class="header-top">
+    <div class="container">
+      <div class="header-row">
+        <!-- Left: Hamburger Menu & Brand -->
+        <div class="header-left">
+          <!-- Hamburger Menu Button -->
+          <button class="hamburger-btn" (click)="toggleMobileMenu()" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+          </button>
 
-<!-- Guest -->
-<header *ngIf="designVariant === 'guest'" class="meesho-header design-guest" [class.scrolled]="isScrolled">
-  <div class="mh-row">
-    
-    <a routerLink="/" class="mh-brand" aria-label="home"><img src="/assets/logo.png" alt="logo" /></a>
+          <!-- Brand Logo -->
+          <a [routerLink]="getHomeRoute()" class="brand-logo">
+            <img src="/assets/logo.png" alt="Sivanuya Trends Tops" />
+          </a>
+        </div>
 
-    <form class="mh-search" (ngSubmit)="onSearch()" role="search">
-      <input type="search" name="q" [(ngModel)]="query" placeholder="Search products, brands and more"
-        class="mh-search-input" (input)="onInput($event)" autocomplete="off" />
-      <button class="mh-search-go" type="submit">Go</button>
-    </form>
+        <!-- Center: Search Bar -->
+        <div class="header-center">
+          <form class="search-form" (ngSubmit)="onSearch()" role="search">
+            <input type="search" name="q" [(ngModel)]="query" [placeholder]="getSearchPlaceholder()"
+                   class="search-input" (input)="onInput($event)" autocomplete="off" />
+            <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+          </form>
+        </div>
 
-    <div class="mh-controls">
-      <a routerLink="/login" class="mh-icon-btn" aria-label="login">
-        <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
-      </a>
-    </div>
-  </div>
-</header>
+        <!-- Right: Controls -->
+        <div class="header-right">
+          <!-- Cart Icon -->
+          <a *ngIf="role !== 'admin'" routerLink="/cart" class="nav-icon cart-icon" aria-label="Cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="badge" *ngIf="(cartCount$ | async) as cartCount">{{ cartCount > 0 ? cartCount : '' }}</span>
+          </a>
 
-<!-- Admin -->
-<header *ngIf="designVariant === 'admin'" class="meesho-header design-admin" [class.scrolled]="isScrolled">
-  <div class="mh-row">
-
-    <a routerLink="/admin" class="mh-brand" aria-label="admin"><img src="/assets/logo.png" alt="admin" /></a>
-
-    <form class="mh-search" (ngSubmit)="onSearch()" role="search">
-      <input type="search" name="q" [(ngModel)]="query" placeholder="Search orders, users, SKUs" class="mh-search-input"
-        (input)="onInput($event)" autocomplete="off" />
-      <button class="mh-search-go" type="submit">Go</button>
-    </form>
-
-    <div class="mh-controls">
-  
-      <!-- USER MENU (admin) -->
-      <div class="mh-user" [class.open]="isUserMenuOpen">
-        <button class="mh-user-btn" type="button" aria-haspopup="true" [attr.aria-expanded]="isUserMenuOpen"
-          (click)="toggleUserMenu($event)" (touchend)="$event.preventDefault(); toggleUserMenu($event)">
-          <i class="fas fa-user-shield" aria-hidden="true"></i>
-          <span class="mh-username">{{ currentUser?.name || 'Admin' }}</span>
-        </button>
-
-        <!-- keep in DOM but hide/show with .open and aria-hidden -->
-        <ul class="mh-user-menu" [attr.aria-hidden]="!isUserMenuOpen">
-          <li><a routerLink="/admin" (click)="closeUserMenu()">Dashboard</a></li>
-          <li><button class="link-like" (click)="logout(); closeUserMenu()">Logout</button></li>
-        </ul>
+          <!-- Login Button (for guests) -->
+          <a *ngIf="!role" routerLink="/login" class="login-btn">
+            <i class="fas fa-sign-in-alt"></i>
+            <span class="login-text">Login</span>
+          </a>
+        </div>
       </div>
     </div>
   </div>
-</header>
 
-<!-- Customer / Retailer -->
-<header *ngIf="designVariant === 'customer'" class="meesho-header design-customer" [class.scrolled]="isScrolled">
-  <div class="mh-row">
+  <!-- Desktop Navigation -->
+  <nav class="desktop-nav" *ngIf="role">
+    <div class="container">
+      <div class="nav-links">
+        <a routerLink="/" class="nav-link" routerLinkActive="active">Home</a>
+         <!-- Admin Navigation: NOTE: Added Dashboard link first -->
+        <ng-container *ngIf="role === 'admin'">
+          <!-- PLACE: Admin dashboard link (visible to admin on desktop nav) -->
+          <a routerLink="/admin" class="nav-link" routerLinkActive="active">Dashboard</a>
 
+          <a routerLink="/admin/orders" class="nav-link" routerLinkActive="active">Orders</a>
+          <a routerLink="/admin/products" class="nav-link" routerLinkActive="active">Products</a>
+          <a routerLink="/admin/retailers" class="nav-link" routerLinkActive="active">Retailers</a>
+          <a routerLink="/payment-history" class="nav-link" routerLinkActive="active">Payments</a>
+        </ng-container>
 
-    <a routerLink="/" class="mh-brand" aria-label="home"><img src="/assets/logo.png" alt="logo" /></a>
+        <!-- Customer Navigation -->
+        <ng-container *ngIf="role === 'customer'">
+          <a routerLink="/orders" class="nav-link" routerLinkActive="active">My Orders</a>
+          <a routerLink="/payment-history" class="nav-link" routerLinkActive="active">Payments</a>
+        </ng-container>
 
-    <form class="mh-search" (ngSubmit)="onSearch()" role="search">
-     
-      <input type="search" name="q" [(ngModel)]="query" placeholder="Search for products, brands and more"
-        class="mh-search-input" (input)="onInput($event)" autocomplete="off" />
-      <button class="mh-search-go" type="submit">Go</button>
-    </form>
-
-    <div class="mh-controls">
-      <a routerLink="/cart" class="mh-icon-btn" aria-label="cart">
-        <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-        <span class="mh-badge" *ngIf="(cartCount$ | async) as c">{{ c }}</span>
-      </a>
-
-      <!-- USER MENU (customer/retailer) -->
-      <div class="mh-user" [class.open]="isUserMenuOpen">
-        <button class="mh-user-btn" type="button" aria-haspopup="true" [attr.aria-expanded]="isUserMenuOpen"
-          (click)="toggleUserMenu($event)" (touchend)="$event.preventDefault(); toggleUserMenu($event)">
-          <i class="fas fa-user" aria-hidden="true"></i>
-          <span class="mh-username">{{ currentUser?.name || 'Account' }}</span>
-        </button>
-
-        <ul class="mh-user-menu" [attr.aria-hidden]="!isUserMenuOpen">
-          <li *ngIf="role === 'admin'"><a routerLink="/admin" (click)="closeUserMenu()">Admin Panel</a></li>
-          <li *ngIf="role === 'retailer'"><a routerLink="/retailer" (click)="closeUserMenu()">Retailer</a></li>
-          <li *ngIf="role === 'customer'"><a routerLink="/orders" (click)="closeUserMenu()">My Orders</a></li>
-          <li><button class="link-like" (click)="logout(); closeUserMenu()">Logout</button></li>
-        </ul>
+        <!-- Retailer Navigation -->
+        <ng-container *ngIf="role === 'retailer'">
+          <a routerLink="/retailer" class="nav-link" routerLinkActive="active">Dashboard</a>
+          <a routerLink="/orders" class="nav-link" routerLinkActive="active">Orders</a>
+        </ng-container>
       </div>
-
-      <a *ngIf="!role" routerLink="/login" class="mh-login">Login</a>
     </div>
-  </div>
-
-  <div class="mh-cats-panel" *ngIf="mobileCatsVisible">
-    <div class="mh-cats-head d-flex">
-      <strong>Categories</strong>
-      <button class="mh-close" (click)="toggleMobileCategories()">Close</button>
-    </div>
-    <ul class="mh-cats-list">
-      <li *ngFor="let c of categories"><a href="#">{{ c }}</a></li>
-    </ul>
-  </div>
+  </nav>
 </header>
+
+<!-- Mobile Sidebar Menu (unchanged links but ensures Dashboard is present for admin) -->
+<div class="mobile-sidebar" [class.open]="isMobileMenuOpen">
+  <div class="sidebar-header">
+    <button class="close-btn" (click)="toggleMobileMenu()" aria-label="Close menu">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="sidebar-user" *ngIf="currentUser">
+      <i class="fas fa-user-circle"></i>
+      <div class="sidebar-user-info">
+        <strong>{{ currentUser.name }}</strong>
+        <span>{{ getRoleDisplayName() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a routerLink="/" class="sidebar-link" (click)="toggleMobileMenu()">
+      <i class="fas fa-home"></i><span>Home</span>
+    </a>
+    <!-- Admin Links -->
+    <ng-container *ngIf="role === 'admin'">
+      <!-- PLACE: Admin dashboard link (mobile sidebar already had dashboard in previous snippet but keep for safety) -->
+      <a routerLink="/admin" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+      </a>
+      <a routerLink="/admin/orders" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-shopping-bag"></i><span>Orders</span>
+      </a>
+      <a routerLink="/admin/products" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-box"></i><span>Products</span>
+      </a>
+      <a routerLink="/admin/retailers" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-users"></i><span>Retailers</span>
+      </a>
+    </ng-container>
+
+    <!-- (rest unchanged) -->
+    <ng-container *ngIf="role === 'customer'">
+      <a routerLink="/dashboard" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+      </a>
+      <a routerLink="/orders" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-history"></i><span>My Orders</span>
+      </a>
+    </ng-container>
+
+    <ng-container *ngIf="role === 'retailer'">
+      <a routerLink="/retailer" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+      </a>
+      <a routerLink="/orders" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-shopping-bag"></i><span>Orders</span>
+      </a>
+    </ng-container>
+
+    <a routerLink="/payment-history" class="sidebar-link" (click)="toggleMobileMenu()">
+      <i class="fas fa-credit-card"></i><span>Payments</span>
+    </a>
+
+    <a routerLink="/cart" class="sidebar-link" (click)="toggleMobileMenu()" *ngIf="role !== 'admin'">
+      <i class="fas fa-shopping-cart"></i><span>Cart</span>
+      <span class="sidebar-badge" *ngIf="(cartCount$ | async) as cartCount">{{ cartCount > 0 ? cartCount : '' }}</span>
+    </a>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Auth Links -->
+    <ng-container *ngIf="role; else guestLinks">
+      <button class="sidebar-link logout-link" (click)="handleLogout()">
+        <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+      </button>
+    </ng-container>
+
+    <ng-template #guestLinks>
+      <a routerLink="/login" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-sign-in-alt"></i><span>Login</span>
+      </a>
+      <a routerLink="/register" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-user-plus"></i><span>Register</span>
+      </a>
+    </ng-template>
+  </nav>
+</div>
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-overlay" [class.active]="isMobileMenuOpen" (click)="toggleMobileMenu()"></div>

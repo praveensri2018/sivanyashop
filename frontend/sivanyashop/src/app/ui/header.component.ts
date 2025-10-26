@@ -39,6 +39,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
     'Party dress'
   ];
   filteredSuggestions: string[] = [];
+// Add these methods to your existing header.component.ts
+
+handleTouchEnd(event: TouchEvent): void {
+  event.preventDefault();
+  this.toggleUserMenu(event);
+}
+
+handleLogout(): void {
+  this.logout();
+  this.closeUserMenu();
+  if (this.isMobileMenuOpen) {
+    this.toggleMobileMenu();
+  }
+}
+
 
   categories = ['Women', 'Men', 'Kids', 'Home', 'Accessories', 'Beauty'];
   mobileCatsVisible = false;
@@ -218,4 +233,47 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.closeUserMenu();
     this.router.navigate(['/']);
   }
+
+  
+isMobileMenuOpen = false;
+
+toggleMobileMenu(): void {
+  this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  // Close user menu when mobile menu opens
+  if (this.isMobileMenuOpen) {
+    this.isUserMenuOpen = false;
+  }
+}
+
+
+getHomeRoute(): string {
+  return this.role === 'admin' ? '/admin' : '/';
+}
+
+getDashboardRoute(): string {
+  switch (this.role) {
+    case 'admin': return '/admin';
+    case 'retailer': return '/retailer';
+    case 'customer': return '/dashboard';
+    default: return '/login';
+  }
+}
+
+getSearchPlaceholder(): string {
+  switch (this.role) {
+    case 'admin': return 'Search orders, users, SKUs...';
+    case 'retailer': return 'Search products, orders...';
+    default: return 'Search products, brands and more...';
+  }
+}
+
+getRoleDisplayName(): string {
+  switch (this.role) {
+    case 'admin': return 'Administrator';
+    case 'retailer': return 'Retailer';
+    case 'customer': return 'Customer';
+    default: return 'Guest';
+  }
+}
+
 }

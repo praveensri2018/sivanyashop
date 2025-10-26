@@ -125,14 +125,14 @@ async function getOrdersByUser(userId, options = {}) {
 
   const result = await query(`
     SELECT 
-      o.Id, o.OrderNumber, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
+      o.Id, o.Id OrderNumber, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
       COUNT(oi.Id) as ItemsCount,
       ua.AddressLine1, ua.City, ua.State
     FROM dbo.Orders o
     LEFT JOIN dbo.OrderItems oi ON o.Id = oi.OrderId
     LEFT JOIN dbo.UserAddresses ua ON o.ShippingAddressId = ua.Id
     ${whereClause}
-    GROUP BY o.Id, o.OrderNumber, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
+    GROUP BY o.Id,  o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
              ua.AddressLine1, ua.City, ua.State
     ORDER BY o.CreatedAt DESC
     OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
@@ -311,7 +311,7 @@ async function getAdminOrders(filters = {}) {
 
   const result = await query(`
     SELECT 
-      o.Id, o.OrderNumber, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
+      o.Id, o.Id OrderNumber, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
       u.Name as UserName, u.Email as UserEmail,
       COUNT(oi.Id) as ItemsCount
     FROM dbo.Orders o
@@ -319,7 +319,7 @@ async function getAdminOrders(filters = {}) {
     LEFT JOIN dbo.OrderItems oi ON o.Id = oi.OrderId
     LEFT JOIN dbo.Products p ON oi.ProductId = p.Id
     ${whereClause}
-    GROUP BY o.Id, o.OrderNumber, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
+    GROUP BY o.Id,  o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
              u.Name, u.Email
     ORDER BY o.CreatedAt DESC
   `, params);
@@ -366,7 +366,7 @@ async function getRetailerOrders(retailerId, filters = {}) {
 
   const result = await query(`
     SELECT 
-      o.Id, o.OrderNumber, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
+      o.Id, o.Id OrderNumber, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
       u.Name as UserName, u.Email as UserEmail,
       COUNT(DISTINCT oi.Id) as ItemsCount
     FROM dbo.Orders o
@@ -374,7 +374,7 @@ async function getRetailerOrders(retailerId, filters = {}) {
     INNER JOIN dbo.Products p ON oi.ProductId = p.Id
     INNER JOIN dbo.Users u ON o.UserId = u.Id
     ${whereClause}
-    GROUP BY o.Id, o.OrderNumber, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
+    GROUP BY o.Id, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
              u.Name, u.Email
     ORDER BY o.CreatedAt DESC
   `, params);
@@ -396,7 +396,7 @@ async function getRefundRequests(filters = {}) {
   const result = await query(`
     SELECT 
       rr.*,
-      o.OrderNumber, o.TotalAmount,
+      o.id OrderNumber, o.TotalAmount,
       u.Name as UserName, u.Email as UserEmail
     FROM dbo.RefundRequests rr
     INNER JOIN dbo.Orders o ON rr.OrderId = o.Id

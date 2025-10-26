@@ -4,6 +4,8 @@
 const orderRepo = require('../repositories/orderRepo');
 const cartRepo = require('../repositories/cartRepo');
 
+const { query, sql } = require('../lib/db');
+
 async function createOrderFromCart({ userId, retailerId, shippingAddressId, cartItems = [], paymentGatewayOrderId, paymentGatewayPaymentId }) {
   // Defensive: ensure cartItems is array
   const items = Array.isArray(cartItems) ? cartItems : [];
@@ -106,23 +108,6 @@ async function clearUserCart(userId) {
 }
 
 
-async function getUserOrderHistory(userId, filters = {}) {
-  const { page, limit, status } = filters;
-  const offset = (page - 1) * limit;
-  
-  const result = await orderRepo.getOrdersByUser(userId, { offset, limit, status });
-  
-  return {
-    orders: result.orders,
-    pagination: {
-      page: parseInt(page),
-      limit: parseInt(limit),
-      total: result.total,
-      totalPages: Math.ceil(result.total / limit)
-    }
-  };
-}
-
 async function getOrderWithDetails(orderId, userId, userRole) {
   let order;
   
@@ -210,12 +195,132 @@ async function confirmOrder(orderId, userId, userRole) {
   };
 }
 
+// Add these functions to your existing orderService.js
+
+async function getUserOrderHistory(userId, options = {}) {
+  const { page = 1, limit = 10, status, paymentStatus } = options;
+  const offset = (page - 1) * limit;
+  
+  let whereClause = 'WHERE o.UserId = @userId';
+  const params = {
+    userId: { type: sql.Int, value: userId },
+    offset: { type: sql.Int, value: offset },
+    limit: { type: sql.Int, value: limit }
+  };
+
+  if (status) {
+    whereClause += ' AND o.Status = @status';
+    params.status = { type: sql.NVarChar, value: status };
+  }
+  
+  if (paymentStatus) {
+    whereClause += ' AND o.PaymentStatus = @paymentStatus';
+    params.paymentStatus = { type: sql.NVarChar, value: paymentStatus };
+  }
+
+  const result = await query(`
+    SELECT 
+      o.Id, o.Id, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
+      COUNT(*) OVER() as TotalCount,
+      (SELECT COUNT(*) FROM dbo.OrderItems WHERE OrderId = o.Id) as ItemsCount
+    FROM dbo.Orders o
+    ${whereClause}
+    ORDER BY o.CreatedAt DESC
+    OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
+  `, params);
+
+  const total = result.recordset[0]?.TotalCount || 0;
+  
+  return {
+    orders: result.recordset.map(order => ({
+      id: order.Id,
+      orderNumber: order.OrderNumber,
+      status: order.Status,
+      paymentStatus: order.PaymentStatus,
+      totalAmount: order.TotalAmount,
+      createdAt: order.CreatedAt,
+      itemsCount: order.ItemsCount
+    })),
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
+}
+
+async function getAdminOrderHistory(options = {}) {
+  const { page = 1, limit = 10, status, paymentStatus, userId } = options;
+  const offset = (page - 1) * limit;
+  
+  let whereClause = 'WHERE 1=1';
+  const params = {
+    offset: { type: sql.Int, value: offset },
+    limit: { type: sql.Int, value: limit }
+  };
+
+  if (status) {
+    whereClause += ' AND o.Status = @status';
+    params.status = { type: sql.NVarChar, value: status };
+  }
+  
+  if (paymentStatus) {
+    whereClause += ' AND o.PaymentStatus = @paymentStatus';
+    params.paymentStatus = { type: sql.NVarChar, value: paymentStatus };
+  }
+  
+  if (userId) {
+    whereClause += ' AND o.UserId = @userId';
+    params.userId = { type: sql.Int, value: userId };
+  }
+
+  const result = await query(`
+    SELECT 
+      o.Id, o.id OrderNumber, o.Status, o.PaymentStatus, o.TotalAmount, o.CreatedAt,
+      u.Id as UserId, u.Name as UserName, u.Email as UserEmail,
+      COUNT(*) OVER() as TotalCount,
+      (SELECT COUNT(*) FROM dbo.OrderItems WHERE OrderId = o.Id) as ItemsCount
+    FROM dbo.Orders o
+    LEFT JOIN dbo.Users u ON o.UserId = u.Id
+    ${whereClause}
+    ORDER BY o.CreatedAt DESC
+    OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
+  `, params);
+
+  const total = result.recordset[0]?.TotalCount || 0;
+  
+  return {
+    orders: result.recordset.map(order => ({
+      id: order.Id,
+      orderNumber: order.OrderNumber,
+      status: order.Status,
+      paymentStatus: order.PaymentStatus,
+      totalAmount: order.TotalAmount,
+      createdAt: order.CreatedAt,
+      itemsCount: order.ItemsCount,
+      user: {
+        id: order.UserId,
+        name: order.UserName,
+        email: order.UserEmail
+      }
+    })),
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
+}
+
+
 module.exports = {
   createOrderFromCart,
   createFailedOrder,
   createPaymentRecord,
   updateStockForOrder,
   clearUserCart,
-  getUserOrderHistory,getOrderWithDetails,updateOrderStatus,requestRefund,confirmOrder
+  getUserOrderHistory,getOrderWithDetails,updateOrderStatus,requestRefund,confirmOrder,getAdminOrderHistory
 
 };

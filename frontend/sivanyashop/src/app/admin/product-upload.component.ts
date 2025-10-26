@@ -81,10 +81,10 @@ export class ProductUploadComponent implements OnInit {
 });
   }
 
-
   goBack() {
   this.router.navigate(['/admin/products']);
 }
+
   /* --------- categories --------- */
   loadCategories() {
     this.ps.fetchCategories().subscribe({
@@ -125,10 +125,8 @@ export class ProductUploadComponent implements OnInit {
   removeVariantRow(index: number) {
   const v = this.variants[index];
   if (v?.id) {
-    // mark variant for deletion on save
     this.removedVariantIds.push(v.id);
   }
-  // just remove from UI now
   this.variants.splice(index, 1);
 }
 
@@ -147,7 +145,6 @@ private deleteRemovedVariants(): Promise<void> {
       }
       const id = ids[i];
 
-      // Choose between delete or deactivate endpoint
       if ((this.ps as any).deleteVariant) {
         (this.ps as any).deleteVariant(id).subscribe({
           next: () => {
@@ -156,7 +153,6 @@ private deleteRemovedVariants(): Promise<void> {
           },
           error: (err: any) => {
             console.error('❌ deleteVariant error', err);
-            // fallback to deactivate if available
             if ((this.ps as any).deactivateVariant) {
               (this.ps as any).deactivateVariant(id).subscribe({
                 next: () => {
@@ -285,7 +281,6 @@ private deleteRemovedVariants(): Promise<void> {
         });
 
         if (this.variants.length === 0) this.addVariantRow();
-        //alert('✅ Product loaded for edit (ID: ' + this.createdProductId + ')');
       },
       error: (err: any) => {
         console.error('fetchProduct error', err);
@@ -322,7 +317,8 @@ private deleteRemovedVariants(): Promise<void> {
       }
 
       await this.processAllVariants(productId!);
-await this.deleteRemovedVariants();
+      await this.deleteRemovedVariants();
+      
       this.processing = false;
       alert('✅ Product saved successfully.');
     } catch (err: any) {
@@ -356,7 +352,6 @@ await this.deleteRemovedVariants();
       if (i >= this.variants.length) { resolve(); return; }
       const v = this.variants[i];
 
-      // NEW: treat a row as empty only if SKU and variantName and both prices are empty/null AND stockQty is null/undefined/NaN
       const isStockEmpty = v.stockQty === null || v.stockQty === undefined || Number.isNaN(Number(v.stockQty));
       const empty = (!v.sku || v.sku.toString().trim() === '') &&
                     (!v.variantName || v.variantName.toString().trim() === '') &&
@@ -367,29 +362,59 @@ await this.deleteRemovedVariants();
       if (empty) { seq(i + 1); return; }
 
       if (v.id) {
-        // If we have an id, call updateVariant (new service method)
-        const payload = { productId, sku: v.sku, variantName: v.variantName, attributes: v.attributes, stockQty: Number(v.stockQty || 0) };
+  const payloadForMeta = { // do NOT set stockQty here
+    sku: v.sku,
+    variantName: v.variantName,
+    attributes: v.attributes,
+    // no stockQty
+  };
 
-        if ((this.ps as any).updateVariant) {
-          (this.ps as any).updateVariant(v.id, payload).subscribe({
-            next: () => this.setTwoPricesThenNext(v, seq, i),
-            error: (err: any) => { console.error('updateVariant error', err); this.setTwoPricesThenNext(v, seq, i); }
-          });
-        } else {
-          // fallback (shouldn't normally run if service is implemented)
-          this.ps.addVariant({ ...payload, id: v.id }).subscribe({
-            next: () => this.setTwoPricesThenNext(v, seq, i),
-            error: (err: any) => { console.error('addVariant (fallback) error', err); this.setTwoPricesThenNext(v, seq, i); }
-          });
-        }
+  // 1) Update metadata first (or after) — but do NOT set StockQty here
+  // 2) Call the stock endpoint that will compute previousQty -> insert ledger -> update variant
+  this.updateVariantStockLedger(v.id!, Number(v.stockQty || 0))
+    .then(() => {
+      // Now update other fields (meta/prices)
+      if ((this.ps as any).updateVariant) {
+        (this.ps as any).updateVariant(v.id, payloadForMeta).subscribe({
+          next: () => this.setTwoPricesThenNext(v, seq, i),
+          error: () => this.setTwoPricesThenNext(v, seq, i)
+        });
       } else {
-        // create new variant
-        const payload = { productId, sku: v.sku, variantName: v.variantName, attributes: v.attributes, stockQty: Number(v.stockQty || 0) };
+        this.setTwoPricesThenNext(v, seq, i);
+      }
+    })
+    .catch(() => {
+      // continue even on ledger failure
+      if ((this.ps as any).updateVariant) {
+        (this.ps as any).updateVariant(v.id, payloadForMeta).subscribe({
+          next: () => this.setTwoPricesThenNext(v, seq, i),
+          error: () => this.setTwoPricesThenNext(v, seq, i)
+        });
+      } else this.setTwoPricesThenNext(v, seq, i);
+    });
+}else {
+        // ✅ UPDATED: Create new variant and update stock ledger
+        const payload = { 
+          productId, 
+          sku: v.sku, 
+          variantName: v.variantName, 
+          attributes: v.attributes, 
+          stockQty: Number(v.stockQty || 0) 
+        };
+        
         this.ps.addVariant(payload).subscribe({
           next: (resp: any) => {
             const variantCreated = resp?.variant ?? resp ?? {};
             v.id = variantCreated?.Id ?? variantCreated?.id ?? resp?.variantId ?? null;
-            this.setTwoPricesThenNext(v, seq, i);
+            
+            // ✅ Update stock ledger for new variant
+            if (v.id) {
+              this.updateVariantStockLedger(v.id, Number(v.stockQty || 0))
+                .then(() => this.setTwoPricesThenNext(v, seq, i))
+                .catch(() => this.setTwoPricesThenNext(v, seq, i));
+            } else {
+              this.setTwoPricesThenNext(v, seq, i);
+            }
           },
           error: (err: any) => {
             console.error('addVariant create error', err);
@@ -403,6 +428,23 @@ await this.deleteRemovedVariants();
   });
 }
 
+  // ✅ NEW METHOD: Update variant stock and stock ledger
+  private updateVariantStockLedger(variantId: number, stockQty: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.ps.updateVariantStock(variantId, stockQty).subscribe({
+        next: (res: any) => {
+          console.log(`✅ Stock ledger updated for variant ${variantId}: ${stockQty}`);
+          resolve();
+        },
+        error: (err: any) => {
+          console.error('❌ updateVariantStock error', err);
+          // Don't reject - continue with price setting even if stock update fails
+          resolve();
+        }
+      });
+    });
+  }
+
   private setTwoPricesThenNext(v: VariantRow, seq: (n: number) => void, i: number) {
     const variantId = v.id;
     const cust = Number(v.customerPrice || 0);
@@ -410,13 +452,19 @@ await this.deleteRemovedVariants();
 
     const setCustomer = (cb: ()=>void) => {
       if (cust > 0 && variantId) {
-        this.ps.setVariantPrice(variantId, 'CUSTOMER', cust).subscribe({ next: () => cb(), error: (e: any) => { console.error('set CUSTOMER price error', e); cb(); }});
+        this.ps.setVariantPrice(variantId, 'CUSTOMER', cust).subscribe({ 
+          next: () => cb(), 
+          error: (e: any) => { console.error('set CUSTOMER price error', e); cb(); }
+        });
       } else cb();
     };
 
     const setRetailer = (cb: ()=>void) => {
       if (ret > 0 && variantId) {
-        this.ps.setVariantPrice(variantId, 'RETAILER', ret).subscribe({ next: () => cb(), error: (e: any) => { console.error('set RETAILER price error', e); cb(); }});
+        this.ps.setVariantPrice(variantId, 'RETAILER', ret).subscribe({ 
+          next: () => cb(), 
+          error: (e: any) => { console.error('set RETAILER price error', e); cb(); }
+        });
       } else cb();
     };
 
@@ -444,6 +492,29 @@ await this.deleteRemovedVariants();
     this.ps.deleteProductImage(img.Id).subscribe({
       next: () => {},
       error: (err: any) => { console.error('deleteProductImage error', err); this.uploadedImages = prev; alert('❌ Delete failed'); }
+    });
+  }
+
+  // ✅ NEW METHOD: Bulk update stock for all variants
+  bulkUpdateAllStock() {
+    const stockUpdates = this.variants
+      .filter(v => v.id && v.stockQty !== undefined && v.stockQty !== null)
+      .map(v => ({ variantId: v.id!, stockQty: Number(v.stockQty || 0) }));
+
+    if (stockUpdates.length === 0) {
+      alert('No variants with stock to update');
+      return;
+    }
+
+    this.ps.bulkUpdateStock(stockUpdates).subscribe({
+      next: (res: any) => {
+        console.log('✅ Bulk stock update successful:', res);
+        alert(`✅ Updated stock for ${stockUpdates.length} variants`);
+      },
+      error: (err: any) => {
+        console.error('❌ Bulk stock update failed:', err);
+        alert('❌ Bulk stock update failed');
+      }
     });
   }
 }

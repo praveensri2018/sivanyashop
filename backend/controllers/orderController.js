@@ -1,15 +1,6 @@
 // backend/controllers/orderController.js
 const orderService = require('../services/orderService');
 
-async function getOrderHistory(req, res, next) {
-  try {
-    const userId = req.user.id;
-    const { page = 1, limit = 10, status } = req.query;
-    
-    const orders = await orderService.getUserOrderHistory(userId, { page, limit, status });
-    res.json({ success: true, ...orders });
-  } catch (err) { next(err); }
-}
 
 async function getOrderDetails(req, res, next) {
   try {
@@ -74,6 +65,49 @@ async function confirmOrder(req, res, next) {
 }
 
 
+async function getOrderHistory(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const { page = 1, limit = 10, status, paymentStatus } = req.query;
+    
+    const orders = await orderService.getUserOrderHistory(userId, { 
+      page: parseInt(page), 
+      limit: parseInt(limit),
+      status,
+      paymentStatus
+    });
+    
+    res.json({ 
+      success: true, 
+      orders: orders.orders,
+      pagination: orders.pagination
+    });
+  } catch (err) { 
+    next(err); 
+  }
+}
+
+async function getAdminOrderHistory(req, res, next) {
+  try {
+    const { page = 1, limit = 10, status, paymentStatus, userId } = req.query;
+    
+    const orders = await orderService.getAdminOrderHistory({ 
+      page: parseInt(page), 
+      limit: parseInt(limit),
+      status,
+      paymentStatus,
+      userId: userId ? parseInt(userId) : undefined
+    });
+    
+    res.json({ 
+      success: true, 
+      orders: orders.orders,
+      pagination: orders.pagination
+    });
+  } catch (err) { 
+    next(err); 
+  }
+}
 
 module.exports = {
   getOrderHistory,
@@ -81,5 +115,6 @@ module.exports = {
   updateOrderStatus,
   requestRefund,
   getOrderReports,
-  confirmOrder
+  confirmOrder,
+  getAdminOrderHistory
 };

@@ -22,7 +22,7 @@ async function getMyRefundRequests(userId, options = {}) {
   const result = await query(`
     SELECT 
       rr.*,
-      o.OrderNumber, o.TotalAmount,
+      o.id OrderNumber, o.TotalAmount,
       u.Name as UserName, u.Email as UserEmail
     FROM dbo.RefundRequests rr
     INNER JOIN dbo.Orders o ON rr.OrderId = o.Id
@@ -109,7 +109,7 @@ async function getMyRefundDetails(refundId, userId) {
   const result = await query(`
     SELECT 
       rr.*,
-      o.OrderNumber, o.TotalAmount, o.Status as OrderStatus,
+      o.id OrderNumber, o.TotalAmount, o.Status as OrderStatus,
       u.Name as UserName, u.Email as UserEmail,
       adminUser.Name as ProcessedByName
     FROM dbo.RefundRequests rr
@@ -154,7 +154,7 @@ async function getRetailerRefundRequests(retailerId, options = {}) {
   const result = await query(`
     SELECT DISTINCT
       rr.*,
-      o.OrderNumber, o.TotalAmount,
+      o.id OrderNumber, o.TotalAmount,
       u.Name as UserName, u.Email as UserEmail,
       p.Name as ProductName
     FROM dbo.RefundRequests rr
@@ -222,7 +222,7 @@ async function updateRefundStatus(refundId, retailerId, status, notes = '') {
 
   // Return updated refund
   const updatedResult = await query(`
-    SELECT rr.*, o.OrderNumber, u.Name as UserName
+    SELECT rr.*, o.id OrderNumber, u.Name as UserName
     FROM dbo.RefundRequests rr
     INNER JOIN dbo.Orders o ON rr.OrderId = o.Id
     INNER JOIN dbo.Users u ON rr.UserId = u.Id
@@ -262,7 +262,7 @@ async function getAllRefundRequests(options = {}) {
   const result = await query(`
     SELECT DISTINCT
       rr.*,
-      o.OrderNumber, o.TotalAmount,
+      o.id OrderNumber, o.TotalAmount,
       u.Name as UserName, u.Email as UserEmail,
       adminUser.Name as ProcessedByName
     FROM dbo.RefundRequests rr
@@ -302,7 +302,7 @@ async function getRefundDetails(refundId) {
   const result = await query(`
     SELECT 
       rr.*,
-      o.OrderNumber, o.TotalAmount, o.Status as OrderStatus,
+      o.id OrderNumber, o.TotalAmount, o.Status as OrderStatus,
       u.Name as UserName, u.Email as UserEmail,
       adminUser.Name as ProcessedByName,
       oi.ProductId, oi.VariantId, oi.Qty, oi.Price,

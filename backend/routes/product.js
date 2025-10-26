@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken, ensureAdmin } = require('../middleware/authMiddleware');
 const productController = require('../controllers/productController');
+const productService = require('../services/productService');
 const multer = require('multer');
 
 const storage = multer.diskStorage({
@@ -28,8 +29,46 @@ router.get('/user/:id', verifyToken, productController.getProductForUser)
 router.delete('/variant/:id', verifyToken, ensureAdmin, productController.deleteVariant);
 router.put('/variant/:id/deactivate', verifyToken, ensureAdmin, productController.deactivateVariant);
 
+
+
 router.get('/getdetails/:id', verifyToken, ensureAdmin, productController.getProductById);
 router.put('/variant/:id', verifyToken, ensureAdmin, productController.updateVariant);
+
+router.put('/variant/:id/stock', verifyToken, ensureAdmin, async (req, res, next) => {
+  try {
+    const variantId = parseInt(req.params.id);
+    const { stockQty } = req.body;
+    
+    const updatedVariant = await productService.updateVariantStock(variantId, stockQty);
+    res.json({ success: true, variant: updatedVariant });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/bulk-stock-update', verifyToken, ensureAdmin, async (req, res, next) => {
+  try {
+    const { updates } = req.body;
+    
+    const results = [];
+    for (const update of updates) {
+      try {
+        const result = await productService.updateVariantStock(
+          update.variantId, 
+          update.stockQty,
+          'BULK_UPDATE'
+        );
+        results.push({ variantId: update.variantId, success: true, result });
+      } catch (error) {
+        results.push({ variantId: update.variantId, success: false, error: error.message });
+      }
+    }
+    
+    res.json({ success: true, results });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Admin-only product management
 router.post('/category', verifyToken, ensureAdmin, productController.createCategory);

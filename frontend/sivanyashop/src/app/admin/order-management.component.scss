@@ -1,0 +1,81 @@
+.order-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #007bff;
+  }
+}
+
+.order-icon {
+  width: 40px;
+  height: 40px;
+  background: #f8f9fa;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  i {
+    font-size: 1.2rem;
+  }
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.5em 0.75em;
+}
+
+.card {
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+// Statistics cards
+.card.bg-primary,
+.card.bg-warning,
+.card.bg-info,
+.card.bg-success,
+.card.bg-danger,
+.card.bg-dark {
+  border: none;
+  
+  .card-body {
+    padding: 1.25rem;
+  }
+  
+  i {
+    opacity: 0.8;
+  }
+}
+
+// Modal backdrop
+.modal {
+  background: rgba(0,0,0,0.5);
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .order-card .card-body {
+    padding: 0.75rem;
+  }
+  
+  .order-card .row > div {
+    margin-bottom: 0.5rem;
+  }
+  
+  .order-card .text-end {
+    text-align: left !important;
+    margin-top: 1rem;
+  }
+  
+  .pagination {
+    flex-wrap: wrap;
+  }
+  
+  .stats .col-sm-6 {
+    margin-bottom: 1rem;
+  }
+}

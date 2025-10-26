@@ -15,7 +15,7 @@ async function getCartByUserId(userId) {
  * Create a cart row for user
  */
 async function createCartForUser(userId) {
-  const res = await query('INSERT INTO dbo.Carts (UserId, CreatedAt) OUTPUT INSERTED.* VALUES (@userId, SYSUTCDATETIME())', {
+  const res = await query('INSERT INTO dbo.Carts (UserId, CreatedAt) OUTPUT INSERTED.* VALUES (@userId, SYSDATETIMEOFFSET() AT TIME ZONE "India Standard Time")', {
     userId: { type: sql.Int, value: userId }
   });
   return res.recordset && res.recordset[0] ? res.recordset[0] : null;
@@ -46,7 +46,7 @@ async function updateCartItemQty(cartItemId, qty, price = null) {
     `UPDATE dbo.CartItems
      SET Qty = @qty,
          Price = COALESCE(@price, Price),
-         UpdatedAt = SYSUTCDATETIME()
+         UpdatedAt = SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time'
      OUTPUT INSERTED.*
      WHERE Id = @id`,
     {
