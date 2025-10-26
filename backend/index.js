@@ -58,6 +58,10 @@ const cartRoutes = require('./routes/cartRoutes');
 const paymentsRoutes = require('./routes/paymentsRoutes');
 const shippingAddressRoutes = require('./routes/shippingAddress');
 
+const orderRoutes = require('./routes/orderRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const refundRoutes = require('./routes/refundRoutes');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/product-images', productImageRoutes);
@@ -67,6 +71,10 @@ app.use('/api/retailers', retailerRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/payments', paymentsRoutes); 
 app.use('/api/shipping-address', shippingAddressRoutes);
+
+app.use('/api/orders', orderRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/refunds', refundRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 

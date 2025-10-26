@@ -272,6 +272,7 @@ export class CartService {
     this.itemsSubject.next(arr);
     return found ?? arr[arr.length - 1];
   }
+  
 
 clearLocal(): void {
   try {

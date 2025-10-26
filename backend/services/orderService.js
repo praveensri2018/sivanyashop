@@ -105,10 +105,117 @@ async function clearUserCart(userId) {
   }
 }
 
+
+async function getUserOrderHistory(userId, filters = {}) {
+  const { page, limit, status } = filters;
+  const offset = (page - 1) * limit;
+  
+  const result = await orderRepo.getOrdersByUser(userId, { offset, limit, status });
+  
+  return {
+    orders: result.orders,
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total: result.total,
+      totalPages: Math.ceil(result.total / limit)
+    }
+  };
+}
+
+async function getOrderWithDetails(orderId, userId, userRole) {
+  let order;
+  
+  if (userRole === 'ADMIN') {
+    order = await orderRepo.getOrderById(orderId);
+  } else if (userRole === 'RETAILER') {
+    order = await orderRepo.getOrderByIdForRetailer(orderId, userId);
+  } else {
+    order = await orderRepo.getOrderByIdForCustomer(orderId, userId);
+  }
+  
+  if (!order) {
+    throw { status: 404, message: 'Order not found' };
+  }
+  
+  // Get order items
+  order.items = await orderRepo.getOrderItems(orderId);
+  
+  // Get payment history
+  order.payments = await orderRepo.getOrderPayments(orderId);
+  
+  // Get status history
+  order.statusHistory = await orderRepo.getOrderStatusHistory(orderId);
+  
+  return order;
+}
+
+async function updateOrderStatus(orderId, status, notes = '') {
+  const validStatuses = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+  
+  if (!validStatuses.includes(status)) {
+    throw { status: 400, message: 'Invalid order status' };
+  }
+  
+  const order = await orderRepo.updateOrderStatus(orderId, status, notes);
+  
+  // TODO: Trigger notification
+  // await notificationService.sendOrderStatusUpdate(orderId, status);
+  
+  return order;
+}
+
+async function requestRefund(orderId, userId, refundData) {
+  const order = await orderRepo.getOrderByIdForCustomer(orderId, userId);
+  
+  if (!order) {
+    throw { status: 404, message: 'Order not found' };
+  }
+  
+  if (order.Status !== 'DELIVERED') {
+    throw { status: 400, message: 'Refund can only be requested for delivered orders' };
+  }
+  
+  const refund = await orderRepo.createRefundRequest({
+    orderId,
+    userId,
+    reason: refundData.reason,
+    items: refundData.items,
+    status: 'PENDING'
+  });
+  
+  return refund;
+}
+
+async function confirmOrder(orderId, userId, userRole) {
+  // Get order with details
+  const order = await getOrderWithDetails(orderId, userId, userRole);
+  
+  if (!order) {
+    throw { status: 404, message: 'Order not found' };
+  }
+  
+  // Check if order can be confirmed (pending or confirmed status)
+  if (order.Status !== 'PENDING' && order.Status !== 'CONFIRMED') {
+    throw { status: 400, message: 'Order cannot be confirmed in current status' };
+  }
+  
+  // Update order status to CONFIRMED
+  const updatedOrder = await orderRepo.updateOrderStatus(orderId, 'CONFIRMED', 'Order confirmed by customer');
+  
+  return {
+    ...updatedOrder,
+    items: order.items || [],
+    shippingAddress: order.shippingAddress
+  };
+}
+
 module.exports = {
   createOrderFromCart,
   createFailedOrder,
   createPaymentRecord,
   updateStockForOrder,
-  clearUserCart
+  clearUserCart,
+  getUserOrderHistory,getOrderWithDetails,updateOrderStatus,requestRefund,confirmOrder
+
 };
