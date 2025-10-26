@@ -144,6 +144,29 @@ async function getVariantLatestPrice(variantId, priceType = 'CUSTOMER') {
   return res.recordset && res.recordset[0] ? res.recordset[0].Price : null;
 }
 
+async function updateCartItemQtyForUser(userId, cartItemId, qty = null, price = null) {
+  // Build SQL that allows qty or price to be null (only update fields provided)
+  // We'll set Qty = COALESCE(@qty, Qty) so callers can pass null to leave unchanged
+  const res = await query(
+    `UPDATE ci
+     SET
+       Qty = COALESCE(@qty, ci.Qty),
+       Price = COALESCE(@price, ci.Price),
+       UpdatedAt = SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time'
+     OUTPUT INSERTED.*
+     FROM dbo.CartItems ci
+     INNER JOIN dbo.Carts c ON ci.CartId = c.Id
+     WHERE ci.Id = @id AND c.UserId = @userId`,
+    {
+      id: { type: sql.Int, value: cartItemId },
+      userId: { type: sql.Int, value: userId },
+      qty: { type: sql.Int, value: qty },
+      price: { type: sql.Decimal, value: price }
+    }
+  );
+  return res.recordset && res.recordset[0] ? res.recordset[0] : null;
+}
+
 module.exports = {
   getVariantLatestPrice,
   getCartByUserId,
@@ -152,5 +175,6 @@ module.exports = {
   updateCartItemQty,
   insertCartItem,
   getCartWithItems,
-  deleteCartItem
+  deleteCartItem,
+  updateCartItemQtyForUser
 };

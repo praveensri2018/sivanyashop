@@ -48,5 +48,25 @@ async function removeFromCart(req, res, next) {
     return res.json({ success: true, items: cart.items, total: cart.total });
   } catch (err) { next(err); }
 }
+async function updateCartItem(req, res, next) {
+  try {
+    const user = req.user;
+    if (!user || !user.id) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
-module.exports = { addToCart, getCart, removeFromCart };
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid cart item id' });
+
+    const { qty, price } = req.body;
+    if (typeof qty === 'undefined' && typeof price === 'undefined') {
+      return res.status(400).json({ success: false, message: 'Nothing to update (qty or price required)' });
+    }
+
+    // Call service to update (verifies ownership)
+    const updatedItem = await cartService.updateCartItem(Number(user.id), id, { qty: typeof qty !== 'undefined' ? Number(qty) : undefined, price: typeof price !== 'undefined' ? Number(price) : undefined });
+
+    // Return updated cart so frontend can set items + total
+    const cart = await cartService.getCartForUser(Number(user.id));
+    return res.json({ success: true, item: updatedItem, items: cart.items, total: cart.total });
+  } catch (err) { next(err); }
+}
+module.exports = { addToCart, getCart, removeFromCart,updateCartItem };

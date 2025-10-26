@@ -112,4 +112,28 @@ async function verifyPayment(req, res, next) {
     next(err);
   }
 }
-module.exports = { addToCart, getCartForUser, removeCartItem,verifyPayment };
+
+
+async function updateCartItem(userId, cartItemId, patch) {
+  const qty = typeof patch.qty !== 'undefined' ? Number(patch.qty) : undefined;
+  const price = typeof patch.price !== 'undefined' ? Number(patch.price) : undefined;
+
+  // Must supply at least one field
+  if (typeof qty === 'undefined' && typeof price === 'undefined') {
+    const e = new Error('Nothing to update');
+    e.status = 400;
+    throw e;
+  }
+
+  const updated = await cartRepo.updateCartItemQtyForUser(userId, cartItemId, qty, price);
+
+  if (!updated) {
+    const e = new Error('Cart item not found or not owned by user');
+    e.status = 404;
+    throw e;
+  }
+
+  return updated;
+}
+
+module.exports = { addToCart, getCartForUser, removeCartItem,verifyPayment ,updateCartItem};
