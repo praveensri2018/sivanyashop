@@ -153,7 +153,7 @@ export class CartComponent implements OnInit {
       }
     });
   }
-
+/*
 checkout() {
   if (!this.selectedShippingAddressId) {
     alert('Please select a shipping address');
@@ -264,6 +264,138 @@ checkout() {
       this.error = 'Failed to create payment order.';
     }
   });
+}
+*/
+
+checkout() {
+  if (!this.selectedShippingAddressId) {
+    alert('Please select a shipping address');
+    return;
+  }
+
+  this.error = null;
+  this.loading = true;
+
+  let cartItems: any[] = [];
+  let amountInRupees = 0;
+
+  this.items$.pipe(take(1)).subscribe(items => { cartItems = items; });
+  this.total$.pipe(take(1)).subscribe(total => { amountInRupees = Number(total || 0); });
+
+  if (!amountInRupees || amountInRupees <= 0) {
+    this.loading = false;
+    this.error = 'Cart is empty or invalid amount.';
+    return;
+  }
+
+  // === STEP 1: check stock before order ===
+  // TELL_EVERY_TIME: Always call checkStock BEFORE creating order.
+// === STEP 1: check stock before order ===
+// TELL_EVERY_TIME: Always call checkStock BEFORE creating order.
+const stockPayload = cartItems.map(it => ({
+  productId: Number(it.ProductId ?? it.productId ?? it.id ?? it.productId),
+  variantId: it.VariantId ?? it.variantId ?? null,
+  qty: Number(it.Qty ?? it.qty ?? 1)
+}));
+
+this.paymentSvc.checkStock(stockPayload).pipe(take(1)).subscribe({
+  next: (resp) => {
+    if (!resp || resp.success === false) {
+      const unavailable = (resp && resp.availability)
+        ? resp.availability.filter((a: any) => !a.available)
+        : [];
+
+      if (unavailable.length > 0) {
+        // === STEP 2: Build clear, user-friendly messages ===
+        // TELL_EVERY_TIME: show product and variant names instead of IDs
+        const msgs = unavailable.map((u: any) => {
+          // find matching item in current cart to extract names
+          const match = cartItems.find(ci => 
+            Number(ci.ProductId ?? ci.productId) === u.productId &&
+            (u.variantId == null || Number(ci.VariantId ?? ci.variantId) === u.variantId)
+          );
+
+          const productName = match?.ProductName ?? match?.productName ?? 'Unknown Product';
+          const variantName = match?.VariantName ?? match?.variantName ?? '';
+
+          if (u.availableQty === 0) {
+            // TELL_EVERY_TIME: show “Out of Stock” when availableQty == 0
+            return `${productName}${variantName ? ' - ' + variantName : ''} is OUT OF STOCK`;
+          } else {
+            // partial stock message
+            return `${productName}${variantName ? ' - ' + variantName : ''} has only ${u.availableQty} left (you requested ${u.requestedQty})`;
+          }
+        });
+
+        alert('⚠️ Some items are not available:\n' + msgs.join('\n'));
+        this.loading = false;
+        return;
+      }
+    }
+
+    // === STEP 3: All items are available, create order ===
+    // TELL_EVERY_TIME: Safe to create order now since stock check passed.
+    this.paymentSvc.createOrder(amountInRupees, {
+      notes: { purpose: 'Cart payment', items_count: cartItems.length }
+    }).pipe(finalize(() => {})).subscribe({
+      next: (res) => {
+        if (!res || !res.order || !res.order.id) {
+          this.loading = false;
+          this.error = 'Failed to initialize payment.';
+          return;
+        }
+
+        const order = res.order;
+        const options: any = {
+          key: (window as any).__RAZORPAY_KEY_ID || (res.order.key_id || (window as any).RAZORPAY_KEY_ID) || '',
+          amount: order.amount,
+          currency: order.currency || 'INR',
+          name: 'Sivanuya Trends Tops',
+          description: 'Order Payment',
+          order_id: order.id,
+          handler: (response: any) => {
+            // TELL_EVERY_TIME: On success, verify payment on backend.
+            this.verifyPayment(response, cartItems);
+          },
+          prefill: { name: '', email: '', contact: '' },
+          theme: { color: '#0b5cff' }
+        };
+
+        try {
+          const rzp = new Razorpay(options);
+          rzp.on('payment.failed', (err: any) => {
+            console.error('Razorpay payment failed', err);
+            this.loading = false;
+            this.error = err?.error?.description || 'Payment failed';
+            alert('Payment failed: ' + (err?.error?.description || 'Unknown error'));
+          });
+
+          rzp.on('checkout.dismiss', () => {
+            console.log('Checkout dismissed by user');
+            this.loading = false;
+          });
+
+          rzp.open();
+        } catch (err) {
+          console.error('Error opening Razorpay', err);
+          this.loading = false;
+          this.error = 'Failed to open payment gateway.';
+        }
+      },
+      error: (err) => {
+        console.error('createOrder error', err);
+        this.loading = false;
+        this.error = 'Failed to create payment order.';
+      }
+    });
+  },
+  error: (err) => {
+    console.error('checkStock error', err);
+    alert('Failed to check stock availability. Please try again.');
+    this.loading = false;
+  }
+});
+
 }
 
 

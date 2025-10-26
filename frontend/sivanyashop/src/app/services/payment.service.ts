@@ -87,6 +87,11 @@ export class PaymentService {
     );
   }
 
+  checkStock(items: any[]) {
+    return this.http.post<any>(`${this.base}/check-stock`, { items });
+  }
+
+
   verifyPaymentAndCreateOrder(payload: VerifyPaymentPayload): Observable<VerifyPaymentResponse> {
     const headers = this.headers();
     const opts = headers ? { headers } : {};

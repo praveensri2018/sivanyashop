@@ -1,5 +1,7 @@
 // Place file at: backend/controllers/paymentsController.js
 const paymentService = require('../services/paymentService');
+const stockService = require('../services/stockService'); // new import
+const cartService = require('../services/cartService');  
 
 /**
  * POST /api/payments/create-order
@@ -13,6 +15,20 @@ async function createOrder(req, res, next) {
 
     const order = await paymentService.createOrder({ amountInRupees: amount, currency, receipt, notes });
     return res.json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function checkStock(req, res, next) {
+  try {
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
+    if (items.length === 0) return res.status(400).json({ success: false, message: 'No items provided' });
+
+    const availability = await stockService.checkAvailability(items);
+
+    const anyUnavailable = availability.some(a => !a.available);
+    return res.json({ success: !anyUnavailable, availability });
   } catch (err) {
     next(err);
   }
@@ -145,4 +161,4 @@ async function webhookHandler(req, res, next) {
   }
 }
 
-module.exports = { createOrder, verifyPayment, webhookHandler };
+module.exports = { createOrder, verifyPayment, webhookHandler,checkStock };
