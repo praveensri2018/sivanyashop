@@ -13,8 +13,8 @@ export const appConfig: ApplicationConfig = {
 
 
 export const AppConfig = {
-  apiBase: 'http://localhost:3000', 
-  //apiBase: 'https://api.sivanyatrendstops.com', 
+  //apiBase: 'http://localhost:3000', 
+  apiBase: 'https://api.sivanyatrendstops.com', 
   appName: 'SivanuyaShop',
   version: '1.0.0'
 };
