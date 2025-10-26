@@ -65,7 +65,7 @@ async function insertCartItem(cartId, productId, variantId, qty, price) {
   const res = await query(
     `INSERT INTO dbo.CartItems (CartId, ProductId, VariantId, Qty, Price, CreatedAt)
      OUTPUT INSERTED.Id, INSERTED.CartId, INSERTED.ProductId, INSERTED.VariantId, INSERTED.Qty, INSERTED.Price
-     VALUES (@cartId, @productId, @variantId, @qty, @price, SYSUTCDATETIME())`,
+     VALUES (@cartId, @productId, @variantId, @qty, @price, SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time')`,
     {
       cartId: { type: sql.Int, value: cartId },
       productId: { type: sql.Int, value: productId },

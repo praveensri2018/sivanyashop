@@ -1,0 +1,200 @@
+<div class="shipping-address-section">
+  <h4 class="mb-3">Shipping Address</h4>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && !showAddressForm" class="text-center py-3">
+    <div class="spinner-border" role="status"></div>
+    <p class="mt-2 text-muted">Loading addresses...</p>
+  </div>
+
+  <!-- Address List -->
+  <div *ngIf="!showAddressForm && !loading" class="address-list">
+    <div *ngIf="addresses.length === 0" class="alert alert-info">
+      <p>No shipping addresses found. Please add an address to continue.</p>
+      <button class="btn btn-primary btn-sm" (click)="openAddForm()">
+        + Add Address
+      </button>
+    </div>
+
+    <div *ngFor="let address of addresses" 
+         class="address-card mb-3 p-3 border rounded"
+         [class.selected]="selectedAddressId === address.id"
+         [class.default]="address.isDefault">
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="flex-grow-1">
+          <div class="form-check">
+            <input class="form-check-input" 
+                   type="radio" 
+                   name="selectedAddress"
+                   [id]="'address-' + address.id"
+                   [checked]="selectedAddressId === address.id"
+                   (change)="selectAddress(address.id!)">
+            <label class="form-check-label fw-bold" [for]="'address-' + address.id">
+              {{ address.addressLine1 }}
+              <span *ngIf="address.isDefault" class="badge bg-primary ms-2">Default</span>
+            </label>
+          </div>
+          
+          <div class="address-details mt-2 ms-4">
+            <div *ngIf="address.addressLine2" class="text-muted">
+              {{ address.addressLine2 }}
+            </div>
+            <div class="text-muted">
+              {{ address.city }}, {{ address.state }} - {{ address.postalCode }}
+            </div>
+            <div class="text-muted">{{ address.country }}</div>
+          </div>
+        </div>
+
+        <div class="address-actions">
+          <button class="btn btn-outline-secondary btn-sm me-1" 
+                  (click)="openEditForm(address)"
+                  title="Edit address">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button *ngIf="!address.isDefault" 
+                  class="btn btn-outline-primary btn-sm me-1"
+                  (click)="setDefaultAddress(address.id!)"
+                  title="Set as default">
+            <i class="fas fa-star"></i>
+          </button>
+          <button class="btn btn-outline-danger btn-sm" 
+                  (click)="deleteAddress(address.id!)"
+                  title="Delete address">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button *ngIf="addresses.length > 0" 
+            class="btn btn-outline-primary w-100 mt-2"
+            (click)="openAddForm()">
+      + Add New Address
+    </button>
+  </div>
+
+  <!-- Address Form -->
+  <div *ngIf="showAddressForm" class="address-form">
+    <h5>{{ editingAddress ? 'Edit Address' : 'Add New Address' }}</h5>
+    
+    <form [formGroup]="addressForm" (ngSubmit)="submitAddress()">
+      <div class="row g-3">
+        <div class="col-12">
+          <label for="addressLine1" class="form-label">Address Line 1 *</label>
+          <input type="text" 
+                 class="form-control" 
+                 id="addressLine1"
+                 formControlName="addressLine1"
+                 placeholder="House/Flat No, Street Name">
+          <div *ngIf="addressLine1?.invalid && addressLine1?.touched" class="text-danger small">
+            <div *ngIf="addressLine1?.errors?.['required']">Address line 1 is required</div>
+            <div *ngIf="addressLine1?.errors?.['minlength']">Address must be at least 5 characters</div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <label for="addressLine2" class="form-label">Address Line 2</label>
+          <input type="text" 
+                 class="form-control" 
+                 id="addressLine2"
+                 formControlName="addressLine2"
+                 placeholder="Area, Landmark (optional)">
+        </div>
+
+        <div class="col-md-6">
+          <label for="city" class="form-label">City *</label>
+          <input type="text" 
+                 class="form-control" 
+                 id="city"
+                 formControlName="city"
+                 placeholder="City">
+          <div *ngIf="city?.invalid && city?.touched" class="text-danger small">
+            City is required
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="state" class="form-label">State *</label>
+          <input type="text" 
+                 class="form-control" 
+                 id="state"
+                 formControlName="state"
+                 placeholder="State">
+          <div *ngIf="state?.invalid && state?.touched" class="text-danger small">
+            State is required
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="postalCode" class="form-label">Postal Code *</label>
+          <input type="text" 
+                 class="form-control" 
+                 id="postalCode"
+                 formControlName="postalCode"
+                 placeholder="6-digit PIN code"
+                 maxlength="6">
+          <div *ngIf="postalCode?.invalid && postalCode?.touched" class="text-danger small">
+            <div *ngIf="postalCode?.errors?.['required']">Postal code is required</div>
+            <div *ngIf="postalCode?.errors?.['pattern']">Please enter a valid 6-digit PIN code</div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label for="country" class="form-label">Country *</label>
+          <input type="text" 
+                 class="form-control" 
+                 id="country"
+                 formControlName="country"
+                 placeholder="Country">
+          <div *ngIf="country?.invalid && country?.touched" class="text-danger small">
+            Country is required
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="form-check">
+            <input class="form-check-input" 
+                   type="checkbox" 
+                   id="isDefault"
+                   formControlName="isDefault">
+            <label class="form-check-label" for="isDefault">
+              Set as default address
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" 
+                class="btn btn-primary"
+                [disabled]="addressForm.invalid || loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ editingAddress ? 'Update Address' : 'Save Address' }}
+        </button>
+        <button type="button" 
+                class="btn btn-outline-secondary"
+                (click)="closeForm()"
+                [disabled]="loading">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Selected Address Confirmation -->
+  <div *ngIf="selectedAddressId && !showAddressForm" class="selected-address-confirmation mt-3 p-3 bg-light rounded">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <strong>✓ Shipping to:</strong>
+        <span class="ms-2">
+          {{ getSelectedAddress()?.addressLine1 }}, 
+          {{ getSelectedAddress()?.city }} - {{ getSelectedAddress()?.postalCode }}
+        </span>
+      </div>
+      <button class="btn btn-outline-primary btn-sm" (click)="openAddForm()">
+        Change
+      </button>
+    </div>
+  </div>
+</div>

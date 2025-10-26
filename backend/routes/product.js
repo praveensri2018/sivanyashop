@@ -54,4 +54,6 @@ router.post('/bulk-upload', verifyToken, ensureAdmin, upload.single('file'), pro
 router.put('/:id/feature', verifyToken, ensureAdmin, productController.markProductFeatured);
 router.get('/recently-viewed', verifyToken, productController.recentlyViewedProducts);
 
+router.get('/getdetails/:id',  verifyToken, ensureAdmin,productController.getProductById);
+
 module.exports = router;

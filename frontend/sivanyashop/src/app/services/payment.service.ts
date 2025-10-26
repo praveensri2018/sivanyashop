@@ -20,7 +20,8 @@ export interface CreateOrderPayload {
   amount: number;                   
   currency?: string;                
   receipt?: string | null;          
-  notes?: Record<string, any> | {}; 
+  notes?: Record<string, any>| {};
+  shippingAddressId?: number; 
 }
 
 export interface VerifyPaymentPayload {
@@ -37,6 +38,7 @@ export interface VerifyPaymentResponse {
   message?: string;
   orderId?: number;
   paymentId?: number;
+  shippingAddressId?: number;
   order?: any;
 }
 

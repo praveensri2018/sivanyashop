@@ -1,0 +1,53 @@
+.shipping-address-section {
+  .address-card {
+    border: 2px solid #dee2e6;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #0d6efd;
+      background-color: #f8f9fa;
+    }
+
+    &.selected {
+      border-color: #0d6efd;
+      background-color: #e7f1ff;
+    }
+
+    &.default {
+      border-left: 4px solid #0d6efd;
+    }
+  }
+
+  .address-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .address-card:hover .address-actions {
+    opacity: 1;
+  }
+
+  .form-check-input {
+    margin-top: 0.3rem;
+  }
+
+  .address-details {
+    font-size: 0.9rem;
+  }
+
+  .selected-address-confirmation {
+    border-left: 4px solid #198754;
+  }
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    .address-actions {
+      opacity: 1; // Always show on mobile
+    }
+    
+    .address-card {
+      padding: 1rem;
+    }
+  }
+}

@@ -15,6 +15,7 @@ import { ProductListComponent } from './admin/product-list.component';
 import { AdminRetailerListComponent } from './admin/retailer-list.component';
 import { RegisterComponent } from './auth/register.component';
 import { OrderConfirmationComponent } from './order-confirmation/order-confirmation.component'; // Add this import
+import { ShippingAddressComponent } from './checkout/shipping-address.component';
 
 export const routes: Routes = [
   { path: '', component: ShopComponent, canActivate: [PublicRedirectGuard] },
@@ -30,6 +31,7 @@ export const routes: Routes = [
   { path: 'admin/products', component: ProductListComponent, canActivate: [RoleGuard], data: { roles: ['admin'] }  },
   { path: 'admin/retailers', component: AdminRetailerListComponent, canActivate: [RoleGuard], data: { roles: ['admin']  }},
   { path: 'register', component: RegisterComponent },
+  { path: 'checkout', component: CartComponent, canActivate: [RoleGuard], data: { roles: ['customer','retailer'] } },
   { path: 'order-confirmation/:id', component: OrderConfirmationComponent, canActivate: [RoleGuard], data: { roles: ['customer','retailer'] } },
   { path: 'order-confirmation', component: OrderConfirmationComponent, canActivate: [RoleGuard], data: { roles: ['customer','retailer'] } },
   { path: '**', redirectTo: '' }

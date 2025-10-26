@@ -56,6 +56,7 @@ const retailerRoutes = require('./routes/retailer');
 
 const cartRoutes = require('./routes/cartRoutes');
 const paymentsRoutes = require('./routes/paymentsRoutes');
+const shippingAddressRoutes = require('./routes/shippingAddress');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -65,6 +66,7 @@ app.use('/api/stock', stockRoutes);
 app.use('/api/retailers', retailerRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/payments', paymentsRoutes); 
+app.use('/api/shipping-address', shippingAddressRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 

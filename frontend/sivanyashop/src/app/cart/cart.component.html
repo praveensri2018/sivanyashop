@@ -1,26 +1,42 @@
-<!-- Place file at: src/app/cart/cart.component.html -->
 <div class="cart-page container py-4">
   <h3 class="mb-3">Your Cart</h3>
-
+  
   <div *ngIf="(items$ | async) as items">
     <div *ngIf="items.length > 0; else empty">
       <div class="list-group mb-3">
         <div *ngFor="let it of items" class="list-group-item d-flex gap-3 align-items-center">
           <img [src]="it.image || 'assets/placeholder.png'" class="cart-thumb rounded" alt="{{ it.name }}" />
           <div class="flex-grow-1">
-            <div class="fw-semibold">{{ it.name }}</div>
-            <div class="small text-muted">{{ it.variant || '' }}</div>
+            <div class="fw-semibold">{{ it.productName || it.name }}</div>
+            <div class="small text-muted">{{ it.variantName || '' }}</div>
             <div class="mt-2 d-flex align-items-center gap-2">
               <button class="btn btn-sm btn-outline-secondary" (click)="updateQty(it, -1)">-</button>
               <div class="px-2">{{ it.qty }}</div>
               <button class="btn btn-sm btn-outline-secondary" (click)="updateQty(it, 1)">+</button>
             </div>
           </div>
-
           <div class="text-end">
-            <div class="fw-bold">₹ {{ it.price * (it.qty || 1) }}</div>
+            <div class="fw-bold">₹ {{ (it.price * (it.qty || 1)) | number:'1.0-0' }}</div>
             <button class="btn btn-link text-danger small" (click)="removeItem(it.id)">Remove</button>
           </div>
+        </div>
+      </div>
+      
+      <!-- Shipping Address Section -->
+      <div class="shipping-section mt-4 mb-4 p-3 border rounded bg-light">
+        <h5 class="mb-3">Shipping Address</h5>
+        <app-shipping-address 
+          (addressSelected)="onAddressSelected($event)">
+        </app-shipping-address>
+        
+        <!-- Address Selection Status -->
+        <div *ngIf="selectedShippingAddressId" class="alert alert-success mt-3">
+          <i class="fas fa-check-circle me-2"></i>
+          Shipping address selected ✓
+        </div>
+        <div *ngIf="!selectedShippingAddressId" class="alert alert-warning mt-3">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Please select a shipping address to continue
         </div>
       </div>
 
@@ -30,28 +46,34 @@
         </div>
         <div class="text-end">
           <div class="small text-muted">Total</div>
-          <div class="h5">₹ {{ total$ | async }}</div>
-          <button class="btn btn-primary mt-2" (click)="checkout()">Checkout</button>
+          <div class="h5">₹ {{ total$ | async | number:'1.0-0' }}</div>
+          
+          <!-- Checkout Buttons -->
+          <div class="d-flex gap-2 mt-2">
+  <button class="btn btn-primary flex-fill"
+          (click)="checkout()"
+          [disabled]="loading || !selectedShippingAddressId">
+    <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+    {{ loading ? 'Processing...' : 'Proceed to Payment' }}
+  </button>
+
+  <!-- Test Checkout: visible only when showTestButton is true -->
+  <button *ngIf="showTestButton"
+          class="btn btn-warning"
+          (click)="testOrderCreation()"
+          [disabled]="loading || !selectedShippingAddressId"
+          title="Test order creation without payment">
+    🧪 Test
+  </button>
+</div>
+          
+          <small *ngIf="!selectedShippingAddressId" class="text-danger d-block mt-1">
+            Please select a shipping address
+          </small>
         </div>
       </div>
     </div>
-
-    <ng-template #empty>
-      <div class="alert alert-info">Your cart is empty. <a routerLink="/">Continue shopping</a></div>
-    </ng-template>
-  </div>
-
-   <div class="mb-3">
-    <button class="btn btn-warning btn-sm" (click)="testOrderCreation()" [disabled]="loading">
-      🧪 Test Order Creation (No Payment)
-    </button>
-    <small class="text-muted ms-2">For testing order flow without actual payment</small>
-  </div>
-
-  <div *ngIf="(items$ | async) as items">
-    <div *ngIf="items.length > 0; else empty">
-      <!-- ... rest of your cart HTML ... -->
-    </div>
+    
     <ng-template #empty>
       <div class="alert alert-info">Your cart is empty. <a routerLink="/">Continue shopping</a></div>
     </ng-template>

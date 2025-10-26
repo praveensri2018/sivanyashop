@@ -260,9 +260,9 @@ async function addRecentlyViewed(userId, productId) {
          USING (SELECT @userId AS UserId, @productId AS ProductId) AS source
          ON target.UserId = source.UserId AND target.ProductId = source.ProductId
          WHEN MATCHED THEN 
-             UPDATE SET ViewedAt = SYSDATETIMEOFFSET()
+             UPDATE SET ViewedAt = SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time'
          WHEN NOT MATCHED THEN
-             INSERT (UserId, ProductId, ViewedAt) VALUES (@userId, @productId, SYSDATETIMEOFFSET());`,
+             INSERT (UserId, ProductId, ViewedAt) VALUES (@userId, @productId, SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time');`,
         { userId: { type: sql.Int, value: userId }, productId: { type: sql.Int, value: productId } }
     );
 }
@@ -362,7 +362,7 @@ async function getActivePricesForVariants(variantIds) {
         IsActive,
         ROW_NUMBER() OVER (PARTITION BY VariantId, PriceType ORDER BY Id DESC) AS rn
       FROM dbo.VariantPrices
-      WHERE VariantId IN (${idsList}) AND IsActive = 1 and isdelete = 0
+      WHERE VariantId IN (${idsList}) AND IsActive = 1
     )
     SELECT Id, VariantId, PriceType, Price, EffectiveFrom, EffectiveTo, IsActive
     FROM RankedPrices

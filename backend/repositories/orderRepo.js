@@ -4,7 +4,7 @@ async function createOrder({ userId, retailerId = null, shippingAddressId = null
   const result = await query(
     `INSERT INTO dbo.Orders (UserId, RetailerId, ShippingAddressId, Status, PaymentStatus, TotalAmount, CreatedAt)
      OUTPUT INSERTED.*
-     VALUES (@userId, @retailerId, @shippingAddressId, @status, @paymentStatus, @totalAmount, SYSDATETIMEOFFSET())`,
+     VALUES (@userId, @retailerId, @shippingAddressId, @status, @paymentStatus, @totalAmount, SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time')`,
     {
       userId: { type: sql.Int, value: userId },
       retailerId: { type: sql.Int, value: retailerId },
@@ -21,7 +21,7 @@ async function createOrderItem({ orderId, productId, variantId, qty, price }) {
   const result = await query(
     `INSERT INTO dbo.OrderItems (OrderId, ProductId, VariantId, Qty, Price, CreatedAt)
      OUTPUT INSERTED.*
-     VALUES (@orderId, @productId, @variantId, @qty, @price, SYSDATETIMEOFFSET())`,
+     VALUES (@orderId, @productId, @variantId, @qty, @price, SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time')`,
     {
       orderId: { type: sql.Int, value: orderId },
       productId: { type: sql.Int, value: productId },
@@ -37,7 +37,7 @@ async function createPayment({ orderId, amount, method, paymentGateway, transact
   const result = await query(
     `INSERT INTO dbo.Payments (OrderId, Amount, Method, PaymentGateway, TransactionRef, Status, CreatedAt)
      OUTPUT INSERTED.*
-     VALUES (@orderId, @amount, @method, @paymentGateway, @transactionRef, @status, SYSDATETIMEOFFSET())`,
+     VALUES (@orderId, @amount, @method, @paymentGateway, @transactionRef, @status, SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time')`,
     {
       orderId: { type: sql.Int, value: orderId },
       amount: { type: sql.Decimal, value: amount },
@@ -76,7 +76,7 @@ async function getOrderItems(orderId) {
 async function createStockLedgerEntry({ productId, variantId, refOrderId, refOrderItemId, movementType, quantity }) {
   await query(
     `INSERT INTO dbo.StockLedger (ProductId, VariantId, RefOrderId, RefOrderItemId, MovementType, Quantity, CreatedAt)
-     VALUES (@productId, @variantId, @refOrderId, @refOrderItemId, @movementType, @quantity, SYSDATETIMEOFFSET())`,
+     VALUES (@productId, @variantId, @refOrderId, @refOrderItemId, @movementType, @quantity, SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time')`,
     {
       productId: { type: sql.Int, value: productId },
       variantId: { type: sql.Int, value: variantId },

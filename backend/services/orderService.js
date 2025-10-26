@@ -1,30 +1,46 @@
+// Place file at: backend/services/orderService.js
+// Full order service layer. Uses orderRepo + cartRepo. Defensive total calc + logging.
+
 const orderRepo = require('../repositories/orderRepo');
 const cartRepo = require('../repositories/cartRepo');
 
-async function createOrderFromCart({ userId, retailerId, shippingAddressId, cartItems, paymentGatewayOrderId, paymentGatewayPaymentId }) {
-  // Calculate total amount from cart items
-  const totalAmount = cartItems.reduce((total, item) => {
-    return total + (Number(item.Price) * Number(item.Qty));
+async function createOrderFromCart({ userId, retailerId, shippingAddressId, cartItems = [], paymentGatewayOrderId, paymentGatewayPaymentId }) {
+  // Defensive: ensure cartItems is array
+  const items = Array.isArray(cartItems) ? cartItems : [];
+
+  // Calculate total amount defensively
+  const totalAmount = items.reduce((total, item) => {
+    const price = Number(item.Price ?? item.price ?? 0);
+    const qty = Number(item.Qty ?? item.qty ?? 1);
+    return total + (price * qty);
   }, 0);
 
-  // Create order
+  // ensure we pass a JS Number with 2 decimal places
+  const totalToSend = Number(totalAmount.toFixed(2));
+
+  // Create order - MAKE SURE THIS RETURNS THE CREATED ORDER
   const order = await orderRepo.createOrder({
     userId,
-    retailerId,
-    shippingAddressId,
-    totalAmount,
+    retailerId: retailerId || null,
+    shippingAddressId: shippingAddressId || null,
+    totalAmount: totalToSend,
     status: 'CONFIRMED',
     paymentStatus: 'PAID'
   });
 
+  // Safety check
+  if (!order || !order.Id) {
+    throw new Error('Order repository did not return order with Id');
+  }
+
   // Add order items
-  for (const item of cartItems) {
+  for (const item of items) {
     await orderRepo.createOrderItem({
       orderId: order.Id,
-      productId: item.ProductId,
-      variantId: item.VariantId,
-      qty: item.Qty,
-      price: item.Price
+      productId: item.ProductId ?? item.productId,
+      variantId: item.VariantId ?? item.variantId,
+      qty: item.Qty ?? item.qty ?? 1,
+      price: item.Price ?? item.price ?? 0
     });
   }
 
@@ -33,10 +49,11 @@ async function createOrderFromCart({ userId, retailerId, shippingAddressId, cart
     await orderRepo.updateOrderPaymentReferences(order.Id, paymentGatewayOrderId, paymentGatewayPaymentId);
   }
 
+  // Return created order object
   return order;
 }
 
-async function createFailedOrder({ userId, paymentGatewayOrderId, paymentGatewayPaymentId, status, paymentStatus }) {
+async function createFailedOrder({ userId, paymentGatewayOrderId, paymentGatewayPaymentId, status = 'FAILED', paymentStatus = 'FAILED' }) {
   const order = await orderRepo.createOrder({
     userId,
     totalAmount: 0,
