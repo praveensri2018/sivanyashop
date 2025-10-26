@@ -1,4 +1,3 @@
-// Place file at: src/app/shop/product-detail.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
@@ -8,10 +7,12 @@ import { FormsModule } from '@angular/forms';
 import { CartService } from '../services/cart.service';
 import { AuthService } from '../auth/auth.service';
 
+import { SizeChartComponent } from '../customer/size-chart/size-chart.component';
+
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, SizeChartComponent],
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.scss']
 })
@@ -25,6 +26,9 @@ export class ProductDetailComponent implements OnInit {
   selectedVariantId: number | null = null;
   selectedVariant: any = null;
   quantity = 1;
+  
+  // Add productId property
+  productId!: number;
 
   constructor(
     private route: ActivatedRoute,
@@ -37,7 +41,10 @@ export class ProductDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) this.loadProduct(id);
+    if (id) {
+      this.productId = +id; // Set the productId
+      this.loadProduct(id);
+    }
   }
 
   private getIdFromProduct(p: any): number | null {

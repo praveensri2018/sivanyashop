@@ -7,6 +7,10 @@ import { AdminProductService } from '../services/admin-product.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
+
+import { SizeChartService } from '../services/size-chart.service';
+import { SizeChart } from '../models/size-chart.model';
 
 interface VariantRow {
   id?: number | null;
@@ -44,9 +48,14 @@ export class ProductUploadComponent implements OnInit {
 
   removedVariantIds: number[] = [];
 
+  availableSizeCharts: SizeChart[] = [];
+selectedSizeCharts: number[] = [];
+primarySizeChartId: number | null = null;
+
   constructor(private fb: FormBuilder, private ps: AdminProductService,
   private route: ActivatedRoute,
-  private router: Router) {}
+  private router: Router,
+    private sizeChartService: SizeChartService) {}
 
   ngOnInit(): void {
     this.productForm = this.fb.group({
@@ -72,7 +81,7 @@ export class ProductUploadComponent implements OnInit {
 
     this.loadCategories();
     this.addVariantRow();
-
+ this.loadSizeCharts();
     this.route.queryParams.subscribe(params => {
   const id = params['id'];
   if (id) {
@@ -84,6 +93,107 @@ export class ProductUploadComponent implements OnInit {
   goBack() {
   this.router.navigate(['/admin/products']);
 }
+
+
+// Add these methods to your component:
+
+// Add this method to create a test size chart
+createTestSizeChart(): void {
+  console.log('🧪 Creating test size chart...');
+  
+  const testChart: Omit<SizeChart, 'id'> = {
+    name: 'Women\'s Dress Sizes - Test',
+    chartType: 'DRESS',
+    description: 'Standard women\'s dress size measurements for testing',
+    measurements: [
+      { size: 'S', measurements: { chest: 86, waist: 70, hips: 90, length: 100 } },
+      { size: 'M', measurements: { chest: 90, waist: 74, hips: 94, length: 102 } },
+      { size: 'L', measurements: { chest: 94, waist: 78, hips: 98, length: 104 } },
+      { size: 'XL', measurements: { chest: 98, waist: 82, hips: 102, length: 106 } }
+    ]
+  };
+  
+  this.sizeChartService.createSizeChart(testChart).subscribe({
+    next: (response) => {
+      console.log('✅ Test size chart created successfully:', response);
+      alert('✅ Test size chart created!');
+      // Reload the size charts list
+      this.loadSizeCharts();
+    },
+    error: (error) => {
+      console.error('❌ Failed to create test size chart:', error);
+      alert('❌ Failed to create test size chart: ' + error.message);
+    }
+  });
+}
+
+// Update the existing loadSizeCharts method with better logging
+loadSizeCharts(): void {
+  console.log('🔄 Loading size charts...');
+  
+  this.sizeChartService.getSizeCharts(1, 100).subscribe({
+    next: (response) => {
+      console.log('✅ Size charts API response:', response);
+      this.availableSizeCharts = response.sizeCharts;
+      console.log('📊 Available size charts:', this.availableSizeCharts);
+      
+      if (this.availableSizeCharts.length === 0) {
+        console.log('ℹ️ No size charts found. You can create one using the "Create Test Chart" button.');
+      }
+    },
+    error: (error) => {
+      console.error('❌ Error loading size charts:', error);
+      console.log('🔧 Error details:', {
+        status: error.status,
+        message: error.message,
+        url: error.url
+      });
+      alert('Error loading size charts. Check console for details.');
+    }
+  });
+}
+
+onSizeChartSelect(sizeChartId: number, event: any): void {
+  if (event.target.checked) {
+    this.selectedSizeCharts.push(sizeChartId);
+  } else {
+    this.selectedSizeCharts = this.selectedSizeCharts.filter(id => id !== sizeChartId);
+    if (this.primarySizeChartId === sizeChartId) {
+      this.primarySizeChartId = null;
+    }
+  }
+}
+setPrimarySizeChart(sizeChartId: number): void {
+  this.primarySizeChartId = sizeChartId;
+}
+
+ assignSizeChartsToProduct(): void {
+    if (!this.createdProductId) {
+      alert('Please create or load a product first');
+      return;
+    }
+
+    // Assign all selected size charts
+    const assignments = this.selectedSizeCharts.map(chartId => 
+      this.sizeChartService.assignSizeChartToProduct(
+        this.createdProductId!, 
+        chartId, 
+        chartId === this.primarySizeChartId
+      )
+    );
+
+    forkJoin(assignments).subscribe({
+      next: () => {
+        alert('Size charts assigned successfully!');
+        this.selectedSizeCharts = [];
+        this.primarySizeChartId = null;
+      },
+      error: (error) => {
+        console.error('Error assigning size charts:', error);
+        alert('Error assigning size charts');
+      }
+    });
+  }
 
   /* --------- categories --------- */
   loadCategories() {

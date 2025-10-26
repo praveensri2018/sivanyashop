@@ -1,25 +1,95 @@
 /* FILE: src/styles.css
-   Place: replace existing header/footer rules with this block.
-   Purpose: make header/footer fixed, give them explicit height so layout doesn't recalc.
+   Modern Commercial Design - Colorful & Professional
+   Fixed Header/Footer Layout with Vibrant Color Scheme
 */
 
-/* PLACE IN: src/styles.css (append or replace related rules) */
-
-/* ---------- variables ---------- */
-:root{
-  --app-header-height: 56px;  /* adjust to your header visual height */
-  --app-footer-height: 56px;  /* adjust to your footer visual height */
+/* ===== MODERN COLOR PALETTE ===== */
+:root {
+  /* Primary Colors - Vibrant & Professional */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-900: #1e3a8a;
+  
+  /* Secondary Colors - Energetic */
+  --secondary-50: #fef2f2;
+  --secondary-500: #ef4444;
+  --secondary-600: #dc2626;
+  --secondary-700: #b91c1c;
+  
+  /* Accent Colors - Warm & Engaging */
+  --accent-50: #fffbeb;
+  --accent-500: #f59e0b;
+  --accent-600: #d97706;
+  
+  /* Success Colors - Fresh */
+  --success-50: #ecfdf5;
+  --success-500: #10b981;
+  --success-600: #059669;
+  
+  /* Warning Colors - Attention */
+  --warning-50: #fffbeb;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
+  
+  /* Error Colors - Alert */
+  --error-50: #fef2f2;
+  --error-500: #ef4444;
+  --error-600: #dc2626;
+  
+  /* Neutral Colors - Professional Base */
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  
+  /* Semantic Variables */
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-muted: var(--gray-500);
+  --bg-primary: #ffffff;
+  --bg-secondary: var(--gray-50);
+  --bg-gradient: linear-gradient(135deg, var(--primary-50) 0%, var(--accent-50) 100%);
+  
+  /* Border Colors */
+  --border-light: var(--gray-200);
+  --border-medium: var(--gray-300);
+  
+  /* Shadow System */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Layout Variables */
+  --app-header-height: 64px;
+  --app-footer-height: 60px;
+  --border-radius: 12px;
+  --border-radius-lg: 16px;
 }
 
-/* ---------- base / viewport ---------- */
-html, body, app-root { height: 100%; margin: 0; padding: 0; }
+/* ===== BASE STYLES ===== */
+html, body, app-root { 
+  height: 100%; 
+  margin: 0; 
+  padding: 0;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
 
 /* Use the JS-calculated --vh to avoid mobile address-bar jumps */
-.app-vh { /* optional helper class on root if you want */
+.app-vh {
   height: calc(var(--vh, 1vh) * 100);
 }
 
-/* ---------- header: fixed top ---------- */
+/* ===== HEADER: FIXED TOP ===== */
 app-header {
   position: fixed;
   top: 0;
@@ -27,15 +97,15 @@ app-header {
   right: 0;
   height: var(--app-header-height);
   z-index: 1200;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+  box-shadow: var(--shadow-lg);
   transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
   will-change: transform, top;
   padding-top: env(safe-area-inset-top);
+  border-bottom: 3px solid var(--accent-500);
 }
 
-/* ---------- footer: fixed bottom ---------- */
+/* ===== FOOTER: FIXED BOTTOM ===== */
 app-footer {
   position: fixed;
   left: 0;
@@ -43,49 +113,299 @@ app-footer {
   bottom: 0;
   height: var(--app-footer-height);
   z-index: 1200;
-  background: #fff;
-  border-top: 1px solid #e9ecef;
+  background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-900) 100%);
+  border-top: 3px solid var(--accent-500);
   transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
   will-change: transform, bottom;
+  color: white;
 }
 
-/* ---------- main scrollable area between header & footer ---------- */
+/* ===== MAIN SCROLLABLE AREA ===== */
 main.app-main {
   box-sizing: border-box;
-  /* use --vh to calculate height minus header+footer; keeps fixed elements stable */
   height: calc(var(--vh, 1vh) * 100 - var(--app-header-height) - var(--app-footer-height));
-  padding-top: calc(var(--app-header-height) + 0.5rem);
-  padding-bottom: calc(var(--app-footer-height) + 0.5rem);
+  padding-top: calc(var(--app-header-height) + 1rem);
+  padding-bottom: calc(var(--app-footer-height) + 1rem);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  background: var(--bg-gradient);
+  background-attachment: fixed;
 }
 
-/* ---------- utility classes to show/hide by viewport ---------- */
-/* Desktop: show when width >= 768px */
+/* ===== UTILITY CLASSES ===== */
 .desktop-only { display: none !important; }
-.mobile-only  { display: flex !important; } /* footers usually flex row */
+.mobile-only  { display: flex !important; }
 
-/* Small screens = mobile */
 @media (min-width: 768px) {
   .desktop-only { display: flex !important; }
   .mobile-only  { display: none !important; }
 }
 
-/* ---------- basic footer nav styling (tweak to match your layout) ---------- */
-.meesho-footer .container { padding: 0 1rem; }
-.mf-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.25rem; }
-.mf-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 0.35rem 0.5rem; min-width: 56px; }
-.mf-item i { font-size: 1.05rem; display: block; }
-.mf-badge { position: absolute; margin-top: -10px; margin-left: 8px; background: #ff3b30; color: white; padding: 2px 6px; border-radius: 999px; font-size: 0.7rem; }
+/* ===== ENHANCED FOOTER STYLING ===== */
+.meesho-footer .container { 
+  padding: 0 1rem; 
+  height: 100%;
+}
 
-/* small tweak if some ancestor has transform we can't remove — ensure body is transform-free
-   (if you already have transforms on ancestors, try removing them or moving header outside that element) */
-html, body, app-root { transform: none !important; }
+.mf-nav { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 0.5rem;
+  height: 100%;
+}
 
+.mf-item { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  text-decoration: none; 
+  padding: 0.5rem;
+  min-width: 64px;
+  border-radius: var(--border-radius);
+  transition: all 0.3s ease;
+  color: white;
+}
 
+.mf-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
 
+.mf-item i { 
+  font-size: 1.25rem; 
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.mf-badge { 
+  position: absolute; 
+  margin-top: -8px; 
+  margin-left: 12px; 
+  background: var(--accent-500);
+  color: var(--gray-900);
+  padding: 4px 8px; 
+  border-radius: 999px; 
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+}
+
+/* ===== MODERN CARD STYLES ===== */
+.card {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary-200);
+}
+
+/* ===== HERO SECTION ===== */
+.dashboard-hero {
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--accent-500) 100%);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-xl);
+  color: white;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.hero-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #fff 0%, var(--primary-100) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* ===== BUTTON STYLES ===== */
+.btn-primary, .btn-outline, .btn-ghost {
+  border-radius: var(--border-radius);
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+  color: white;
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+  background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--accent-500);
+  color: var(--primary-700);
+  font-weight: 600;
+}
+
+.btn-outline:hover {
+  background: var(--accent-500);
+  color: var(--gray-900);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  background: var(--accent-500);
+  color: var(--gray-900);
+  font-weight: 600;
+}
+
+.btn-ghost:hover {
+  background: var(--accent-600);
+  transform: translateY(-2px);
+}
+
+/* ===== KPI CARDS ===== */
+.kpi-card {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--primary-50) 100%);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  border-left: 4px solid var(--primary-500);
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-left-color: var(--accent-500);
+}
+
+.kpi-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-50) 100%);
+  color: var(--primary-600);
+}
+
+.kpi-value {
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--primary-700);
+  margin: 0;
+}
+
+.kpi-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0 0;
+}
+
+/* ===== STATUS BADGES ===== */
+.badge {
+  background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);
+  color: white;
+  border-radius: 2em;
+  padding: 0.5em 1em;
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.badge-warning {
+  background: linear-gradient(135deg, var(--warning-500) 0%, var(--warning-600) 100%);
+}
+
+.badge-error {
+  background: linear-gradient(135deg, var(--error-500) 0%, var(--error-600) 100%);
+}
+
+.badge-secondary {
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+}
+
+/* ===== HEADER/FOOTER ENHANCEMENTS ===== */
+.meesho-header {
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+  color: white;
+  box-shadow: var(--shadow-xl);
+  border-bottom: 3px solid var(--accent-500);
+}
+
+.meesho-footer {
+  background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-900) 100%);
+  color: white;
+  box-shadow: var(--shadow-xl);
+  border-top: 3px solid var(--accent-500);
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+  :root {
+    --app-header-height: 56px;
+    --app-footer-height: 56px;
+  }
+  
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .dashboard-hero {
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .card {
+    padding: 1rem;
+    margin: 0.5rem;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== FOCUS STYLES ===== */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent-500);
+  outline-offset: 2px;
+}
 
 /* Bootstrap import (if you use it) */
 @import 'bootstrap/dist/css/bootstrap.min.css';

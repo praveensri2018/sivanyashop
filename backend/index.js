@@ -61,6 +61,7 @@ const shippingAddressRoutes = require('./routes/shippingAddress');
 const orderRoutes = require('./routes/orderRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const refundRoutes = require('./routes/refundRoutes');
+const sizeChartRoutes = require('./routes/sizeChartRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -75,6 +76,10 @@ app.use('/api/shipping-address', shippingAddressRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/refunds', refundRoutes);
+
+// Add this with other app.use routes
+app.use('/api/size-charts', sizeChartRoutes);
+
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 

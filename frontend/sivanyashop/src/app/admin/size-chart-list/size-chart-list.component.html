@@ -1,0 +1,76 @@
+<div class="admin-container">
+  <div class="list-header">
+    <h2>Size Charts</h2>
+    <div class="actions">
+      <button routerLink="/admin/size-chart/create" class="btn btn-primary">
+        + New Size Chart
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters card">
+    <div class="filter-group">
+      <label>Chart Type:</label>
+      <select [(ngModel)]="chartTypeFilter" (change)="onChartTypeFilterChange()">
+        <option value="">All Types</option>
+        <option value="DRESS">Dress</option>
+        <option value="SHOES">Shoes</option>
+        <option value="GENERAL">General</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">Loading size charts...</div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && sizeCharts.length === 0" class="empty-state">
+    <p>No size charts found.</p>
+    <button routerLink="/admin/size-chart/create" class="btn btn-primary">
+      Create Your First Size Chart
+    </button>
+  </div>
+
+  <!-- Size Charts List -->
+  <div *ngIf="!loading && sizeCharts.length > 0" class="size-charts-list">
+    <div class="size-chart-card" *ngFor="let chart of sizeCharts">
+      <div class="chart-header">
+        <h4>{{ chart.name }}</h4>
+        <span class="chart-type-badge" [class]="chart.chartType.toLowerCase()">
+          {{ getChartTypeDisplay(chart.chartType) }}
+        </span>
+      </div>
+      
+      <p class="chart-description" *ngIf="chart.description">{{ chart.description }}</p>
+      
+      <div class="chart-meta">
+        <small><strong>Sizes:</strong> {{ chart.measurements.length }}</small>
+        <small><strong>Created:</strong> {{ formatDate(chart.createdAt) }}</small>
+      </div>
+
+      <div class="chart-actions">
+        <button [routerLink]="['/admin/size-chart/edit', chart.id]" class="btn btn-outline btn-sm">
+          Edit
+        </button>
+        <button [routerLink]="['/admin/size-chart/view', chart.id]" class="btn btn-outline btn-sm">
+          View
+        </button>
+        <button (click)="deleteSizeChart(chart)" class="btn btn-danger btn-sm">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="pagination">
+    <button (click)="onPageChange(page - 1)" [disabled]="page <= 1" class="page-btn">
+      ‹ Previous
+    </button>
+    <span class="page-info">Page {{ page }} of {{ totalPages }}</span>
+    <button (click)="onPageChange(page + 1)" [disabled]="page >= totalPages" class="page-btn">
+      Next ›
+    </button>
+  </div>
+</div>

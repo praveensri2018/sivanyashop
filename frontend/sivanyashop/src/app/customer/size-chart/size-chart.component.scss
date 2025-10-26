@@ -1,0 +1,334 @@
+.size-chart-section {
+  margin: 24px 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+
+  h3 {
+    margin: 0;
+    color: #333;
+  }
+}
+
+.tab-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+
+  &.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+
+  &:not(.active):hover {
+    background: #f8f9fa;
+  }
+}
+
+// Table View Styles
+.size-chart-table {
+  padding: 20px;
+
+  .chart-info {
+    margin-bottom: 20px;
+
+    h4 {
+      margin: 0 0 8px 0;
+      color: #333;
+    }
+
+    .chart-description {
+      color: #666;
+      margin: 0;
+    }
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.size-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+
+  th, td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+  }
+
+  th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .size-label {
+    background: #f8f9fa;
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) {
+    background: #fafafa;
+  }
+
+  tr:hover {
+    background: #f0f8ff;
+  }
+}
+
+.size-help {
+  margin-top: 16px;
+  padding: 12px;
+  background: #e7f3ff;
+  border-radius: 4px;
+
+  p {
+    margin: 0;
+    color: #0066cc;
+  }
+}
+
+// Visual View Styles
+.size-chart-visual {
+  padding: 20px;
+}
+
+.visual-header {
+  text-align: center;
+  margin-bottom: 24px;
+
+  h4 {
+    margin: 0 0 8px 0;
+    color: #333;
+  }
+
+  p {
+    color: #666;
+    margin: 0;
+  }
+}
+
+.visual-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.size-selection {
+  h5 {
+    margin: 0 0 16px 0;
+    color: #333;
+  }
+}
+
+.size-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.size-option {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  min-width: 60px;
+  text-align: center;
+
+  &:hover {
+    border-color: #007bff;
+    background: #f0f8ff;
+  }
+
+  &.selected {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+}
+
+.size-details {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h5 {
+    margin: 0;
+    color: #333;
+  }
+}
+
+.selected-size-badge {
+  background: #007bff;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.measurement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.measurement-item {
+  background: white;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.measurement-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  .measurement-name {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .measurement-value {
+    color: #007bff;
+    font-weight: 600;
+  }
+}
+
+.measurement-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.size-tips {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+
+  h6 {
+    margin: 0 0 12px 0;
+    color: #333;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #666;
+  }
+
+  li {
+    margin-bottom: 6px;
+  }
+}
+
+.no-selection {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  grid-column: 1 / -1;
+}
+
+// Additional Charts
+.additional-charts {
+  padding: 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+}
+
+.additional-header {
+  margin-bottom: 12px;
+
+  h5 {
+    margin: 0;
+    color: #333;
+  }
+}
+
+.additional-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.additional-chart {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
+
+  &.primary {
+    border-color: #007bff;
+    background: #f0f8ff;
+  }
+
+  .chart-type {
+    color: #666;
+    font-size: 12px;
+    text-transform: capitalize;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+// Helper method for bar widths
+:host {
+  // This would be implemented in the component class
+}

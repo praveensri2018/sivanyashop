@@ -21,6 +21,12 @@
             <img [src]="img" (error)="onImgError($event)" style="width:56px; height:56px; object-fit:cover; border-radius:6px" />
           </button>
         </div>
+           <div class="product-section mt-4">
+          <app-size-chart 
+            [productId]="productId" 
+            [displayMode]="'table'">
+          </app-size-chart>
+        </div>
       </div>
 
       <div class="col-12 col-md-7">

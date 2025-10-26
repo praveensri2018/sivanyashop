@@ -1,16 +1,14 @@
-<!-- FILE: src/app/admin/product-upload.component.html
-     REPLACE or MERGE into src/app/admin/product-upload.component.html
-     -- ADDED placeholder attributes for all inputs and .variant-input class for styling.
--->
+<!-- FILE: src/app/admin/product-upload.component.html -->
 
 <div class="admin-container">
   <h2>🛒 Product Upload & Edit</h2>
+
+
 
   <!-- Load / Clear -->
   <section class="card">
     <h3>Load / Edit Product</h3>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <!-- PLACE: product id input (keeps name pidInput) -->
       <input #pidInput placeholder="Enter product id to load (e.g. 12345)" />
       <button class="btn-primary" (click)="loadProductById(pidInput.value)">Load Product</button>
       <button class="btn-outline" (click)="clearForm()">Clear</button>
@@ -26,12 +24,10 @@
   <section class="card">
     <h3>Product Details</h3>
     <form [formGroup]="productForm" (ngSubmit)="$event.preventDefault()" class="form-grid">
-      <!-- PLACE: product name -->
       <label>Product Name
         <input formControlName="name" placeholder="e.g. Cotton Polo T-shirt — Navy" />
       </label>
 
-      <!-- PLACE: description -->
       <label>Description
         <textarea formControlName="description" rows="2" placeholder="Short product description (features, material, care)"></textarea>
       </label>
@@ -92,65 +88,106 @@
     </div>
 
     <div *ngIf="variants?.length">
-      <!-- PLACE: variants table. Added placeholder text and .variant-input class for styling -->
-
-<table class="variants-table" style="width:100%;border-collapse:collapse">
-  <thead>
-    <tr>
-      <th>SKU</th>
-      <th>Variant Name</th>
-      <th>Attributes</th>
-      <th>Stock</th>
-      <th>Customer ₹</th>
-      <th>Retailer ₹</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let v of variants; let i = index">
-      <!-- SKU -->
-      <td data-label="SKU">
-        <input class="variant-input" [(ngModel)]="v.sku" name="sku-{{i}}" placeholder="e.g. SKU-001" />
-      </td>
-
-      <!-- Variant Name -->
-      <td data-label="Variant Name">
-        <input class="variant-input" [(ngModel)]="v.variantName" name="variantName-{{i}}" placeholder="Variant name (e.g. Navy / L)" />
-      </td>
-
-      <!-- Attributes -->
-      <td data-label="Attributes">
-        <input class="variant-input" [(ngModel)]="v.attributes" name="attributes-{{i}}" placeholder="color:Red;size:L (semicolon separated)" />
-      </td>
-
-      <!-- Stock -->
-      <td data-label="Stock">
-        <input class="variant-input" type="number" [(ngModel)]="v.stockQty" name="stockQty-{{i}}" placeholder="0" />
-      </td>
-
-      <!-- Customer Price -->
-      <td data-label="Customer ₹">
-        <input class="variant-input" type="number" [(ngModel)]="v.customerPrice" name="customerPrice-{{i}}" placeholder="e.g. 499.00" />
-      </td>
-
-      <!-- Retailer Price -->
-      <td data-label="Retailer ₹">
-        <input class="variant-input" type="number" [(ngModel)]="v.retailerPrice" name="retailerPrice-{{i}}" placeholder="e.g. 450.00" />
-      </td>
-
-      <!-- Actions -->
-      <td class="actions-cell" data-label="Actions" style="vertical-align:middle">
-        <div class="variant-actions">
-          <button class="btn-primary" (click)="addVariantRow(v)">Duplicate</button>
-          <button class="btn-warning" (click)="removeVariantRow(i)">Remove</button>
-        </div>
-      </td>
-    </tr>
-  </tbody>
-</table>
+      <table class="variants-table" style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Variant Name</th>
+            <th>Attributes</th>
+            <th>Stock</th>
+            <th>Customer ₹</th>
+            <th>Retailer ₹</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let v of variants; let i = index">
+            <td data-label="SKU">
+              <input class="variant-input" [(ngModel)]="v.sku" name="sku-{{i}}" placeholder="e.g. SKU-001" />
+            </td>
+            <td data-label="Variant Name">
+              <input class="variant-input" [(ngModel)]="v.variantName" name="variantName-{{i}}" placeholder="Variant name (e.g. Navy / L)" />
+            </td>
+            <td data-label="Attributes">
+              <input class="variant-input" [(ngModel)]="v.attributes" name="attributes-{{i}}" placeholder="color:Red;size:L (semicolon separated)" />
+            </td>
+            <td data-label="Stock">
+              <input class="variant-input" type="number" [(ngModel)]="v.stockQty" name="stockQty-{{i}}" placeholder="0" />
+            </td>
+            <td data-label="Customer ₹">
+              <input class="variant-input" type="number" [(ngModel)]="v.customerPrice" name="customerPrice-{{i}}" placeholder="e.g. 499.00" />
+            </td>
+            <td data-label="Retailer ₹">
+              <input class="variant-input" type="number" [(ngModel)]="v.retailerPrice" name="retailerPrice-{{i}}" placeholder="e.g. 450.00" />
+            </td>
+            <td class="actions-cell" data-label="Actions" style="vertical-align:middle">
+              <div class="variant-actions">
+                <button class="btn-primary" (click)="addVariantRow(v)">Duplicate</button>
+                <button class="btn-warning" (click)="removeVariantRow(i)">Remove</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <div *ngIf="!variants?.length" style="color:#777;margin-top:8px">No variants yet — click "Add Variant Row" to start.</div>
+  </section>
+
+  <!-- Size Charts Section - ALWAYS SHOW THIS -->
+  <section class="card">
+    <h3>Size Charts</h3>
+    
+    <!-- Show when no charts available -->
+    <div *ngIf="availableSizeCharts.length === 0" style="background: #f8f9fa; padding: 16px; border-radius: 6px; text-align: center;">
+      <p style="color: #666; margin-bottom: 16px;">No size charts available.</p>
+      <button class="btn-primary" (click)="createTestSizeChart()">Create Test Size Chart</button>
+      <button class="btn-outline" (click)="loadSizeCharts()" style="margin-left: 8px;">Refresh</button>
+    </div>
+
+    <!-- Show when charts are available -->
+    <div *ngIf="availableSizeCharts.length > 0">
+      <p class="muted">Assign size charts to this product</p>
+
+      <div class="size-charts-selection">
+        <div *ngFor="let chart of availableSizeCharts" class="size-chart-option">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [value]="chart.id"
+              (change)="onSizeChartSelect(chart.id!, $event)">
+            <span class="checkmark"></span>
+            <strong>{{ chart.name }}</strong> - {{ chart.chartType }}
+          </label>
+          
+          <div *ngIf="selectedSizeCharts.includes(chart.id!)" class="primary-option">
+            <label class="radio-label">
+              <input
+                type="radio"
+                name="primarySizeChart"
+                [value]="chart.id"
+                [checked]="primarySizeChartId === chart.id"
+                (change)="setPrimarySizeChart(chart.id!)">
+              <span class="radiomark"></span>
+              Set as Primary
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="button" 
+          (click)="assignSizeChartsToProduct()" 
+          [disabled]="selectedSizeCharts.length === 0 || !createdProductId"
+          class="btn btn-primary">
+          Assign Size Charts to Product
+        </button>
+        <small *ngIf="!createdProductId" style="color: #dc3545; margin-left: 12px;">
+          * Create or load a product first
+        </small>
+      </div>
+    </div>
   </section>
 
   <!-- Final submit -->

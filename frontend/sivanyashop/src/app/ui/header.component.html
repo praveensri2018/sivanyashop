@@ -1,7 +1,4 @@
-<!-- FILE: src/app/ui/header.component.html
-     REPLACE the existing file at src/app/ui/header.component.html with this content.
-     (This adds an Admin "Dashboard" link in desktop nav and ensures consistency with mobile sidebar.)
--->
+<!-- FILE: src/app/ui/header.component.html -->
 <header class="meesho-header" [class.scrolled]="isScrolled" [class.mobile-menu-open]="isMobileMenuOpen">
   <!-- Top Bar -->
   <div class="header-top">
@@ -48,18 +45,25 @@
   </div>
 
   <!-- Desktop Navigation -->
-  <nav class="desktop-nav" *ngIf="role">
+  <nav class="desktop-nav" *ngIf="role" style = "display: none;">
     <div class="container">
       <div class="nav-links">
         <a routerLink="/" class="nav-link" routerLinkActive="active">Home</a>
-         <!-- Admin Navigation: NOTE: Added Dashboard link first -->
+        
+        <!-- Admin Navigation -->
         <ng-container *ngIf="role === 'admin'">
-          <!-- PLACE: Admin dashboard link (visible to admin on desktop nav) -->
           <a routerLink="/admin" class="nav-link" routerLinkActive="active">Dashboard</a>
-
           <a routerLink="/admin/orders" class="nav-link" routerLinkActive="active">Orders</a>
           <a routerLink="/admin/products" class="nav-link" routerLinkActive="active">Products</a>
+          
+          <!-- ✅ NEW: Size Charts Menu Item -->
+          <a routerLink="/admin/size-charts" class="nav-link" routerLinkActive="active">
+            <i class="fas fa-ruler-combined" style="margin-right: 4px;"></i>
+            Size Charts
+          </a>
+          
           <a routerLink="/admin/retailers" class="nav-link" routerLinkActive="active">Retailers</a>
+          <a routerLink="/admin/categories" class="nav-link" routerLinkActive="active">Categories</a>
           <a routerLink="/payment-history" class="nav-link" routerLinkActive="active">Payments</a>
         </ng-container>
 
@@ -79,7 +83,7 @@
   </nav>
 </header>
 
-<!-- Mobile Sidebar Menu (unchanged links but ensures Dashboard is present for admin) -->
+<!-- Mobile Sidebar Menu -->
 <div class="mobile-sidebar" [class.open]="isMobileMenuOpen">
   <div class="sidebar-header">
     <button class="close-btn" (click)="toggleMobileMenu()" aria-label="Close menu">
@@ -98,9 +102,9 @@
     <a routerLink="/" class="sidebar-link" (click)="toggleMobileMenu()">
       <i class="fas fa-home"></i><span>Home</span>
     </a>
+    
     <!-- Admin Links -->
     <ng-container *ngIf="role === 'admin'">
-      <!-- PLACE: Admin dashboard link (mobile sidebar already had dashboard in previous snippet but keep for safety) -->
       <a routerLink="/admin" class="sidebar-link" (click)="toggleMobileMenu()">
         <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
       </a>
@@ -110,12 +114,21 @@
       <a routerLink="/admin/products" class="sidebar-link" (click)="toggleMobileMenu()">
         <i class="fas fa-box"></i><span>Products</span>
       </a>
+      
+      <!-- ✅ NEW: Size Charts Menu Item (Mobile) -->
+      <a routerLink="/admin/size-charts" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-ruler-combined"></i><span>Size Charts</span>
+      </a>
+      
       <a routerLink="/admin/retailers" class="sidebar-link" (click)="toggleMobileMenu()">
         <i class="fas fa-users"></i><span>Retailers</span>
       </a>
+      <a routerLink="/admin/categories" class="sidebar-link" (click)="toggleMobileMenu()">
+        <i class="fas fa-tags"></i><span>Categories</span>
+      </a>
     </ng-container>
 
-    <!-- (rest unchanged) -->
+    <!-- Customer Links -->
     <ng-container *ngIf="role === 'customer'">
       <a routerLink="/dashboard" class="sidebar-link" (click)="toggleMobileMenu()">
         <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
@@ -125,6 +138,7 @@
       </a>
     </ng-container>
 
+    <!-- Retailer Links -->
     <ng-container *ngIf="role === 'retailer'">
       <a routerLink="/retailer" class="sidebar-link" (click)="toggleMobileMenu()">
         <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
@@ -134,6 +148,7 @@
       </a>
     </ng-container>
 
+    <!-- Common Links -->
     <a routerLink="/payment-history" class="sidebar-link" (click)="toggleMobileMenu()">
       <i class="fas fa-credit-card"></i><span>Payments</span>
     </a>
