@@ -1,78 +1,24 @@
+<!-- src/app/ui/footer.component.html -->
 <footer class="meesho-footer">
-  <div class="container">
-
-    <!-- ADMIN FOOTER -->
-    <nav class="mf-nav mobile-only" *ngIf="designVariant === 'admin'">
-      <a routerLink="/admin" class="mf-item">
-        <i class="fas fa-tachometer-alt"></i><span>Dash</span>
-      </a>
-      <a routerLink="/admin/orders" class="mf-item">
-        <i class="fas fa-box-open"></i><span>Orders</span>
-      </a>
-      <a routerLink="/admin/retailers" class="mf-item">
-        <i class="fas fa-users"></i><span>Users</span>
-      </a>
-      <a routerLink="/admin/settings" class="mf-item">
-        <i class="fas fa-cog"></i><span>Settings</span>
-      </a>
-    </nav>
-
-    <!-- CUSTOMER / RETAILER FOOTER -->
-    <nav class="mf-nav mobile-only" *ngIf="designVariant === 'customer'">
-      <a routerLink="/" routerLinkActive="active" class="mf-item">
-        <i class="fas fa-home"></i><span>Home</span>
-      </a>
-      <a routerLink="/cart" routerLinkActive="active" class="mf-item">
-        <i class="fas fa-shopping-cart"></i><span>Cart</span>
-        <strong class="mf-badge" *ngIf="(cartCount$ | async) as c">{{ c }}</strong>
-      </a>
-      <a routerLink="/orders" routerLinkActive="active" class="mf-item">
-        <i class="fas fa-box-open"></i><span>Orders</span>
-      </a>
-      <a routerLink="/account" routerLinkActive="active" class="mf-item">
-        <i class="fas fa-user"></i><span>Account</span>
-      </a>
-    </nav>
-
-    <!-- GUEST FOOTER -->
-    <nav class="mf-nav mobile-only" *ngIf="designVariant === 'guest'">
-      <a routerLink="/" routerLinkActive="active" class="mf-item">
-        <i class="fas fa-home"></i><span>Home</span>
-      </a>
-      <a routerLink="/cart" routerLinkActive="active" class="mf-item">
-        <i class="fas fa-shopping-cart"></i><span>Cart</span>
-      </a>
-      <a routerLink="/login" routerLinkActive="active" class="mf-item">
-        <i class="fas fa-sign-in-alt"></i><span>Login</span>
-      </a>
-    </nav>
-
-    <!-- DESKTOP FOOTER -->
-    <nav class="mf-nav desktop-only">
-      <div style="display:flex; gap:1.5rem; align-items:center;">
-        <a routerLink="/" class="mf-item"><i class="fas fa-home"></i><span>Home</span></a>
-        <a routerLink="/orders" class="mf-item"><i class="fas fa-box-open"></i><span>Orders</span></a>
+  
+  <!-- Desktop Footer -->
+  <nav class="footer-nav desktop-footer">
+    <div class="container">
+      <div class="footer-content">
+        
+        <!-- Left Section -->
+        
       </div>
+    </div>
+  </nav>
 
-      <div style="display:flex; gap:1rem; align-items:center;">
-        <a routerLink="/cart" class="mf-item">
-          <i class="fas fa-shopping-cart"></i><span>Cart</span>
-          <strong class="mf-badge" *ngIf="(cartCount$ | async) as c">{{ c }}</strong>
-        </a>
-
-        <ng-container *ngIf="role; else showLoginDesktop">
-          <a routerLink="/account" class="mf-item">
-            <i class="fas fa-user"></i><span>{{ (currentUser?.name | slice:0:10) || 'Account' }}</span>
-          </a>
-        </ng-container>
-
-        <ng-template #showLoginDesktop>
-          <a routerLink="/login" class="mf-item">
-            <i class="fas fa-sign-in-alt"></i><span>Login</span>
-          </a>
-        </ng-template>
+  <!-- Mobile Footer -->
+  <nav class="footer-nav mobile-footer">
+    <div class="container">
+      <div class="footer-content">
+        
+       
       </div>
-    </nav>
-
-  </div>
+    </div>
+  </nav>
 </footer>

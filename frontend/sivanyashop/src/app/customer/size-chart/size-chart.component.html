@@ -1,0 +1,140 @@
+<div *ngIf="hasSizeCharts()" class="size-chart-section">
+  <div class="section-header">
+    <h3>Size Guide</h3>
+    
+    <!-- Tab Navigation -->
+    <div class="tab-nav" *ngIf="getCurrentSizeChart()">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'table'"
+        (click)="switchTab('table')">
+        Size Table
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'visual'"
+        (click)="switchTab('visual')">
+        Find Your Size
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading size guide...</div>
+
+  <!-- Table View -->
+  <div *ngIf="!loading && activeTab === 'table' && getCurrentSizeChart()" class="size-chart-table">
+    <div class="chart-info">
+      <h4>{{ getCurrentSizeChart()!.name }}</h4>
+      <p *ngIf="getCurrentSizeChart()!.description" class="chart-description">
+        {{ getCurrentSizeChart()!.description }}
+      </p>
+    </div>
+
+    <div class="table-container">
+      <table class="size-table">
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th *ngFor="let measurement of getMeasurementKeys()">
+              {{ measurement | titlecase }} (cm)
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let size of getAvailableSizes()">
+            <td class="size-label"><strong>{{ size.size }}</strong></td>
+            <td *ngFor="let measurement of getMeasurementKeys()">
+              {{ size.measurements[measurement] || '-' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="size-help">
+      <p><small>All measurements are in centimeters. Please refer to the visual guide for help finding your perfect size.</small></p>
+    </div>
+  </div>
+
+  <!-- Visual Chart View -->
+  <div *ngIf="!loading && activeTab === 'visual' && getCurrentSizeChart()" class="size-chart-visual">
+    <div class="visual-header">
+      <h4>Find Your Perfect Size</h4>
+      <p>Click on a size to see detailed measurements</p>
+    </div>
+
+    <div class="visual-content">
+      <!-- Size Selection -->
+      <div class="size-selection">
+        <h5>Available Sizes</h5>
+        <div class="size-options">
+          <button 
+            *ngFor="let size of getAvailableSizes()"
+            class="size-option"
+            [class.selected]="selectedSize === size.size"
+            (click)="selectSize(size.size)">
+            {{ size.size }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Size Details -->
+      <div class="size-details" *ngIf="selectedSize">
+        <div class="details-header">
+          <h5>Size {{ selectedSize }} Measurements</h5>
+          <span class="selected-size-badge">{{ selectedSize }}</span>
+        </div>
+        
+        <div class="measurement-list">
+          <div *ngFor="let measurement of getSelectedSizeMeasurements()" class="measurement-item">
+            <div class="measurement-info">
+              <span class="measurement-name">{{ measurement.key | titlecase }}</span>
+              <span class="measurement-value">{{ measurement.value }} cm</span>
+            </div>
+            <div class="measurement-bar">
+              <div class="bar-fill" [style.width.%]="getBarWidth(measurement.value)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="size-tips">
+          <h6>How to measure:</h6>
+          <ul>
+            <li *ngIf="getMeasurementKeys().includes('chest')">
+              <strong>Chest:</strong> Measure around the fullest part of your chest
+            </li>
+            <li *ngIf="getMeasurementKeys().includes('waist')">
+              <strong>Waist:</strong> Measure around your natural waistline
+            </li>
+            <li *ngIf="getMeasurementKeys().includes('hips')">
+              <strong>Hips:</strong> Measure around the fullest part of your hips
+            </li>
+            <li *ngIf="getMeasurementKeys().includes('length')">
+              <strong>Length:</strong> Measure from shoulder to hem
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- No Size Selected -->
+      <div *ngIf="!selectedSize" class="no-selection">
+        <p>Select a size to view detailed measurements</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multiple Charts Available -->
+  <div *ngIf="sizeCharts.length > 1" class="additional-charts">
+    <div class="additional-header">
+      <h5>Additional Size Guides</h5>
+    </div>
+    <div class="additional-list">
+      <div *ngFor="let chart of sizeCharts" 
+           class="additional-chart"
+           [class.primary]="chart.isPrimary">
+        <strong>{{ chart.name }}</strong>
+        <span class="chart-type">{{ chart.chartType | lowercase }}</span>
+      </div>
+    </div>
+  </div>
+</div>

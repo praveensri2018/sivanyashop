@@ -27,7 +27,8 @@
     "jsonwebtoken": "^9.0.2",
     "mssql": "^12.0.0",
     "multer": "^2.0.2",
-    "multer-s3": "^3.0.1"
+    "multer-s3": "^3.0.1",
+    "razorpay": "^2.9.6"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

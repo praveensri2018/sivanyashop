@@ -1,0 +1,15 @@
+// order-details/order-details.component.scss
+.order-details {
+  .card-header {
+    background-color: #f8f9fa;
+  }
+  
+  .img-fluid {
+    max-height: 80px;
+    object-fit: cover;
+  }
+  
+  .badge {
+    font-size: 0.75rem;
+  }
+}

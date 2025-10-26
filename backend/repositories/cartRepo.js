@@ -15,7 +15,7 @@ async function getCartByUserId(userId) {
  * Create a cart row for user
  */
 async function createCartForUser(userId) {
-  const res = await query('INSERT INTO dbo.Carts (UserId, CreatedAt) OUTPUT INSERTED.* VALUES (@userId, SYSUTCDATETIME())', {
+  const res = await query('INSERT INTO dbo.Carts (UserId, CreatedAt) OUTPUT INSERTED.* VALUES (@userId, SYSDATETIMEOFFSET() AT TIME ZONE "India Standard Time")', {
     userId: { type: sql.Int, value: userId }
   });
   return res.recordset && res.recordset[0] ? res.recordset[0] : null;
@@ -46,7 +46,7 @@ async function updateCartItemQty(cartItemId, qty, price = null) {
     `UPDATE dbo.CartItems
      SET Qty = @qty,
          Price = COALESCE(@price, Price),
-         UpdatedAt = SYSUTCDATETIME()
+         UpdatedAt = SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time'
      OUTPUT INSERTED.*
      WHERE Id = @id`,
     {
@@ -65,7 +65,7 @@ async function insertCartItem(cartId, productId, variantId, qty, price) {
   const res = await query(
     `INSERT INTO dbo.CartItems (CartId, ProductId, VariantId, Qty, Price, CreatedAt)
      OUTPUT INSERTED.Id, INSERTED.CartId, INSERTED.ProductId, INSERTED.VariantId, INSERTED.Qty, INSERTED.Price
-     VALUES (@cartId, @productId, @variantId, @qty, @price, SYSUTCDATETIME())`,
+     VALUES (@cartId, @productId, @variantId, @qty, @price, SYSDATETIMEOFFSET() AT TIME ZONE 'India Standard Time')`,
     {
       cartId: { type: sql.Int, value: cartId },
       productId: { type: sql.Int, value: productId },

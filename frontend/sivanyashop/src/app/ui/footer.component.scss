@@ -1,64 +1,157 @@
-/* Place file at: src/app/ui/footer.component.scss
-   Mobile bottom navigation styles (Meesho-like)
-*/
+// src/app/ui/footer.component.scss
+:root {
+  --footer-bg: #ffffff;
+  --footer-text: #374151;
+  --footer-border: #e5e7eb;
+  --footer-accent: #dc2626;
+  --footer-badge: #ef4444;
+  --footer-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
 .meesho-footer {
+  background: var(--footer-bg);
+  border-top: 1px solid var(--footer-border);
   position: sticky;
   bottom: 0;
-  width: 100%;
-  background: #fff;
-  border-top: 1px solid #eee;
-  z-index: 55;
-  .container { padding:0 12px; }
-  .mf-nav {
+  z-index: 100;
+  box-shadow: var(--footer-shadow);
+}
+
+.footer-nav {
+  padding: 0.75rem 0;
+}
+
+/* Desktop Footer */
+.desktop-footer {
+  @media (max-width: 768px) {
+    display: none;
+  }
+
+  .footer-content {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    gap: 6px;
   }
-  .mf-item {
-    flex: 1 1 0;
+
+  .footer-section {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 4px;
-    text-decoration: none;
-    color: #111827;
-    padding: 6px 4px;
-    font-size: 11px;
-    border-radius: 8px;
-    background: transparent;
-    border: 0;
-  }
-  .mf-item svg { color: #111827; }
-  .mf-badge {
-    background: #ff3b30;
-    color: #fff;
-    padding: 2px 6px;
-    border-radius: 999px;
-    font-size: 11px;
-    margin-top: -6px;
+    gap: 1.5rem;
   }
 }
 
-/* hide footer on larger screens (optional) */
-@media (min-width: 768px) {
-  .meesho-footer { display: none; }
+/* Mobile Footer */
+.mobile-footer {
+  @media (min-width: 769px) {
+    display: none;
+  }
+
+  .footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+  }
 }
 
-.mh-icon-btn i,
-.mf-item i,
-.mh-search-left i,
-.mh-user-btn i {
-  font-size: 18px; /* adjust if you prefer larger/smaller */
-  line-height: 1;
-  display: inline-block;
-  width: 22px;     /* keep consistent footprint like svg */
-  text-align: center;
+/* Footer Links */
+.footer-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-decoration: none;
+  color: var(--footer-text);
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+  min-width: 60px;
+
+  &:hover {
+    background: #f3f4f6;
+    color: var(--footer-accent);
+  }
+
+  &.active {
+    color: var(--footer-accent);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      background: var(--footer-accent);
+      border-radius: 50%;
+    }
+  }
+
+  i {
+    font-size: 1.25rem;
+  }
+
+  span {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
 }
 
-/* small adjustment for header search-left icon */
-.mh-search-left i { font-size:16px; width:18px; }
+/* Cart Link with Badge */
+.cart-link {
+  position: relative;
+}
 
-/* ensure icons inherit text color where needed */
-.mh-icon-btn i, .mf-item i { color: inherit; }
+.footer-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--footer-badge);
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+
+  @media (max-width: 768px) {
+    padding: 0 0.5rem;
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+  .footer-nav {
+    padding: 0.5rem 0;
+  }
+
+  .footer-link {
+    padding: 0.375rem;
+    min-width: 50px;
+
+    i {
+      font-size: 1.125rem;
+    }
+
+    span {
+      font-size: 0.7rem;
+    }
+  }
+
+  .footer-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 0.65rem;
+  }
+}

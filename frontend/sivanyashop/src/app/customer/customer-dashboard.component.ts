@@ -43,7 +43,8 @@ export class CustomerDashboardComponent implements OnInit {
   productsLoading = false;
   productsPage = 1;
   productsLimit = 12;
-
+  loading = false;
+  
   // orders
   orders: OrderItem[] = [];
   ordersLoading = false;
@@ -64,6 +65,11 @@ export class CustomerDashboardComponent implements OnInit {
     this.loadOrders();
   }
 
+
+    goToProduct(productId: number): void {
+    this.router.navigate(['/product', productId]);
+  }
+  
   /* ---------- products ---------- */
   loadProducts(reset = true) {
     if (reset) {
@@ -112,8 +118,18 @@ export class CustomerDashboardComponent implements OnInit {
     this.router.navigate(['/product', p.id]);
   }
 
-  onSearchSubmit() {
-    this.loadProducts(true);
+  onSearch(): void {
+    if (this.activeTab === 'products') {
+      this.loadProducts();
+    } else {
+      this.loadOrders();
+    }
+  }
+
+    setActiveTab(tab: 'products' | 'orders'): void {
+    this.activeTab = tab;
+    if (tab === 'products' && this.products.length === 0) this.loadProducts();
+    if (tab === 'orders' && this.orders.length === 0) this.loadOrders();
   }
 
   /* ---------- orders ---------- */

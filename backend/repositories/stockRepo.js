@@ -26,4 +26,28 @@ async function fetchProductStock(productId) {
   return result.recordset;
 }
 
-module.exports = { insertStockLedger, fetchStockLedger, fetchProductStock };
+
+async function getVariantStockById(variantId) {
+  const result = await query(
+    `SELECT Id AS VariantId, ProductId, VariantName, StockQty
+     FROM dbo.ProductVariants
+     WHERE Id = @variantId`,
+    { variantId: { type: sql.Int, value: variantId } }
+  );
+  return result.recordset && result.recordset[0] ? result.recordset[0] : null;
+}
+
+async function tryDecrementVariantStock(variantId, qty) {
+  const res = await query(
+    `UPDATE dbo.ProductVariants
+     SET StockQty = StockQty - @qty
+     WHERE Id = @variantId AND StockQty >= @qty;
+     SELECT @@ROWCOUNT as rowsAffected;`,
+    { variantId: { type: sql.Int, value: variantId }, qty: { type: sql.Int, value: qty } }
+  );
+  // Some DB helpers may return recordset[0].rowsAffected differently; adapt if needed
+  const rows = res && res.recordset && res.recordset[0] ? Number(res.recordset[0].rowsAffected || res.rowsAffected?.[0] || res.rowsAffected) : 0;
+  return rows > 0;
+}
+
+module.exports = { insertStockLedger, fetchStockLedger, fetchProductStock,getVariantStockById,tryDecrementVariantStock };

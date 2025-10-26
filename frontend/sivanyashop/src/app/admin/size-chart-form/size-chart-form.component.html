@@ -1,0 +1,132 @@
+<div class="admin-container">
+  <div class="form-header">
+    <h2>{{ isEdit ? 'Edit' : 'Create' }} Size Chart</h2>
+    <button routerLink="/admin/size-charts" class="btn btn-outline">
+      ← Back to Size Charts
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading size chart...</div>
+
+  <form *ngIf="!loading" [formGroup]="sizeChartForm" (ngSubmit)="onSubmit()" class="size-chart-form card">
+    
+    <!-- Basic Information -->
+    <div class="form-section">
+      <h3>Basic Information</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Chart Name *</label>
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            placeholder="e.g., Women's Dress Sizes"
+            class="form-control"
+            [class.error]="sizeChartForm.get('name')?.invalid && sizeChartForm.get('name')?.touched">
+          <div *ngIf="sizeChartForm.get('name')?.invalid && sizeChartForm.get('name')?.touched" class="error-message">
+            Chart name is required and must be at least 2 characters long.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="chartType">Chart Type *</label>
+          <select
+            id="chartType"
+            formControlName="chartType"
+            class="form-control">
+            <option value="DRESS">Dress</option>
+            <option value="SHOES">Shoes</option>
+            <option value="GENERAL">General</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Optional description for this size chart"
+          rows="3"
+          class="form-control"></textarea>
+      </div>
+    </div>
+
+    <!-- Size Measurements -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3>Size Measurements</h3>
+        <button type="button" (click)="addSize()" class="btn btn-primary btn-sm">
+          + Add Size
+        </button>
+      </div>
+
+      <p class="section-help">
+        Add all the sizes available for this chart. Measurements are in centimeters.
+      </p>
+
+      <div formArrayName="measurements" class="measurements-container">
+        <div *ngFor="let measurement of measurements.controls; let i = index" 
+             [formGroupName]="i" 
+             class="measurement-row">
+          
+          <div class="measurement-header">
+            <h4>Size {{ i + 1 }}</h4>
+            <button type="button" (click)="removeSize(i)" class="btn btn-danger btn-sm" 
+                    [disabled]="measurements.length <= 1">
+              Remove
+            </button>
+          </div>
+
+          <div class="measurement-fields">
+            <!-- Size Name -->
+            <div class="form-group">
+              <label>Size Label *</label>
+              <input
+                type="text"
+                formControlName="size"
+                placeholder="e.g., S, M, L or 38, 40, 42"
+                class="form-control"
+                [class.error]="measurement.get('size')?.invalid && measurement.get('size')?.touched">
+              <div *ngIf="measurement.get('size')?.invalid && measurement.get('size')?.touched" class="error-message">
+                Size label is required.
+              </div>
+            </div>
+
+            <!-- Dynamic Measurement Fields -->
+            <div *ngFor="let field of getMeasurementFields()" class="form-group">
+              <label>{{ field }} (cm) *</label>
+              <input
+                type="number"
+                step="0.1"
+                [formControlName]="getFieldName(field)"
+                [placeholder]="field + ' in cm'"
+                class="form-control"
+                [class.error]="measurement.get(getFieldName(field))?.invalid && measurement.get(getFieldName(field))?.touched">
+              <div *ngIf="measurement.get(getFieldName(field))?.invalid && measurement.get(getFieldName(field))?.touched" 
+                   class="error-message">
+                {{ field }} must be a positive number.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="measurements.length === 0" class="empty-measurements">
+        <p>No sizes added yet. Click "Add Size" to start.</p>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="button" routerLink="/admin/size-charts" class="btn btn-outline">
+        Cancel
+      </button>
+      <button type="submit" [disabled]="submitting || sizeChartForm.invalid" class="btn btn-primary">
+        <span *ngIf="submitting">Saving...</span>
+        <span *ngIf="!submitting">{{ isEdit ? 'Update' : 'Create' }} Size Chart</span>
+      </button>
+    </div>
+  </form>
+</div>

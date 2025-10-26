@@ -1,204 +1,422 @@
-// 🎨 AMAZON-LIKE ADMIN STYLE
+/* PLACE: src/app/admin/category-management.component.scss
+   Modern Commercial Category Management - Colorful & Professional
+   ----------------------------------------------------------------
+   NOTE: Replace the contents of the file at the path above with this file.
+   MOBILE-specific tweaks are annotated with "MOBILE".
+*/
 
-// 🌈 Color Palette
-$primary: #232f3e;       // Amazon dark navy
-$accent: #febd69;        // Amazon orange highlight
-$bg-light: #f3f3f3;      // light gray background
-$text-dark: #111;        // main text
-$text-muted: #555;       // muted text
-$border-color: #ddd;
+:host {
+  display: block;
+  font-family: 'Inter', system-ui, sans-serif;
+}
 
-// 🔤 Typography
-$font-main: 'Amazon Ember', 'Inter', sans-serif;
-
-// 🧱 Layout
+/* Container */
 .admin-container {
-  max-width: 900px;
-  margin: 50px auto;
-  padding: 32px;
-  background: $bg-light;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  font-family: $font-main;
-  color: $text-dark;
-  transition: all 0.3s ease;
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--primary-50) 100%);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-light);
+  animation: fadeInUp 0.6s ease-out;
 
   h2 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 24px;
-    color: $primary;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    color: var(--primary-700);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.75rem;
+
+    &::before {
+      content: '📂';
+      font-size: 1.8rem;
+    }
+
+    &::after {
+      content: '';
+      flex: 1;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary-500) 0%, var(--accent-500) 100%);
+      border-radius: 2px;
+      margin-left: 1rem;
+    }
   }
 }
 
-// 🧩 Card
+/* ===== CARD BASE ===== */
 .card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 24px 28px;
-  margin-bottom: 24px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-  transition: all 0.2s ease;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--primary-500) 0%, var(--accent-500) 100%);
+  }
 
   &:hover {
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
   }
 
   h3 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 18px;
-    color: $primary;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    color: var(--primary-700);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::before {
+      content: '';
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-500) 0%, var(--accent-500) 100%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: white;
+    }
   }
 }
 
-// 🧾 Form
+/* ===== FORM GRID ===== */
 .form-grid {
   display: grid;
-  gap: 16px;
   grid-template-columns: 1fr;
-}
+  gap: 1.5rem;
 
-label {
-  display: flex;
-  flex-direction: column;
-  font-weight: 600;
-  color: $text-dark;
-  font-size: 0.95rem;
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
 
-  input,
-  select {
-    margin-top: 8px;
-    padding: 10px 12px;
-    border-radius: 6px;
-    border: 1px solid $border-color;
-    background: #fff;
+  label {
+    display: block;
+    font-weight: 600;
     font-size: 0.95rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
 
-    &:focus {
-      border-color: $accent;
-      box-shadow: 0 0 0 2px rgba($accent, 0.3);
-      outline: none;
+    input, select {
+      display: block;
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 1rem 1.25rem;
+      border-radius: var(--border-radius);
+      border: 2px solid var(--border-light);
+      background: var(--bg-primary);
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        transform: translateY(-1px);
+      }
+    }
+
+    input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.75;
+    }
+
+    /* select chevron */
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1.25rem;
+      padding-right: 3rem;
     }
   }
 }
 
-// 🧷 Buttons
+/* ===== BUTTON ROW ===== */
 .btn-row {
+  grid-column: 1 / -1;
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+  flex-wrap: wrap;
 
-button {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  font-family: $font-main;
-
-  &.btn-primary {
-    background: linear-gradient(90deg, darken($accent, 3%), $accent);
-    color: #111;
-    padding: 10px 16px;
-
-    &:hover {
-      background: darken($accent, 5%);
-      transform: translateY(-1px);
-    }
+  button {
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 160px;
+    justify-content: center;
   }
 
-  &.btn-cancel {
-    background: #ccc;
-    color: #111;
-    padding: 10px 16px;
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+    color: white;
 
-    &:hover {
-      background: darken(#ccc, 8%);
-    }
+    &:hover { box-shadow: 0 8px 25px rgba(37,99,235,0.16); }
+    &::before { content: '✅'; margin-right: 6px; }
   }
 
-  &.btn-small {
-    background: $primary;
-    color: #fff;
-    padding: 6px 10px;
-    font-size: 0.85rem;
+  .btn-cancel {
+    background: linear-gradient(135deg, var(--gray-400) 0%, var(--gray-500) 100%);
+    color: white;
 
-    &:hover {
-      background: lighten($primary, 5%);
-    }
-  }
-
-  &.btn-danger {
-    background: #d62828;
-    color: #fff;
-    padding: 6px 10px;
-    font-size: 0.85rem;
-
-    &:hover {
-      background: darken(#d62828, 8%);
-    }
+    &:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+    &::before { content: '❌'; margin-right: 6px; }
   }
 }
 
-// 📋 Category List
+/* ===== EXISTING CATEGORIES LIST ===== */
+/* Matches HTML: <ul class="category-list"><li>...</li></ul> */
 .category-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 14px;
+  gap: 1rem;
+}
 
-  li {
-    background: #fff;
-    border-radius: 8px;
-    padding: 14px 18px;
-    border: 1px solid #e5e5e5;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+/* each list item */
+.category-list li {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.category-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: linear-gradient(180deg, var(--primary-500) 0%, var(--accent-500) 100%);
+  transition: width 0.25s ease;
+}
+
+.category-list li:hover {
+  transform: translateX(6px);
+  box-shadow: var(--shadow-lg);
+}
+.category-list li:hover::before { width: 6px; }
+
+/* info and meta */
+.category-list li .row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.category-list li .row strong {
+  font-size: 1.1rem;
+  color: var(--primary-700);
+}
+
+.category-list li .muted {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* category meta badges */
+.category-list li .category-meta {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.category-list li .category-meta .category-path,
+.category-list li .category-meta .product-count {
+  font-size: 0.9rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/* path badge */
+.category-list li .category-meta .category-path {
+  background: var(--gray-100);
+  color: var(--text-muted);
+}
+
+/* product count badge */
+.category-list li .category-meta .product-count {
+  background: var(--success-50);
+  color: var(--success-700);
+}
+
+/* actions column (buttons) */
+.category-list li .actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* small button / delete */
+.btn-small {
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--accent-500) 0%, var(--warning-500) 100%);
+  border: none;
+  color: var(--gray-900);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-small:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+/* danger button */
+.btn-danger {
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--error-500) 0%, var(--error-600) 100%);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-danger:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+/* ===== EMPTY STATE & LOADING ===== */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text-muted);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+/* alerts */
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius);
+  margin: 1rem 0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px) {
+  .admin-container {
+    margin: 1rem;
+    padding: 1.25rem;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .btn-row {
+    flex-direction: column;
+    button { width: 100%; min-width: 0; }
+  }
+
+  /* stack category items vertically */
+  .category-list {
     display: flex;
     flex-direction: column;
-    transition: box-shadow 0.2s ease;
-
-    &:hover {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      strong {
-        font-weight: 600;
-        color: $primary;
-        font-size: 1rem;
-      }
-
-      .muted {
-        color: $text-muted;
-        font-size: 0.85rem;
-      }
-    }
-
-    .muted {
-      margin-top: 6px;
-      color: $text-muted;
-      font-size: 0.9rem;
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
+    gap: 0.75rem;
   }
+
+  .category-list li {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+  }
+
+  .category-list li .row {
+    gap: 4px;
+  }
+
+  .category-list li .actions {
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .category-list li .actions button {
+    flex: 0 0 auto;
+  }
+
+  /* make action buttons full width and stacked if needed */
+  .category-list li .actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .btn-small, .btn-danger {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+@media (prefers-color-scheme: dark) {
+  .admin-container { background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-900) 100%); }
+  .card { background: var(--gray-800); border-color: var(--gray-700); }
+  input, select { background: var(--gray-700) !important; border-color: var(--gray-600) !important; color: var(--gray-100) !important; }
+  .category-list li .category-meta .category-path { background: var(--gray-700) !important; }
 }

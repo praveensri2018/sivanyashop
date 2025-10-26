@@ -1,0 +1,147 @@
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ isAdmin ? 'All Payments' : 'Payment History' }}</h2>
+        <div class="text-muted">
+          Total: {{ totalPayments }} payments
+        </div>
+      </div>
+      
+      <!-- Filters -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Payment Status</label>
+              <select class="form-select" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+                <option value="">All Statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="PAID">Paid</option>
+                <option value="FAILED">Failed</option>
+                <option value="REFUNDED">Refunded</option>
+                <option value="PARTIALLY_REFUNDED">Partially Refunded</option>
+              </select>
+            </div>
+
+            <!-- Admin only filter -->
+            <div class="col-md-3" *ngIf="isAdmin">
+              <label class="form-label">User ID</label>
+              <input type="number" class="form-control" [(ngModel)]="userIdFilter" 
+                     placeholder="Filter by User ID" (input)="onFilterChange()">
+            </div>
+            
+            <div class="col-md-3 d-flex align-items-end">
+              <button class="btn btn-outline-secondary w-100" (click)="loadPayments()" [disabled]="loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading payments...</p>
+      </div>
+
+      <!-- Payments List -->
+      <div *ngIf="!loading">
+        <div *ngIf="payments.length === 0" class="alert alert-info text-center">
+          <i class="fas fa-receipt fa-2x mb-3 text-muted"></i>
+          <h5>No payments found</h5>
+          <p *ngIf="!isAdmin">You haven't made any payments yet.</p>
+          <p *ngIf="isAdmin">No payments match your filters.</p>
+        </div>
+
+        <div *ngFor="let payment of payments" class="card mb-3 payment-card">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-md-2">
+                <div class="payment-icon text-center">
+                  <i [class]="getPaymentMethodIcon(payment.paymentMethod)" class="fa-2x text-primary"></i>
+                </div>
+              </div>
+              
+              <div class="col-md-3">
+                <strong class="d-block">Order #{{ payment.orderNumber }}</strong>
+                <small class="text-muted">
+                  {{ payment.createdAt | date:'medium' }}
+                </small>
+                <div *ngIf="payment.paymentGatewayPaymentId" class="small text-muted">
+                  ID: {{ payment.paymentGatewayPaymentId }}
+                </div>
+              </div>
+              
+              <div class="col-md-2">
+                <span class="badge" [ngClass]="getStatusBadgeClass(payment.status)">
+                  {{ payment.status }}
+                </span>
+              </div>
+              
+              <div class="col-md-2">
+                <strong class="text-success">₹{{ payment.amount | number }}</strong>
+                <div class="text-muted small">
+                  Order: ₹{{ payment.orderAmount | number }}
+                </div>
+              </div>
+              
+              <div class="col-md-3 text-end">
+                <button class="btn btn-outline-primary btn-sm me-2"
+                        (click)="viewPaymentDetails(payment.id)">
+                  <i class="fas fa-info-circle me-1"></i>Details
+                </button>
+                
+                <a [routerLink]="['/order-details', payment.orderId]" 
+                   class="btn btn-outline-secondary btn-sm me-2">
+                  <i class="fas fa-box me-1"></i>Order
+                </a>
+
+                <button *ngIf="payment.status === 'PAID' && isAdmin"
+                        class="btn btn-outline-warning btn-sm"
+                        (click)="processRefund(payment)">
+                  <i class="fas fa-undo me-1"></i>Refund
+                </button>
+              </div>
+            </div>
+            
+            <!-- Admin only user info -->
+            <div *ngIf="isAdmin && payment.user" class="mt-2 pt-2 border-top">
+              <small class="text-muted">
+                <i class="fas fa-user me-1"></i>
+                Customer: {{ payment.user.name }} ({{ payment.user.email }})
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav *ngIf="totalPages > 1" aria-label="Payment pagination">
+          <ul class="pagination justify-content-center">
+            <li class="page-item" [class.disabled]="page === 1">
+              <button class="page-link" (click)="onPageChange(page - 1)" [disabled]="page === 1">
+                <i class="fas fa-chevron-left"></i> Previous
+              </button>
+            </li>
+            
+            <li *ngFor="let p of getPages()" 
+                class="page-item" 
+                [class.active]="page === p">
+              <button class="page-link" (click)="onPageChange(p)">{{ p }}</button>
+            </li>
+            
+            <li class="page-item" [class.disabled]="page === totalPages">
+              <button class="page-link" (click)="onPageChange(page + 1)" [disabled]="page === totalPages">
+                Next <i class="fas fa-chevron-right"></i>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

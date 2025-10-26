@@ -1,113 +1,110 @@
 <!-- FILE: src/app/admin/admin.component.html
-     REPLACE existing file. Paste this complete HTML into src/app/admin/admin.component.html.
-
-     Notes:
-     - Uses Bootstrap-like utilities + the SCSS I provided earlier (kpi-row, card-grid, admin-card).
-     - KPI bindings: totalOrders, totalRevenue, totalCustomers, totalProducts (add these to the TS if not present).
-     - Icons use Bootstrap Icons (class="bi ..."). Replace with FontAwesome if you prefer.
+     REPLACE the existing file at src/app/admin/admin.component.html with this content.
+     (Modern/stylish admin dashboard: hero + KPI cards + actions + recent activity)
 -->
-
-<div class="admin-dashboard container py-4">
-  <!-- Header -->
-  <h2 class="mb-1">⚙️ Admin Panel</h2>
-  <p class="text-muted mb-2">
-    Signed in as <strong>{{ user?.name || 'Admin' }}</strong>
-  </p>
-
-  <!-- KPI / Stats row (classic e-comm style) -->
-  <div class="kpi-row" aria-label="Key performance indicators">
-    <div class="kpi" role="group" aria-roledescription="stat">
-      <div class="kpi-icon" aria-hidden="true"><i class="bi bi-basket-fill"></i></div>
-      <div class="kpi-body">
-        <div class="kpi-value">{{ totalOrders ?? 0 }}</div>
-        <div class="kpi-label">Total Orders</div>
-      </div>
+<div class="admin-dashboard container-fluid py-4">
+  <!-- HERO -->
+  <div class="dashboard-hero row align-items-center mb-3">
+    <div class="col-md-8">
+      <h1 class="hero-title">Admin Dashboard</h1>
+      <p class="hero-sub">Welcome back, <strong>{{ user?.name || 'Admin' }}</strong>. Here's a quick overview of your store.</p>
     </div>
-
-    <div class="kpi" role="group" aria-roledescription="stat">
-      <div class="kpi-icon" aria-hidden="true"><i class="bi bi-currency-rupee"></i></div>
-      <div class="kpi-body">
-        <div class="kpi-value">₹ {{ totalRevenue ?? 0 | number }}</div>
-        <div class="kpi-label">Revenue</div>
-      </div>
+    <div class="col-md-4 text-md-end hero-actions">
+      <button class="btn btn-ghost" (click)="onNavigate('/admin/orders')"><i class="fas fa-shopping-bag"></i> Orders</button>
+      <button class="btn btn-primary" (click)="onNavigate('/admin/products')"><i class="fas fa-box"></i> Add Product</button>
     </div>
+  </div>
 
-    <div class="kpi" role="group" aria-roledescription="stat">
-      <div class="kpi-icon" aria-hidden="true"><i class="bi bi-people-fill"></i></div>
-      <div class="kpi-body">
-        <div class="kpi-value">{{ totalCustomers ?? 0 }}</div>
-        <div class="kpi-label">Customers</div>
-      </div>
-    </div>
-
-    <div class="kpi" role="group" aria-roledescription="stat">
-      <div class="kpi-icon" aria-hidden="true"><i class="bi bi-box-seam"></i></div>
-      <div class="kpi-body">
-        <div class="kpi-value">{{ totalProducts ?? 0 }}</div>
-        <div class="kpi-label">Products</div>
+  <!-- KPI Row -->
+  <div class="kpi-grid row g-3 mb-3" aria-label="Key performance indicators">
+    <div class="col-6 col-sm-6 col-md-3" *ngFor="let k of kpis">
+      <div class="kpi-card">
+        <div class="kpi-left">
+          <div class="kpi-icon" [innerHTML]="k.icon"></div>
+        </div>
+        <div class="kpi-right">
+          <div class="kpi-value">{{ k.value }}</div>
+          <div class="kpi-label">{{ k.label }}</div>
+          <div class="kpi-meta" *ngIf="k.meta">{{ k.meta }}</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="header-divider" aria-hidden="true"></div>
+  <div class="row">
+    <!-- Left: Cards grid -->
+    <div class="col-lg-8">
+      <div class="card-grid">
+        <div class="admin-card" role="region" aria-label="Products">
+          <div class="icon-circle">
+            <i class="fas fa-box"></i>
+          </div>
+          <h6 class="fw-semibold">Products</h6>
+          <p class="small text-muted mb-3">Create, edit or upload products quickly.</p>
+          <a routerLink="/admin/products" class="btn btn-primary w-100" (click)="onNavigate('/admin/products')">Manage Products</a>
+        </div>
 
-  <!-- Classic card grid (tiles) -->
-  <div class="card-grid">
-    <!-- Products -->
-    <div class="admin-card" role="region" aria-label="Products">
-      <div class="icon-circle bg-primary-subtle text-primary mb-2">
-        <i class="bi bi-box-seam"></i>
+        <div class="admin-card">
+          <div class="icon-circle">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h6 class="fw-semibold">Reports</h6>
+          <p class="small text-muted mb-3">Sales & performance overview.</p>
+          <a routerLink="/admin/reports" class="btn btn-outline w-100" (click)="onNavigate('/admin/reports')">Open Reports</a>
+        </div>
+
+        <div class="admin-card">
+          <div class="icon-circle">
+            <i class="fas fa-users"></i>
+          </div>
+          <h6 class="fw-semibold">Retailers</h6>
+          <p class="small text-muted mb-3">Manage retailer accounts and commissions.</p>
+          <a routerLink="/admin/retailers" class="btn btn-primary w-100" (click)="onNavigate('/admin/retailers')">Manage Retailers</a>
+        </div>
+
+        <div class="admin-card">
+          <div class="icon-circle">
+            <i class="fas fa-cubes"></i>
+          </div>
+          <h6 class="fw-semibold">Stock</h6>
+          <p class="small text-muted mb-3">Inventory and stock movements.</p>
+          <a routerLink="/admin/stock" class="btn btn-outline w-100" (click)="onNavigate('/admin/stock')">Open Stock</a>
+        </div>
       </div>
-      <h6 class="fw-semibold">Products</h6>
-      <p class="small text-muted mb-3">Create, edit or upload products.</p>
-      <a routerLink="/admin/products" class="btn btn-primary w-100" (click)="onNavigate()">
-        Manage
-      </a>
     </div>
 
-    <!-- Categories -->
-    <div class="admin-card" role="region" aria-label="Categories">
-      <div class="icon-circle bg-info-subtle text-info mb-2">
-        <i class="bi bi-diagram-3"></i>
-      </div>
-      <h6 class="fw-semibold">Categories</h6>
-      <p class="small text-muted mb-3">Manage categories & structure.</p>
-      <a routerLink="/admin/categories" class="btn btn-outline w-100" (click)="onNavigate()">
-        Manage
-      </a>
-    </div>
+    <!-- Right: Recent / Activity -->
+    <div class="col-lg-4">
+      <div class="activity-card">
+        <div class="activity-header">
+          <h6>Recent activity</h6>
+          <small class="text-muted">Last 24 hrs</small>
+        </div>
+        <div class="activity-list">
+          <!-- Placeholder items - replace with real data binding -->
+          <div class="activity-item" *ngFor="let item of recentActivity">
+            <div class="activity-dot" [ngClass]="item.type"></div>
+            <div class="activity-body">
+              <div class="activity-title">{{ item.title }}</div>
+              <div class="activity-sub text-muted">{{ item.time }}</div>
+            </div>
+          </div>
 
-    <!-- Stock -->
-    <div class="admin-card" role="region" aria-label="Stock">
-      <div class="icon-circle bg-warning-subtle text-warning mb-2">
-        <i class="bi bi-boxes"></i>
+          <!-- Fallback -->
+          <div *ngIf="recentActivity.length === 0" class="p-3 text-muted small">
+            No recent activity. Your updates will appear here.
+          </div>
+        </div>
       </div>
-      <h6 class="fw-semibold">Stock</h6>
-      <p class="small text-muted mb-3">Adjust stock & inventory ledger.</p>
-      <a routerLink="/admin/stock" class="btn btn-outline w-100" (click)="onNavigate()">
-        Open
-      </a>
-    </div>
 
-    <!-- Reports -->
-    <div class="admin-card" role="region" aria-label="Reports">
-      <div class="icon-circle bg-success-subtle text-success mb-2">
-        <i class="bi bi-graph-up-arrow"></i>
+      <div class="mini-card mt-3">
+        <h6 class="mb-2">Quick Links</h6>
+        <div class="d-grid gap-2">
+          <button class="btn btn-sm btn-outline" (click)="onNavigate('/admin/products')">New product</button>
+          <button class="btn btn-sm btn-outline" (click)="onNavigate('/admin/orders')">Orders</button>
+          <button class="btn btn-sm btn-outline" (click)="onNavigate('/admin/retailers')">Retailers</button>
+        </div>
       </div>
-      <h6 class="fw-semibold">Reports</h6>
-      <p class="small text-muted mb-3">Sales & performance overview.</p>
-      <a routerLink="/admin/reports" class="btn btn-outline w-100" (click)="onNavigate()">
-        Open
-      </a>
-    </div>
-        <!-- NEW: Retailers -->
-    <div class="admin-card" role="region" aria-label="Retailers">
-      <div class="icon-circle bg-secondary-subtle text-secondary mb-2">
-        <i class="bi bi-people"></i>
-      </div>
-      <h6 class="fw-semibold">Retailers</h6>
-      <p class="small text-muted mb-3">Add/manage retailer accounts (admin only).</p>
-      <a routerLink="/admin/retailers" class="btn btn-primary w-100" (click)="onNavigate()">Manage Retailers</a>
     </div>
   </div>
 </div>

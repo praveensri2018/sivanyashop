@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ZIP → AI Readable TXT (No Comments)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:24px;background:#f9fafb;color:#111827}
+    .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,0.1);max-width:900px;margin:auto}
+    h1{font-size:22px;margin:0 0 10px}
+    label{font-weight:600;margin-top:12px;display:block}
+    input[type=file],input[type=text]{padding:8px;margin-top:6px;width:100%;max-width:400px}
+    button{margin-top:18px;padding:10px 18px;border:none;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    pre{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:8px;margin-top:20px;white-space:pre-wrap;overflow:auto;max-height:300px}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</head>
+<body>
+<div class="card">
+  <h1>ZIP → AI Readable TXT (No Comments)</h1>
+  <p>Upload a ZIP, it keeps <b>.js / .ts / .html</b>, removes comments, trims, and downloads a clean text file.</p>
+
+  <label>ZIP File</label>
+  <input id="zipInput" type="file" accept=".zip">
+
+  <label>Extensions to keep (comma separated)</label>
+  <input id="exts" type="text" value="js,ts,html">
+
+  <label><input id="minify" type="checkbox"> Minify output (remove extra newlines)</label><br>
+  <label><input id="marker" type="checkbox"> Add "TELL_EVERY_TIME" marker per file</label>
+
+  <button id="processBtn">Process & Download</button>
+
+  <pre id="log">Waiting for file...</pre>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', ()=>{
+  const fileInput = document.getElementById('zipInput');
+  const processBtn = document.getElementById('processBtn');
+  const log = document.getElementById('log');
+
+  const extsInput = document.getElementById('exts');
+  const minifyEl = document.getElementById('minify');
+  const markerEl = document.getElementById('marker');
+
+  function logMsg(msg){ log.textContent = msg; console.log(msg); }
+
+  function cleanText(text, ext){
+    text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    text = text.replace(/\/\*[\s\S]*?\*\//g, '');  
+    text = text.replace(/<!--[\s\S]*?-->/g, ''); 
+    text = text.replace(/(^|[^:])\/\/.*$/gm, '$1');   
+    let lines = text.split("\n").map(l=>l.trim());
+    let cleaned = [];
+    let prevBlank = false;
+    for (const ln of lines){
+      if (!ln){
+        if (!prevBlank){ cleaned.push(""); prevBlank = true; }
+      } else {
+        cleaned.push(ln);
+        prevBlank = false;
+      }
+    }
+    return cleaned.join("\n").trim();
+  }
+
+  async function processZip(file){
+    const zipData = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(zipData);
+    const entries = Object.keys(zip.files);
+    const allowedExts = extsInput.value.split(",").map(e=>e.trim().toLowerCase());
+    let output = [];
+    let count = 0;
+
+    for (const name of entries){
+      const entry = zip.files[name];
+      if (entry.dir) continue;
+      const ext = name.split('.').pop().toLowerCase();
+      if (!allowedExts.includes(ext)) continue;
+      const raw = await entry.async("string");
+      const cleaned = cleanText(raw, ext) || "<empty or comment-only>";
+      let section = `===== FILE: ${name} =====\n${cleaned}`;
+      if (markerEl.checked){
+        section = `===== FILE: ${name} =====\n=== TELL_EVERY_TIME_PLACEHOLDER ===\n${cleaned}`;
+      }
+      if (minifyEl.checked){
+        section = section.replace(/\s+/g, ' ');
+      }
+      output.push(section);
+      count++;
+    }
+
+    if (!count){
+      logMsg("No matching files found in ZIP.");
+      return;
+    }
+
+    const combined = output.join("\n\n");
+    const blob = new Blob([combined], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = file.name.replace(/\.zip$/i, "") + "_ai_readable.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+    logMsg(`✅ Done! Processed ${count} files and downloaded result.`);
+  }
+
+  processBtn.onclick = async ()=>{
+    const file = fileInput.files[0];
+    if (!file){ logMsg("⚠️ Please select a ZIP file."); return; }
+    processBtn.disabled = true;
+    logMsg("Processing... please wait");
+    try {
+      await processZip(file);
+    } catch(err){
+      logMsg("❌ Error: " + err.message);
+      console.error(err);
+    } finally {
+      processBtn.disabled = false;
+    }
+  };
+});
+</script>
+</body>
+</html>

@@ -1,8 +1,3 @@
-// Place file at: src/app/shop/product-detail.component.ts
-// Full file (updated): prevents adding to cart when not logged in.
-// If user is not logged in, navigates to /login with redirect + variant/qty in query params.
-// If logged in, proceeds to call CartService.add as before.
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
@@ -10,14 +5,14 @@ import { ProductService } from '../services/product.service';
 import { Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../services/cart.service';
-
-// ADDED: import AuthService to check login state
 import { AuthService } from '../auth/auth.service';
+
+import { SizeChartComponent } from '../customer/size-chart/size-chart.component';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, SizeChartComponent],
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.scss']
 })
@@ -31,8 +26,10 @@ export class ProductDetailComponent implements OnInit {
   selectedVariantId: number | null = null;
   selectedVariant: any = null;
   quantity = 1;
+  
+  // Add productId property
+  productId!: number;
 
-  // UPDATED: inject AuthService
   constructor(
     private route: ActivatedRoute,
     private svc: ProductService,
@@ -44,7 +41,10 @@ export class ProductDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) this.loadProduct(id);
+    if (id) {
+      this.productId = +id; // Set the productId
+      this.loadProduct(id);
+    }
   }
 
   private getIdFromProduct(p: any): number | null {
@@ -77,7 +77,9 @@ export class ProductDetailComponent implements OnInit {
 
         const variants = this.getVariantsFromProduct(product);
         if (Array.isArray(variants) && variants.length) {
-          const first = variants[0];
+          // Find first available variant with stock
+          const availableVariant = variants.find(v => this.getVariantStockQty(v) > 0);
+          const first = availableVariant || variants[0];
           this.selectedVariantId = first?.Id ?? first?.id ?? null;
           this.mapSelectedVariant();
         } else {
@@ -93,6 +95,19 @@ export class ProductDetailComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  // NEW: Helper method to get variant stock quantity
+  private getVariantStockQty(variant: any): number {
+    return variant?.StockQty ?? variant?.stockQty ?? variant?.stock ?? variant?.Stock ?? 0;
+  }
+
+  // NEW: Check if selected variant has sufficient stock
+  private hasSufficientStock(): boolean {
+    if (!this.selectedVariant) return false;
+    
+    const availableStock = this.getVariantStockQty(this.selectedVariant);
+    return availableStock >= this.quantity && availableStock > 0;
   }
 
   setMainImage(url: string) {
@@ -144,36 +159,44 @@ export class ProductDetailComponent implements OnInit {
     return min;
   }
 
+  // UPDATED: Add stock validation to canAddToCart
   canAddToCart(): boolean {
     const hasVariants = (this.getVariantsFromProduct(this.product) || []).length > 0;
     if (hasVariants && !this.selectedVariantId) return false;
+    if (!this.hasSufficientStock()) return false;
     return this.product != null && this.quantity > 0;
   }
 
-  // UPDATED: prevent add-to-cart when not logged in; redirect to /login with return info
+  // UPDATED: Add stock validation before adding to cart
   addToCart() {
+    // Validate stock first
+    if (!this.hasSufficientStock()) {
+      const availableStock = this.getVariantStockQty(this.selectedVariant);
+      if (availableStock <= 0) {
+        alert('❌ This item is out of stock');
+      } else {
+        alert(`❌ Only ${availableStock} items available in stock`);
+      }
+      return;
+    }
+
     // If user not logged in -> navigate to login (do not add to cart)
     const token = this.auth.getToken ? this.auth.getToken() : null;
     const isLoggedIn = !!token;
 
-    // If not logged in, redirect to login and include return info in query params
     if (!isLoggedIn) {
       const pid = this.getIdFromProduct(this.product);
       const queryParams: any = { redirect: `/product/${pid}` };
       if (this.selectedVariantId) queryParams.variant = String(this.selectedVariantId);
       if (this.quantity) queryParams.qty = String(this.quantity || 1);
 
-      // Optional: show a confirmation prompt (uncomment if desired)
-      // if (!confirm('You need to login to add items to cart. Go to login page now?')) return;
-
-      // navigate to login (user will be expected to login and then come back)
       this.router.navigate(['/login'], { queryParams }).catch(err => console.warn('nav to login failed', err));
       return;
     }
 
     // Logged in -> proceed to add to cart as before
     if (!this.canAddToCart()) { 
-      alert('Select a variant and quantity'); 
+      alert('Select a valid variant and quantity'); 
       return; 
     }
 
@@ -192,7 +215,6 @@ export class ProductDetailComponent implements OnInit {
       price: this.getDisplayedPrice() ?? null
     };
 
-    // call CartService (injected as this.cart)
     this.cart.add(payload).subscribe({
       next: (res: any) => {
         if (res?.local) {
@@ -210,7 +232,6 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
-
   addToWishlist() {
     alert('Added to wishlist (demo)');
   }
@@ -223,9 +244,6 @@ export class ProductDetailComponent implements OnInit {
     return this.getNameFromProduct(this.product);
   }
 
-  // ---------------------------
-  // image error handler used by template
-  // ---------------------------
   onImgError(event: Event) {
     const img = event.target as HTMLImageElement;
     if (!img) return;

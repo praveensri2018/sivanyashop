@@ -272,4 +272,15 @@ export class CartService {
     this.itemsSubject.next(arr);
     return found ?? arr[arr.length - 1];
   }
+  
+
+clearLocal(): void {
+  try {
+    localStorage.removeItem('local_cart');
+  } catch {
+    // ignore if storage unavailable
+  }
+  this.itemsSubject.next([]);
+}
+
 }

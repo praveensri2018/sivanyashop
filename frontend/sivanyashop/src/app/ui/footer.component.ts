@@ -45,6 +45,15 @@ export class FooterComponent implements OnInit, OnDestroy {
     window.removeEventListener('storage', this._onStorageEvent);
   }
 
+  getDashboardRoute(): string {
+  switch (this.role) {
+    case 'admin': return '/admin';
+    case 'retailer': return '/retailer';
+    case 'customer': return '/dashboard';
+    default: return '/login';
+  }
+}
+
   private _onStorageEvent = (e: StorageEvent) => {
     if (e.key === 'user' || e.key === 'currentUser' || e.key === 'token') {
       try { this.currentUser = this.auth.getUser(); } catch { this.currentUser = null; }
