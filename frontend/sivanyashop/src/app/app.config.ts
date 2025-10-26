@@ -17,4 +17,5 @@ export const AppConfig = {
   apiBase: 'https://api.sivanyatrendstops.com', 
   appName: 'SivanuyaShop',
   version: '1.0.0'
+   
 };
