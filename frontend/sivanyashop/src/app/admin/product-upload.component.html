@@ -21,7 +21,7 @@
   </section>
 
   <!-- Product meta -->
-  <section class="card">
+  <section class="card" style="height:80vh">
     <h3>Product Details</h3>
     <form [formGroup]="productForm" (ngSubmit)="$event.preventDefault()" class="form-grid">
       <label>Product Name
@@ -180,7 +180,7 @@
           type="button" 
           (click)="assignSizeChartsToProduct()" 
           [disabled]="selectedSizeCharts.length === 0 || !createdProductId"
-          class="btn btn-primary">
+          class="btn btn-primary" style="color:black;">
           Assign Size Charts to Product
         </button>
         <small *ngIf="!createdProductId" style="color: #dc3545; margin-left: 12px;">

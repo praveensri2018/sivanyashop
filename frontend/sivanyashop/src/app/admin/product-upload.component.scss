@@ -1,21 +1,76 @@
-/* PLACE: src/app/admin/product-upload.component.scss
-   Modern Commercial Product Upload - Colorful & Professional
-   -------------------------
-   NOTE: Replace the contents of the file at the path above with this file.
-   MOBILE-specific variant horizontal scroll behavior is in the @media (max-width: 768px) block.
+/* PLACE FILE AT: src/app/admin/product-upload.component.scss
+   Full SCSS for Product Upload Admin UI
+   - Vibrant teal ↔ purple color palette
+   - ng-select dropdown fixes & theme overrides included
+   - Responsive + dark-mode support
+   - Copy / replace existing SCSS for this component with the content below
 */
 
+/* =========================
+   COLOR PALETTE & VARIABLES
+   ========================= */
+:root {
+  /* Primary Teal ↔ Purple Palette (updated per request) */
+  --primary-50: #e6f8f5;
+  --primary-100: #c3f0eb;
+  --primary-200: #8ee6db;
+  --primary-300: #3fd1bf;
+  --primary-500: #0ea5a4; /* teal */
+  --primary-600: #0b8f8e;
+  --primary-700: #086e6d;
+
+  --accent-400: #7c3aed; /* purple */
+  --accent-500: #6b21a8;
+  --accent-600: #53157f;
+
+  --success-50: #ecfdf5;
+  --success-100: #d1fae5;
+  --success-500: #10b981;
+  --success-700: #059669;
+
+  --warning-50: #fffbeb;
+  --warning-300: #fcd34d;
+  --warning-500: #f59e0b;
+
+  --error-50: #fff1f2;
+  --error-500: #ef4444;
+  --error-700: #dc2626;
+
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-700: #334155;
+  --gray-800: #0f1724;
+  --gray-900: #071025;
+
+  /* UI tokens */
+  --bg-primary: #ffffff;
+  --bg-gradient: linear-gradient(135deg, #f2fbfa 0%, #eef6ff 100%);
+  --text-primary: #0f1724;
+  --text-muted: #55607a;
+  --text-secondary: #062635;
+  --border-light: #e6eef2;
+
+  --border-radius: 10px;
+  --border-radius-lg: 14px;
+  --shadow-sm: 0 4px 12px rgba(2,6,23,0.06);
+  --shadow-md: 0 8px 24px rgba(2,6,23,0.08);
+  --shadow-lg: 0 18px 40px rgba(2,6,23,0.12);
+  --shadow-xl: 0 30px 60px rgba(2,6,23,0.18);
+}
+
+/* Host */
 :host {
   display: block;
   background: var(--bg-gradient);
   min-height: 100vh;
   padding: 1rem;
-
-  /* MOBILE: Make base font scale responsively (small devices get smaller text) */
-  font-size: clamp(14px, 2.2vw, 16px);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-size: clamp(14px, 1.6vw, 16px);
 }
 
-/* Container: keep inside viewport and enable touch scrolling on mobile */
+/* Container */
 .admin-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -24,28 +79,20 @@
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-xl);
   border: 1px solid var(--border-light);
-  font-family: 'Inter', system-ui, sans-serif;
   animation: fadeInUp 0.6s ease-out;
-
-  /* MOBILE: ensure admin container fits screen and can scroll when necessary */
   max-height: calc(100vh - 2rem);
   overflow: auto;
-  -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
 
   h2 {
     font-size: 2rem;
     font-weight: 800;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     color: var(--primary-700);
     display: flex;
     align-items: center;
     gap: 0.75rem;
-
-    &::before {
-      content: '🚀';
-      font-size: 1.8rem;
-    }
-
+    &::before { content: '🚀'; font-size: 1.5rem; }
     &::after {
       content: '';
       flex: 1;
@@ -57,17 +104,17 @@
   }
 }
 
-/* ===== LOAD PRODUCT SECTION ===== */
+/* Card wrapper */
 .card {
   background: var(--bg-primary);
   border-radius: var(--border-radius-lg);
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--shadow-lg);
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-md);
   border: 1px solid var(--border-light);
-  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
 
   &::before {
     content: '';
@@ -80,857 +127,501 @@
   }
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-xl);
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
   }
 
   h3 {
-    font-size: 1.5rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    margin: 0 0 1.5rem 0;
+    margin: 0 0 1rem 0;
     color: var(--primary-700);
     display: flex;
     align-items: center;
     gap: 0.5rem;
-
     &::before {
       content: '';
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary-500) 0%, var(--accent-500) 100%);
-      display: flex;
+      background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.8rem;
       color: white;
+      font-size: 0.9rem;
     }
   }
-
-  /* Section-specific icons */
-  &:nth-child(1) h3::before { content: '📥'; }
-  &:nth-child(2) h3::before { content: '📋'; }
-  &:nth-child(3) h3::before { content: '💰'; }
-  &:nth-child(4) h3::before { content: '🖼️'; }
-  &:nth-child(5) h3::before { content: '📦'; }
-  &:nth-child(6) h3::before { content: '⚡'; }
 }
 
+/* Load section helpers (inputs & buttons) */
 .load-section {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: center;
   flex-wrap: wrap;
 
-  input {
+  input[type="text"], input[type="number"], input:not([type]) {
     flex: 1;
-    min-width: 250px;
-    padding: 1rem 1.25rem;
+    min-width: 240px;
+    padding: 0.9rem 1rem;
     border: 2px solid var(--border-light);
     border-radius: var(--border-radius);
     background: var(--bg-primary);
-    font-size: 1rem;
-    transition: all 0.3s ease;
     box-shadow: var(--shadow-sm);
-
+    font-size: 0.95rem;
+    &::placeholder { color: var(--text-muted); }
     &:focus {
       outline: none;
       border-color: var(--primary-500);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      box-shadow: 0 0 0 6px rgba(14,165,164,0.06);
       transform: translateY(-1px);
-    }
-
-    &::placeholder {
-      color: var(--text-muted);
-      opacity: 0.7;
     }
   }
 
   .btn {
-    padding: 1rem 1.5rem;
+    padding: 0.8rem 1.1rem;
     border-radius: var(--border-radius);
     font-weight: 700;
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
 
     &.btn-primary {
-      background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+      background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
       color: white;
-
-      &::before {
-        content: '🔍';
-      }
-
-      &:hover {
-        background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%);
-      }
+      &:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+      &::before { content: '🔍'; }
     }
 
     &.btn-outline {
       background: transparent;
-      border: 2px solid var(--border-medium);
+      border: 2px solid var(--primary-200);
       color: var(--primary-600);
-
-      &::before {
-        content: '🗑️';
-      }
-
-      &:hover {
-        background: var(--primary-50);
-        border-color: var(--primary-500);
-      }
+      &:hover { background: var(--primary-50); border-color: var(--primary-500); }
+      &::before { content: '🗑️'; }
     }
 
     &.btn-back {
-      background: linear-gradient(135deg, var(--gray-400) 0%, var(--gray-500) 100%);
+      background: linear-gradient(135deg, var(--gray-400), var(--gray-500));
       color: white;
-
-      &::before {
-        content: '←';
-      }
-
-      &:hover {
-        background: linear-gradient(135deg, var(--gray-500) 0%, var(--gray-600) 100%);
-      }
+      &:hover { transform: translateY(-2px); }
+      &::before { content: '←'; }
     }
   }
 }
 
+/* Product ID display */
 .product-id-display {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: linear-gradient(135deg, var(--success-50) 0%, var(--success-100) 100%);
-  border: 1px solid var(--success-200);
+  margin-top: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, var(--success-50), var(--success-100));
+  border: 1px solid rgba(16,185,129,0.12);
   border-radius: var(--border-radius);
   color: var(--success-700);
-  font-weight: 600;
-  display: flex;
+  font-weight: 700;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-
-  &::before {
-    content: '📝';
-    font-size: 1.2rem;
-  }
+  &::before { content: '📝'; font-size: 1.05rem; }
 }
 
-/* ===== FORM GRID ===== */
+/* Form grid */
 .form-grid {
   display: grid;
+  gap: 1rem;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
+    gap: 1.25rem;
   }
 
   label {
     display: block;
     font-weight: 600;
-    font-size: 0.95rem;
     color: var(--text-primary);
-    margin-bottom: 0.5rem;
-
-    &.required::after {
-      content: ' *';
-      color: var(--error-500);
-    }
+    font-size: 0.95rem;
 
     input, textarea, select {
-      display: block;
-      width: 100%;
       margin-top: 0.5rem;
-      padding: 1rem 1.25rem;
+      width: 100%;
+      padding: 0.9rem 1rem;
+      border-radius: var(--border-radius);
       border: 2px solid var(--border-light);
-      border-radius: var(--border-radius);
       background: var(--bg-primary);
-      font-size: 1rem;
-      transition: all 0.3s ease;
       box-shadow: var(--shadow-sm);
-      resize: vertical;
-
-      &:focus {
-        outline: none;
-        border-color: var(--primary-500);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        transform: translateY(-1px);
-      }
-
-      &:hover {
-        border-color: var(--primary-300);
-      }
+      &:focus { outline: none; border-color: var(--primary-500); box-shadow: 0 0 0 6px rgba(14,165,164,0.06); transform: translateY(-1px); }
     }
 
-    textarea {
-      min-height: 100px;
-      line-height: 1.5;
-    }
-
-    /* Select dropdown styling */
-    select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 1rem center;
-      background-size: 1.25rem;
-      padding-right: 3rem;
-    }
+    textarea { min-height: 110px; resize: vertical; }
   }
 
-  /* Full-width fields */
-  .full-width {
-    grid-column: 1 / -1;
-  }
+  .full-width { grid-column: 1 / -1; }
 }
 
-/* ===== VARIANT INPUTS (desktop/table) ===== */
-/* Keep variant-input class for inputs inside table cells */
+/* Variant inputs & table */
 .variant-input {
-  background: linear-gradient(135deg, var(--primary-50) 0%, var(--accent-50) 100%);
-  border: 2px dashed var(--primary-300);
+  background: linear-gradient(135deg, var(--primary-50), #f6f7fb);
+  border: 2px dashed var(--primary-200);
   border-radius: var(--border-radius);
-  padding: 1.5rem;
-  margin: 1rem 0;
-  transition: all 0.3s ease;
+  padding: 0.85rem;
   width: 100%;
-
-  &:hover {
-    border-color: var(--primary-500);
-    background: linear-gradient(135deg, var(--primary-100) 0%, var(--accent-100) 100%);
-  }
-
-  /* If you have inner variant header blocks inside a card, keep these styles */
-  .variant-header {
-    display: flex;
-    justify-content: between;
-    align-items: center;
-    margin-bottom: 1rem;
-
-    h4 {
-      margin: 0;
-      color: var(--primary-700);
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-
-      &::before {
-        content: '🎨';
-      }
-    }
-
-    .remove-variant {
-      background: linear-gradient(135deg, var(--error-500) 0%, var(--error-600) 100%);
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-      }
-
-      &::before {
-        content: '🗑️';
-        margin-right: 0.5rem;
-      }
-    }
-  }
-
-  .variant-fields {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-  }
+  transition: all 0.18s ease;
+  &:hover { border-color: var(--primary-500); background: linear-gradient(135deg, var(--primary-100), #f4eefb); }
 }
 
-/* table styles */
+/* Variants table (desktop) */
 .variants-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
-}
-.variants-table th,
-.variants-table td {
-  padding: 8px;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  vertical-align: top;
-}
-.variants-table .actions-cell .variant-actions {
-  display:flex;
-  gap:8px;
-}
-.variants-table input[type="number"],
-.variants-table input[type="text"],
-.variants-table input[type="tel"] {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border-light);
-  box-sizing: border-box;
+  margin-top: 0.5rem;
+  th, td { padding: 10px 8px; border-bottom: 1px solid rgba(2,6,23,0.04); vertical-align: top; }
+  .actions-cell .variant-actions { display: flex; gap: 8px; }
+  input[type="number"], input[type="text"], input[type="tel"] { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-light); box-sizing: border-box; }
 }
 
-/* ===== IMAGE UPLOAD ===== */
+/* Image upload area & preview */
 .image-upload-section {
   .upload-area {
-    border: 3px dashed var(--primary-300);
+    border: 2px dashed var(--primary-200);
     border-radius: var(--border-radius-lg);
-    padding: 3rem 2rem;
+    padding: 1.6rem;
     text-align: center;
-    background: linear-gradient(135deg, var(--primary-50) 0%, var(--accent-50) 100%);
-    transition: all 0.3s ease;
+    background: linear-gradient(135deg, var(--primary-50), var(--accent-50));
     cursor: pointer;
-    position: relative;
-
-    &:hover {
-      border-color: var(--primary-500);
-      background: linear-gradient(135deg, var(--primary-100) 0%, var(--accent-100) 100%);
-      transform: translateY(-2px);
-    }
-
-    &.dragover {
-      border-color: var(--success-500);
-      background: linear-gradient(135deg, var(--success-50) 0%, var(--success-100) 100%);
-    }
-
-    .upload-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      opacity: 0.7;
-    }
-
-    .upload-text {
-      h4 {
-        margin: 0 0 0.5rem 0;
-        color: var(--primary-700);
-        font-size: 1.25rem;
-      }
-
-      p {
-        margin: 0;
-        color: var(--text-muted);
-        font-size: 0.95rem;
-      }
-    }
-
-    input[type="file"] {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      opacity: 0;
-      cursor: pointer;
-    }
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    &:hover { transform: translateY(-3px); border-color: var(--primary-500); box-shadow: var(--shadow-sm); }
+    &.dragover { border-color: var(--success-500); background: linear-gradient(135deg, var(--success-50), #ecfffa); }
+    input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
   }
 
-  /* IMAGE PREVIEW: on small screens use horizontal scroll for better alignment */
   .image-preview {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1rem;
-    margin-top: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.8rem;
+    margin-top: 1rem;
 
     .preview-item {
-      position: relative;
       border-radius: var(--border-radius);
       overflow: hidden;
-      box-shadow: var(--shadow-md);
-      transition: all 0.3s ease;
-
-      &:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--shadow-lg);
-
-        .preview-actions {
-          opacity: 1;
-        }
-      }
-
-      img {
-        width: 100%;
-        height: 120px;
-        object-fit: cover;
-        display: block;
-      }
-
-      .preview-actions {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        display: flex;
-        gap: 0.25rem;
-
-        button {
-          background: rgba(0, 0, 0, 0.7);
-          color: white;
-          border: none;
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-
-          &:hover {
-            background: var(--error-500);
-            transform: scale(1.1);
-          }
-        }
-      }
+      box-shadow: var(--shadow-sm);
+      background: white;
+      img { width: 100%; height: 110px; object-fit: cover; display: block; }
+      .preview-actions { position: absolute; top: 8px; right: 8px; opacity: 0; transition: opacity 0.18s; }
+      &:hover { transform: translateY(-3px); .preview-actions { opacity: 1; } }
     }
   }
 }
 
-/* ===== FORM ACTIONS ===== */
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 2px solid var(--border-light);
-
-  .btn {
-    padding: 1rem 2rem;
+/* Sizes section (assignment area) */
+.size-charts-selection {
+  display: grid;
+  gap: 0.75rem;
+  .size-chart-option {
+    padding: 0.8rem;
     border-radius: var(--border-radius);
-    font-weight: 700;
-    font-size: 1rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    border: 1px solid var(--border-light);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    min-width: 160px;
-    justify-content: center;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none !important;
-    }
+    justify-content: space-between;
+    gap: 0.6rem;
+    background: var(--bg-primary);
   }
 
-  .btn-primary {
-    background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: linear-gradient(135deg, var(--success-600) 0%, var(--success-700) 100%);
-      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-    }
-
-    &::before {
-      content: '💾';
-    }
+  .checkbox-label {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    input[type="checkbox"] { width: 18px; height: 18px; }
+    .checkmark { width: 18px; height: 18px; border-radius: 4px; background: transparent; border: 1px solid var(--border-light); display:inline-block; }
   }
 
-  .btn-secondary {
-    background: linear-gradient(135deg, var(--gray-400) 0%, var(--gray-500) 100%);
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: linear-gradient(135deg, var(--gray-500) 0%, var(--gray-600) 100%);
-    }
-
-    &::before {
-      content: '🔄';
-    }
-  }
-
-  .btn-outline {
-    background: transparent;
-    border: 2px solid var(--primary-500);
-    color: var(--primary-600);
-
-    &:hover:not(:disabled) {
-      background: var(--primary-50);
-    }
-
-    &::before {
-      content: '🚫';
-    }
-  }
+  .primary-option { margin-left: auto; }
 }
 
-/* ===== VALIDATION STYLES ===== */
-.ng-invalid.ng-touched {
-  border-color: var(--error-500) !important;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-}
-
-.ng-valid.ng-touched {
-  border-color: var(--success-500) !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
-}
-
-.validation-error {
-  color: var(--error-500);
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-  font-weight: 600;
+/* Form actions (footer) */
+.form-actions {
   display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
   align-items: center;
-  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+  margin-top: 1rem;
 
-  &::before {
-    content: '⚠️';
+  .btn {
+    padding: 0.9rem 1.2rem;
+    border-radius: var(--border-radius);
+    font-weight: 800;
+    min-width: 140px;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+    &.btn-primary {
+      background: linear-gradient(135deg, var(--success-500), var(--success-700));
+      color: white;
+      &::before { content: '💾'; margin-right: 0.45rem; }
+      &:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    }
+
+    &.btn-secondary {
+      background: linear-gradient(135deg, var(--gray-400), var(--gray-500));
+      color: white;
+      &::before { content: '🔄'; margin-right: 0.45rem; }
+    }
+
+    &.btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary-500);
+      color: var(--primary-600);
+      &:hover { background: var(--primary-50); }
+    }
   }
 }
 
-/* ===== LOADING STATE ===== */
+/* Validation */
+.ng-invalid.ng-touched { box-shadow: 0 0 0 6px rgba(239,68,68,0.06) !important; border-color: var(--error-500) !important; }
+.ng-valid.ng-touched { box-shadow: 0 0 0 6px rgba(16,185,129,0.06) !important; border-color: var(--success-500) !important; }
+
+/* Loading overlay */
 .loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  backdrop-filter: blur(5px);
-
-  .loading-spinner {
-    background: var(--bg-primary);
-    padding: 2rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-xl);
-    text-align: center;
-    color: var(--text-primary);
-
-    .spinner {
-      width: 3rem;
-      height: 3rem;
-      border: 3px solid var(--primary-200);
-      border-top: 3px solid var(--primary-600);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
-    }
-
-    p {
-      margin: 0;
-      font-weight: 600;
-    }
-  }
+  position: fixed; inset: 0; display:flex; align-items:center; justify-content:center; z-index:12000;
+  background: rgba(2,6,23,0.6);
+  .loading-spinner { background: var(--bg-primary); padding: 1.25rem 1.5rem; border-radius: var(--border-radius); box-shadow: var(--shadow-xl); color: var(--text-primary); }
 }
 
-/* ===== SUCCESS MESSAGE ===== */
-.success-message {
-  background: linear-gradient(135deg, var(--success-50) 0%, var(--success-100) 100%);
-  border: 1px solid var(--success-200);
+/* Success message */
+.success-message { display:flex; gap:1rem; align-items:center; padding:0.85rem; border-radius: var(--border-radius); background: linear-gradient(135deg,var(--success-50),#ecfff3); border:1px solid rgba(16,185,129,0.08); font-weight:700; }
+
+/* =========================
+   NG-SELECT: Dropdown fixes & theme overrides
+   (Recommended: use [appendTo]="'body'" on the ng-select component)
+   ========================= */
+
+/* Ensure admin container has relative position for some absolute children */
+.admin-container { position: relative; }
+
+/* Base ng-select */
+ng-select, .ng-select { display:block; width:100%; font-family: inherit; font-size: 1rem; color: var(--text-primary); }
+
+/* Container style matching other inputs */
+.ng-select .ng-select-container {
+  padding: 0.45rem 0.6rem;
+  min-height: 44px;
   border-radius: var(--border-radius);
-  padding: 1.5rem;
-  margin: 1rem 0;
-  color: var(--success-700);
+  border: 2px solid var(--border-light);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+
+/* Focus / active */
+.ng-select .ng-select-container.ng-has-value,
+.ng-select .ng-select-container:focus,
+.ng-select.ng-select-focused .ng-select-container {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 6px rgba(14,165,164,0.06);
+  transform: translateY(-1px);
+}
+
+/* Selected tags look */
+.ng-select .ng-value {
+  background: linear-gradient(135deg, var(--primary-50), var(--accent-50));
+  color: var(--primary-700);
+  border-radius: 6px;
+  padding: 0.18rem 0.45rem;
+  font-weight: 700;
+  margin-right: 0.35rem;
+}
+.ng-select .ng-placeholder { color: var(--text-muted); font-weight:600; }
+
+/* Dropdown panel: high z-index, box, rounded */
+.ng-dropdown-panel {
+  position: absolute !important;
+  z-index: 11000 !important;
+  min-width: 320px;
+  max-width: min(880px, 95vw);
+  max-height: 420px;
+  overflow: auto;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 18px 40px rgba(2,6,23,0.12);
+  padding: 0.3rem;
+}
+
+/* Option rows */
+.ng-dropdown-panel .ng-option {
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  margin: 0.15rem 0;
+  cursor: pointer;
+  color: var(--text-primary);
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  animation: slideIn 0.5s ease-out;
-
-  &::before {
-    content: '🎉';
-    font-size: 2rem;
-  }
-
-  .message-content {
-    flex: 1;
-
-    h4 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.2rem;
-    }
-
-    p {
-      margin: 0;
-      opacity: 0.8;
-    }
-  }
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+.ng-dropdown-panel .ng-option:hover,
+.ng-dropdown-panel .ng-option.active {
+  background: linear-gradient(90deg, var(--primary-50), var(--accent-50));
+  color: var(--primary-700);
+  transform: translateY(-2px);
 }
 
-/* ===== ANIMATIONS ===== */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Search input */
+.ng-dropdown-panel .ng-dropdown-panel-search { padding: 0.5rem; }
+.ng-dropdown-panel .ng-dropdown-panel-search input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--bg-primary);
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* Scrollbar styling */
+.ng-dropdown-panel::-webkit-scrollbar { width: 8px; height: 8px; }
+.ng-dropdown-panel::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }
+.ng-dropdown-panel { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.12) transparent; }
+
+/* Fallback: fixed panel if appendTo not available */
+.ng-dropdown-panel--fallback-fixed {
+  position: fixed !important;
+  z-index: 12000 !important;
+  left: 8px !important;
+  right: 8px !important;
+  top: 12% !important;
+  margin: 0 auto;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
+/* =========================
+   VARIANTS TABLE: mobile horizontal card behavior
+   (keeps earlier mobile logic intact)
+   ========================= */
 
-/* ===== RESPONSIVE DESIGN ===== */
-/* MOBILE: Major adjustments for <= 768px for neat alignment + scrolling */
+/* Mobile: convert variant rows into horizontally scrollable cards */
 @media (max-width: 768px) {
-  .admin-container {
-    margin: 0.5rem;
-    padding: 1rem; /* reduced padding for small screens */
-    max-height: calc(100vh - 1rem);
+  .variants-table { display: block; width: 100%; overflow: visible; }
+  .variants-table thead { display: none; }
+  .variants-table tbody { display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.5rem; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
+  .variants-table tbody tr { display: block; flex: 0 0 86%; min-width: 86%; background: var(--bg-primary); border-radius: 10px; padding: 12px; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); scroll-snap-align: center; margin: 0; }
+  .variants-table tbody tr td { display: block; width: 100%; padding: 6px 0; border: none; }
+  .variants-table tbody tr td[data-label]::before { content: attr(data-label); display:block; font-weight:700; margin-bottom:6px; color: var(--text-primary); }
+  .variants-table input, .variants-table select { width: 100%; padding: 0.6rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-light); }
+  .variants-table .actions-cell { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+  .variants-table .variant-actions .btn-primary, .variants-table .variant-actions .btn-warning { padding: 0.5rem 0.75rem; font-size: 0.9rem; }
+}
+
+/* =========================
+   DARK MODE SUPPORT
+   ========================= */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-gradient: linear-gradient(135deg, #061028 0%, #07112e 100%);
+    --bg-primary: #071025;
+    --text-primary: #e6eef8;
+    --text-muted: #9fb4c7;
+    --border-light: rgba(255,255,255,0.04);
+    --shadow-md: 0 10px 30px rgba(0,0,0,0.6);
+    --shadow-lg: 0 18px 40px rgba(0,0,0,0.7);
   }
 
-  .card {
-    padding: 1rem;
-  }
+  .admin-container { background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(14,165,164,0.02)); }
+  .card { background: rgba(255,255,255,0.02); border-color: var(--border-light); box-shadow: none; }
+  .variant-input { background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-color: rgba(255,255,255,0.03); }
+  .upload-area { background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-color: rgba(255,255,255,0.03); }
+  .product-id-display { background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(16,185,129,0.04)); color: #e6eef8; }
+  .ng-dropdown-panel { background: rgba(6,10,22,0.88); border-color: rgba(255,255,255,0.04); box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
+  .ng-dropdown-panel .ng-option { color: var(--text-primary); }
+  .sizes .size.selected { /* If using selected styles here, keep black text even in dark mode as requested */ color: #000 !important; }
+}
 
-  .load-section {
-    flex-direction: column;
-    align-items: stretch;
+/* =========================
+   ANIMATIONS & UTILITIES
+   ========================= */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    input {
-      min-width: auto;
-      padding: 0.75rem 1rem; /* smaller input padding on mobile */
-      font-size: 0.95rem;
-    }
+/* small helpers */
+.muted { color: var(--text-muted); font-weight:600; }
 
-    .btn {
-      padding: 0.75rem 1rem;
-      width: 100%;
-      justify-content: center;
-      min-width: 0; /* override desktop min width */
-      font-size: 0.95rem;
-    }
-  }
 
-  .form-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+/* PLACE/APPEND to: src/app/admin/product-upload.component.scss
+   -----------------------
+   Compact styles for Duplicate / Remove variant buttons
+   + reduce overall admin font-size slightly (smaller)
+   -----------------------
+   Paste this near the variants-table / .variant-actions rules in the file.
+*/
 
-  .form-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
+/* make admin UI font a little smaller for compactness */
+.admin-container {
+  /* smaller base font (overrides the previous clamp if any) */
+  font-size: clamp(13px, 1.2vw, 14px) !important;
+}
 
-    .btn {
-      width: 100%;
-      padding: 0.9rem 1rem;
-      min-width: 0;
-      font-size: 0.95rem;
-    }
-  }
+/* Compact button styles specifically for variant row actions
+   (Duplicate = left button, Remove = right button)
+*/
+.variants-table .actions-cell .variant-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
 
-  .variant-fields {
-    grid-template-columns: 1fr !important;
-  }
+/* Duplicate button (uses .btn-primary in template) */
+.variants-table .variant-actions .btn-primary {
+  padding: 0.38rem 0.6rem;    /* compact padding */
+  font-size: 0.62rem;        /* smaller text */
+  min-width: 0;              /* don't force large width */
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary-300), var(--primary-600));
+  color: rgb(0, 0, 0);
+  box-shadow: 0 6px 14px rgba(14,125,120,0.08);
+  border: none;
+  font-weight: 700;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+.variants-table .variant-actions .btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 24px rgba(14,125,120,0.12);
+}
 
-  /* ===== MOBILE: Convert variant table into a horizontal scrollable list =====
-     Explanation:
-     - Keep desktop table intact.
-     - On mobile hide the thead, and render tbody rows as horizontal cards inside a track.
-     - Each card is 86% width and scroll-snap centers it.
-  */
-  .variants-table {
-    display: block;            /* allow overflow container */
-    overflow: visible;
-    width: 100%;
-  }
+/* Remove button (uses .btn-warning in template) */
+.variants-table .variant-actions .btn-warning {
+  padding: 0.34rem 0.54rem;
+  font-size: 0.62rem;
+  min-width: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ffb4a1, #ff8a66); /* warm warning */
+  color: #3b0d0d;
+  border: none;
+  font-weight: 800;
+  box-shadow: 0 6px 12px rgba(220,38,38,0.06);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.variants-table .variant-actions .btn-warning:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 22px rgba(220,38,38,0.12);
+}
 
-  .variants-table thead {
-    display: none;            /* hide table headers on mobile */
-  }
-
-  .variants-table tbody {
-    display: flex;
-    gap: 0.75rem;
-    overflow-x: auto;
-    padding: 0.5rem 0.5rem 1rem 0.5rem;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-  }
-
-  /* Each <tr> becomes an individual card */
-  .variants-table tbody tr {
-    display: block;
-    flex: 0 0 86%;           /* change to 100% for single-card-per-view */
-    min-width: 86%;
-    max-width: 86%;
-    box-sizing: border-box;
-    background: var(--bg-primary);
-    border-radius: 10px;
-    padding: 12px;
-    border: 1px solid var(--border-light);
-    box-shadow: var(--shadow-md);
-    scroll-snap-align: center;
-    margin: 0;
-  }
-
-  /* make table cells stack vertically inside each card */
-  .variants-table tbody tr td {
-    display: block;
-    width: 100%;
-    padding: 6px 0;
-    border: none;
-  }
-
-  .variants-table tbody tr td[data-label]::before {
-    /* show a label for each stacked field for clarity */
-    content: attr(data-label);
-    display: block;
-    font-weight: 700;
-    margin-bottom: 6px;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-  }
-
-  /* inputs inside cards take full width and compact padding */
-  .variants-table input,
-  .variants-table select {
-    width: 100%;
-    padding: 0.6rem 0.75rem;
-    font-size: 0.95rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-light);
-    box-sizing: border-box;
-  }
-
-  /* actions cell: keep buttons horizontally aligned and compact */
-  .variants-table .actions-cell {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 8px;
-  }
-
+/* Ensure buttons are compact on mobile as well */
+@media (max-width: 768px) {
   .variants-table .variant-actions .btn-primary,
   .variants-table .variant-actions .btn-warning {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.9rem;
-    min-width: auto;
+    padding: 0.36rem 0.6rem;
+    font-size: 0.68rem;
   }
 
-  /* Optional: scrollbar styling for the track */
-  .variants-table tbody {
-    scrollbar-width: thin; /* Firefox */
-    scrollbar-color: rgba(0,0,0,0.15) transparent;
-  }
-
-  .variants-table tbody::-webkit-scrollbar {
-    height: 8px;
-  }
-  .variants-table tbody::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.12);
-    border-radius: 10px;
-  }
-  .variants-table tbody::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  /* MOBILE: make image preview horizontally scrollable for neat alignment */
-  .image-upload-section {
-    .image-preview {
-      display: flex;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      gap: 0.75rem;
-      padding-bottom: 0.25rem;
-
-      .preview-item {
-        min-width: 140px; /* fixed width for each preview item on mobile */
-        flex: 0 0 auto;
-        img {
-          height: 110px;
-        }
-      }
-    }
-
-    .upload-area {
-      padding: 2rem 1rem; /* slightly smaller */
-    }
-  }
-
-  /* MOBILE: reduce heading sizes for better fit */
-  .admin-container h2 {
-    font-size: 1.25rem;
-    gap: 0.5rem;
-  }
-
-  .card h3 {
-    font-size: 1.05rem;
-  }
-
-  /* MOBILE: smaller form controls */
-  label {
-    font-size: 0.9rem;
-  }
-
-  input, textarea, select {
-    font-size: 0.95rem;
-    padding: 0.75rem 1rem;
-  }
-
-  textarea {
-    min-height: 80px;
-  }
-
-  /* MOBILE: reduce large spacings */
-  .add-variant-btn, .btn-primary, .btn-secondary {
-    padding: 0.85rem 1rem;
-    font-size: 0.95rem;
-  }
-}
-
-/* ===== DARK MODE SUPPORT ===== */
-@media (prefers-color-scheme: dark) {
-  .admin-container {
-    background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-900) 100%);
-  }
-
-  .variant-input {
-    background: linear-gradient(135deg, var(--gray-700) 0%, var(--gray-800) 100%);
-  }
-
-  .upload-area {
-    background: linear-gradient(135deg, var(--gray-700) 0%, var(--gray-800) 100%);
-  }
-
-  .product-id-display {
-    background: linear-gradient(135deg, var(--success-900) 0%, var(--success-800) 100%);
+  /* Keep the action buttons horizontally stacked when space is tight */
+  .variants-table tbody tr .variant-actions {
+    gap: 8px;
+    justify-content: flex-end;
   }
 }
