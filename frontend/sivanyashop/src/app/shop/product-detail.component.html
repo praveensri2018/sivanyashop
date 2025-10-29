@@ -1,4 +1,13 @@
 <!-- Place file at: src/app/shop/product-detail.component.html -->
+<!--
+  Full product detail component template.
+  - The variants/sizes block is accessible and highlights selected size.
+  - Make sure your component class (TS) defines `selectedVariantId`, `onSelectVariant(id)`,
+    `mainImage`, `images`, `product`, `productId`, `quantity`, `loading`, `error`,
+    `getProductTitle()`, `getDisplayedPrice()`, `addToCart()`, `canAddToCart()`, `goBack()`,
+    and `onImgError($event)` as used below.
+-->
+
 <div class="product-detail container py-3" *ngIf="!loading">
   <div class="toolbar mb-2">
     <button class="btn btn-outline-secondary btn-sm" (click)="goBack()">← Back</button>
@@ -6,76 +15,96 @@
 
   <ng-container *ngIf="product; else notfound">
     <div class="detail-grid row gx-4 gy-3">
+      <!-- LEFT: Images / Thumbnails / Size chart -->
       <div class="col-12 col-md-5">
         <div class="main-image mb-2">
-          <img [src]="mainImage || '/assets/placeholder.png'" (error)="onImgError($event)" alt="{{ getProductTitle() }}" class="img-fluid rounded" />
+          <img
+            [src]="mainImage || '/assets/placeholder.png'"
+            (error)="onImgError($event)"
+            alt="{{ getProductTitle() }}"
+            class="img-fluid rounded" />
         </div>
 
         <div class="thumb-row d-flex gap-2 flex-wrap" *ngIf="images?.length">
-          <button *ngFor="let img of images"
-                  class="thumb btn btn-light p-1"
-                  type="button"
-                  (click)="setMainImage(img)"
-                  [class.active]="img === mainImage"
-                  aria-label="Select image">
-            <img [src]="img" (error)="onImgError($event)" style="width:56px; height:56px; object-fit:cover; border-radius:6px" />
+          <button
+            *ngFor="let img of images"
+            class="thumb btn btn-light p-1"
+            type="button"
+            (click)="setMainImage(img)"
+            [class.active]="img === mainImage"
+            aria-label="Select image">
+            <img
+              [src]="img"
+              (error)="onImgError($event)"
+              style="width:56px; height:56px; object-fit:cover; border-radius:6px" />
           </button>
         </div>
-           <div class="product-section mt-4">
-          <app-size-chart 
-            [productId]="productId" 
+
+        <div class="product-section mt-4">
+          <!-- size chart component (optional) -->
+          <app-size-chart
+            [productId]="productId"
             [displayMode]="'table'">
           </app-size-chart>
         </div>
       </div>
 
+      <!-- RIGHT: Product info -->
       <div class="col-12 col-md-7">
         <h2 class="prod-title">{{ getProductTitle() }}</h2>
-        <p class="text-muted" *ngIf="product?.Description || product?.description">{{ product?.Description ?? product?.description }}</p>
+
+        <p class="text-muted" *ngIf="product?.Description || product?.description">
+          {{ product?.Description ?? product?.description }}
+        </p>
 
         <div class="price-row my-2">
           <div class="price" *ngIf="getDisplayedPrice() !== null">₹ {{ getDisplayedPrice() | number:'1.0-0' }}</div>
           <div class="no-price muted" *ngIf="getDisplayedPrice() === null">Price unavailable</div>
         </div>
 
-      <div *ngIf="(product?.variants ?? product?.Variants ?? product?.productVariants)?.length" class="variants mb-3">
-  <small class="muted">Choose size</small>
+        <!-- RATING SECTION (optional; styled in SCSS) -->
+        <div class="rating-section" *ngIf="product?.rating || product?.reviewCount">
+          <div class="stars" aria-hidden="true">
+            <span *ngFor="let i of [1,2,3,4,5]" class="star" [class.filled]="i <= (product?.rating ?? 0)">★</span>
+          </div>
+          <div class="rating-value">{{ product?.rating ?? '-' }} / 5</div>
+          <div class="review-count">{{ product?.reviewCount ?? 0 }} reviews</div>
+          <button class="write-review">Write review</button>
+        </div>
 
-  <!-- Place file at: src/app/shop/product-detail.component.html
-     --- REPLACE the existing variants block with this exact code --- -->
-<div *ngIf="(product?.variants ?? product?.Variants ?? product?.productVariants)?.length" class="variants mb-3">
-  <small class="muted">Choose size</small>
+        <!-- ===== Replace the existing variants block with this block ===== -->
+        <div *ngIf="(product?.variants ?? product?.Variants ?? product?.productVariants)?.length" class="variants mb-3">
+          <small class="muted">Choose size</small>
 
-  <div class="sizes d-flex gap-2 flex-wrap mt-2" role="list" aria-label="Available sizes">
-    <button
-  *ngFor="let v of (product?.variants ?? product?.Variants ?? product?.productVariants)"
-  type="button"
-  class="size"                 
-  role="listitem"
-  [attr.aria-pressed]="(v?.Id ?? v?.id) === selectedVariantId"
-  [class.active]="(v?.Id ?? v?.id) === selectedVariantId"
-  [class.out-of-stock]="(v?.StockQty ?? v?.stock ?? 0) <= 0"
-  (click)="onSelectVariant(v?.Id ?? v?.id); $event.stopPropagation()"
-  [disabled]="(v?.StockQty ?? v?.stock ?? 0) <= 0"
-  title="{{ (v?.VariantName ?? v?.variantName ?? v?.Attributes ?? v?.SKU) }}">
+          <div class="sizes d-flex gap-2 flex-wrap mt-2" role="list" aria-label="Available sizes">
+            <button
+              *ngFor="let v of (product?.variants ?? product?.Variants ?? product?.productVariants)"
+              type="button"
+              class="size"
+              role="listitem"
+              [attr.aria-pressed]="(v?.Id ?? v?.id) === selectedVariantId"
+              [class.active]="(v?.Id ?? v?.id) === selectedVariantId"
+              [class.out-of-stock]="(v?.StockQty ?? v?.stock ?? 0) <= 0"
+              (click)="onSelectVariant(v?.Id ?? v?.id); $event.stopPropagation()"
+              [disabled]="(v?.StockQty ?? v?.stock ?? 0) <= 0"
+              title="{{ (v?.VariantName ?? v?.variantName ?? (v?.Attributes ?? v?.attributes ?? v?.SKU ?? '-')) }}">
 
-  <div class="size-left">
-    <div class="size-label">{{ v?.VariantName ?? v?.variantName ?? (v?.Attributes ?? v?.attributes ?? v?.SKU ?? '-') }}</div>
-    <div class="size-meta">
-      <span class="stock" *ngIf="(v?.StockQty ?? v?.stock ?? 0) > 0">{{ (v?.StockQty ?? v?.stock) }} in stock</span>
-      <span class="stock muted-2" *ngIf="(v?.StockQty ?? v?.stock ?? 0) <= 0">Out of stock</span>
-    </div>
-  </div>
+              <div class="size-left">
+                <div class="size-label">{{ v?.VariantName ?? v?.variantName ?? (v?.Attributes ?? v?.attributes ?? v?.SKU ?? '-') }}</div>
+                <div class="size-meta">
+                  <span class="stock" *ngIf="(v?.StockQty ?? v?.stock ?? 0) > 0">{{ (v?.StockQty ?? v?.stock) }} in stock</span>
+                  <span class="stock muted-2" *ngIf="(v?.StockQty ?? v?.stock ?? 0) <= 0">Out of stock</span>
+                </div>
+              </div>
 
-  <div class="size-right">
-    <span class="price-badge" *ngIf="v?.price || v?.customerPrice">₹ {{ (v?.price ?? v?.customerPrice) | number:'1.0-0' }}</span>
-    <span class="chev" aria-hidden="true">›</span>
-  </div>
-</button>
-  </div>
-</div>
-
-</div>
+              <div class="size-right">
+                <span class="price-badge" *ngIf="v?.price || v?.customerPrice">₹ {{ (v?.price ?? v?.customerPrice) | number:'1.0-0' }}</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </div>
+            </button>
+          </div>
+        </div>
+        <!-- ===== end variants block ===== -->
 
         <div class="actions-row d-flex gap-3 align-items-center">
           <div class="qty">
@@ -96,6 +125,7 @@
   </ng-template>
 </div>
 
+<!-- Loading / Error states -->
 <div *ngIf="loading" class="text-center py-4">
   <div class="spinner-border" role="status"></div>
 </div>
