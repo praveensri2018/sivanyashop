@@ -112,8 +112,11 @@ export class CustomerProductsComponent implements OnInit {
 
   // ---- NEW: select size (variant) handler ----
   selectSize(productId: number, variantId: number) {
+
+    this.router.navigate(['/product', productId], { queryParams: { variant: variantId } })
+    .catch(err => console.warn('navigate to product failed', err));
     // toggle selection: if already selected, deselect
-    const current = this.selectedVariantByProduct[productId] ?? null;
+   /* const current = this.selectedVariantByProduct[productId] ?? null;
     if (current === variantId) {
       this.selectedVariantByProduct[productId] = null;
       // update displayed price back to max for that product
@@ -130,7 +133,7 @@ export class CustomerProductsComponent implements OnInit {
     if (s) {
       prod.price = s.price ?? prod.priceMax;
       prod.stock = s.stock ?? prod.stock;
-    }
+    }*/
   }
 
   // helper to check selected state in template
