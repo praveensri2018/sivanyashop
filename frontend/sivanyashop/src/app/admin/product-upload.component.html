@@ -155,8 +155,8 @@
             <input
               type="checkbox"
               [value]="chart.id"
+                [checked]="selectedSizeCharts.includes(chart.id!)" 
               (change)="onSizeChartSelect(chart.id!, $event)">
-            <span class="checkmark"></span>
             <strong>{{ chart.name }}</strong> - {{ chart.chartType }}
           </label>
           

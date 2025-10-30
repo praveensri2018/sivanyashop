@@ -371,6 +371,86 @@ private deleteRemovedVariants(): Promise<void> {
         const imgs = product.images ?? product.Images ?? res?.images ?? [];
         this.uploadedImages = this.normalizeImagesResponse(imgs);
 
+        try {
+  const apiSizeCharts = product.sizeCharts ?? product.SizeCharts ?? null;
+  const apiSizeChartIds = product.sizeChartIds ?? product.SizeChartIds ?? null;
+  const apiPrimary = product.primarySizeChartId ?? product.PrimarySizeChartId ?? product.primarySizeChart ?? null;
+
+  console.log('🔎 product size chart payload', { apiSizeCharts, apiSizeChartIds, apiPrimary });
+
+  // Build availableSizeCharts from API objects if provided
+  if (Array.isArray(apiSizeCharts) && apiSizeCharts.length > 0) {
+    // Normalize incoming objects
+    const normalized = apiSizeCharts.map((sc: any) => ({
+      id: sc.Id ?? sc.id ?? sc.sizeChartId,
+      name: sc.Name ?? sc.name ?? sc.title ?? `Size Chart ${sc.Id ?? sc.id ?? ''}`,
+      chartType: sc.ChartType ?? sc.chartType ?? sc.type ?? 'UNKNOWN',
+      description: sc.Description ?? sc.description ?? '',
+      measurements: sc.Measurements ? (typeof sc.Measurements === 'string' ? JSON.parse(sc.Measurements) : sc.Measurements) : sc.measurements ?? null,
+      isPrimary: !!(sc.IsPrimary ?? sc.isPrimary ?? false)
+    }));
+
+    // Deduplicate by id (in case loadSizeCharts already populated the same charts)
+    const map = new Map<number, any>();
+    normalized.forEach((s: any) => {
+      const n = Number(s.id);
+      if (!Number.isNaN(n)) map.set(n, s);
+    });
+    // Also include any existing availableSizeCharts loaded earlier (avoid duplicates)
+    (this.availableSizeCharts || []).forEach((s: any) => {
+      const n = Number(s.id);
+      if (!Number.isNaN(n) && !map.has(n)) map.set(n, s);
+    });
+
+    this.availableSizeCharts = Array.from(map.values());
+  }
+
+  // Collect selected ids into a Set to dedupe
+  const sel = new Set<number>();
+  if (Array.isArray(apiSizeChartIds) && apiSizeChartIds.length > 0) {
+    apiSizeChartIds.forEach((id: any) => {
+      const n = Number(id);
+      if (!Number.isNaN(n)) sel.add(n);
+    });
+  }
+
+  // If API returned full objects and those are assigned, mark them selected
+  if (this.availableSizeCharts && this.availableSizeCharts.length > 0) {
+    this.availableSizeCharts.forEach((sc: any) => {
+      const n = Number(sc.id);
+      if (!Number.isNaN(n)) sel.add(n);
+    });
+    const primaryFromObjs = (this.availableSizeCharts || []).find((s: any) => s.isPrimary);
+    this.primarySizeChartId = primaryFromObjs ? Number(primaryFromObjs.id) : (apiPrimary ? Number(apiPrimary) : null);
+  }
+
+  // If API provided only primary id, add it too
+  if ((!Array.isArray(apiSizeCharts) || apiSizeCharts.length === 0) && apiPrimary) {
+    const p = Number(apiPrimary);
+    if (!Number.isNaN(p)) {
+      this.primarySizeChartId = p;
+      sel.add(p);
+    }
+  }
+
+  // Finalize selectedSizeCharts as deduped array
+  this.selectedSizeCharts = Array.from(sel);
+
+  // Normalize primary id
+  if (this.primarySizeChartId !== null && this.primarySizeChartId !== undefined) {
+    this.primarySizeChartId = Number(this.primarySizeChartId);
+    if (Number.isNaN(this.primarySizeChartId)) this.primarySizeChartId = null;
+  }
+
+  console.log('📦 Mapped size charts state (deduped):', {
+    availableSizeCharts: this.availableSizeCharts,
+    selectedSizeCharts: this.selectedSizeCharts,
+    primarySizeChartId: this.primarySizeChartId
+  });
+} catch (scErr) {
+  console.error('❌ Error mapping size charts from product response', scErr);
+}
+
         const serverVariants = product.variants ?? product.Variants ?? res?.variants ?? [];
         this.variants = (Array.isArray(serverVariants) ? serverVariants : []).map((sv: any) => {
           const pricesArr = sv.prices ?? sv.Prices ?? sv.variantPrices ?? [];
@@ -391,6 +471,9 @@ private deleteRemovedVariants(): Promise<void> {
         });
 
         if (this.variants.length === 0) this.addVariantRow();
+
+
+
       },
       error: (err: any) => {
         console.error('fetchProduct error', err);
