@@ -104,28 +104,53 @@ class SizeChartRepository {
     }
 
     // Assign size chart to product
-    async assignSizeChartToProduct(productId, sizeChartId, isPrimary = false) {
-        // If setting as primary, clear existing primary
-        if (isPrimary) {
-            await query(
-                'UPDATE ProductSizeCharts SET IsPrimary = 0 WHERE ProductId = @productId',
-                { productId: { type: sql.Int, value: productId } }
-            );
-        }
+async assignSizeChartToProduct(productId, sizeChartId, isPrimary = false) {
+    const sqlText = `
+    DECLARE @out TABLE (
+        ProductId INT,
+        SizeChartId INT,
+        IsPrimary BIT,
+        CreatedAt DATETIME2
+    );
 
-        const result = await query(
-            `INSERT INTO ProductSizeCharts (ProductId, SizeChartId, IsPrimary) 
-             OUTPUT INSERTED.ProductId, INSERTED.SizeChartId, INSERTED.IsPrimary, INSERTED.CreatedAt
-             VALUES (@productId, @sizeChartId, @isPrimary)`,
-            {
-                productId: { type: sql.Int, value: productId },
-                sizeChartId: { type: sql.Int, value: sizeChartId },
-                isPrimary: { type: sql.Bit, value: isPrimary }
-            }
-        );
+    IF (@isPrimary = 1)
+    BEGIN
+        UPDATE ProductSizeCharts
+        SET IsPrimary = 0
+        WHERE ProductId = @productId;
+    END
 
+    IF EXISTS (SELECT 1 FROM ProductSizeCharts WHERE ProductId = @productId AND SizeChartId = @sizeChartId)
+    BEGIN
+        UPDATE ProductSizeCharts
+        SET IsPrimary = @isPrimary
+        OUTPUT INSERTED.ProductId, INSERTED.SizeChartId, INSERTED.IsPrimary, INSERTED.CreatedAt INTO @out
+        WHERE ProductId = @productId AND SizeChartId = @sizeChartId;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO ProductSizeCharts (ProductId, SizeChartId, IsPrimary)
+        OUTPUT INSERTED.ProductId, INSERTED.SizeChartId, INSERTED.IsPrimary, INSERTED.CreatedAt INTO @out
+        VALUES (@productId, @sizeChartId, @isPrimary);
+    END
+
+    SELECT ProductId, SizeChartId, IsPrimary, CreatedAt FROM @out;
+    `;
+
+    const params = {
+        productId: { type: sql.Int, value: productId },
+        sizeChartId: { type: sql.Int, value: sizeChartId },
+        isPrimary: { type: sql.Bit, value: isPrimary }
+    };
+
+    try {
+        const result = await query(sqlText, params);
         return result.recordset[0] ? ProductSizeChart.fromDbRow(result.recordset[0]) : null;
+    } catch (err) {
+        throw err;
     }
+}
+
 
     // Remove size chart from product
     async removeSizeChartFromProduct(productId, sizeChartId) {

@@ -2,6 +2,7 @@
 const productRepo = require('../repositories/productRepo');
 const stockRepo = require('../repositories/stockRepo');
 const stockService = require('../services/stockService');
+const sizeChartRepo = require('../repositories/sizeChartRepo');
 
 async function addCategory(name, parentCategoryId) {
   return productRepo.createCategory(name, parentCategoryId);
@@ -172,6 +173,96 @@ async function fetchRecentlyViewedProducts(userId, limit = 10) {
     return productRepo.getRecentlyViewed(userId, limit);
 }
 
+
+// PLACE: replace the existing getProductById function body in backend/services/productService.js with this version
+async function getProductById(productId) {
+  // basic product row
+  const productRow = await productRepo.getProductRowById(productId);
+  if (!productRow) return null;
+
+  // categories, images, variants (existing behavior)
+  const categoryIds = await productRepo.getCategoryIdsForProduct(productId);
+  const images = await productRepo.getImagesForProduct(productId);
+  const variants = await productRepo.getVariantsForProduct(productId);
+
+  // fetch prices for all variant ids (if any)
+  const variantIds = variants.map(v => v.Id).filter(Boolean);
+  const priceMap = variantIds.length ? await productRepo.getActivePricesForVariants(variantIds) : {};
+
+  // map prices into variant objects and pick customer/retailer price convenience fields
+  const variantsNormalized = variants.map(v => {
+    const prices = priceMap[v.Id] || [];
+    const customerPrice = prices.find(p => p.PriceType === 'CUSTOMER')?.Price ?? null;
+    const retailerPrice = prices.find(p => p.PriceType === 'RETAILER')?.Price ?? null;
+
+    return {
+      Id: v.Id,
+      SKU: v.SKU,
+      VariantName: v.VariantName,
+      Attributes: v.Attributes,
+      StockQty: v.StockQty,
+      imageIds: v.ImageIds || [],
+      customerPrice,
+      retailerPrice,
+      prices // full array
+    };
+  });
+
+  // ---------- SIZE CHARTS: fetch assigned charts for this product ----------
+  // PLACE: This is the new block to add. It uses sizeChartRepo.getProductSizeCharts(productId)
+  let sizeCharts = [];
+  let sizeChartIds = [];
+  let primarySizeChartId = null;
+
+  try {
+    // sizeChartRepo.getProductSizeCharts returns full chart objects with IsPrimary (as implemented)
+    const productSizeCharts = await sizeChartRepo.getProductSizeCharts(productId);
+    if (Array.isArray(productSizeCharts) && productSizeCharts.length > 0) {
+      // map db rows / SizeChart objects to plain objects the frontend can consume
+      sizeCharts = productSizeCharts.map(sc => ({
+        id: sc.Id ?? sc.id,
+        name: sc.Name ?? sc.name,
+        chartType: sc.ChartType ?? sc.chartType,
+        description: sc.Description ?? sc.description,
+        measurements: sc.Measurements ? (typeof sc.Measurements === 'string' ? JSON.parse(sc.Measurements) : sc.Measurements) : sc.measurements ?? null,
+        isPrimary: !!sc.IsPrimary || !!sc.isPrimary
+      }));
+
+      sizeChartIds = sizeCharts.map(sc => Number(sc.id));
+      const primary = sizeCharts.find(sc => sc.isPrimary);
+      primarySizeChartId = primary ? Number(primary.id) : null;
+    }
+  } catch (err) {
+    // PLACE: don't break product response if size chart lookup fails — just log
+    console.error('Failed to load product size charts for productId', productId, err);
+    sizeCharts = [];
+    sizeChartIds = [];
+    primarySizeChartId = null;
+  }
+  // ---------- end size chart block ----------
+
+  // return normalized product (includes size chart data now)
+  return {
+    Id: productRow.Id,
+    Name: productRow.Name,
+    Description: productRow.Description,
+    CategoryIds: categoryIds,
+    images,
+    variants: variantsNormalized,
+    // size chart additions:
+    sizeCharts,                // full objects (may include measurements, isPrimary)
+    sizeChartIds,              // [id, id, ...]
+    primarySizeChartId,        // id or null
+
+    // keep other useful fields if helpful
+    ImagePath: productRow.ImagePath,
+    IsActive: productRow.IsActive,
+    IsFeatured: productRow.IsFeatured,
+    CreatedAt: productRow.CreatedAt
+  };
+}
+
+/*
 async function getProductById(productId) {
   // repo returns raw rows; assemble normalized object
   const productRow = await productRepo.getProductRowById(productId);
@@ -218,7 +309,7 @@ async function getProductById(productId) {
     CreatedAt: productRow.CreatedAt
   };
 }
-
+*/
 async function updateVariant({ variantId, sku, variantName, attributes, stockQty }) {
   return productRepo.updateProductVariant({ variantId, sku, variantName, attributes, stockQty });
 }
