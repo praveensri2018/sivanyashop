@@ -1,15 +1,123 @@
-// order-details/order-details.component.scss
+/* FILE: app/order-details/order-details.component.scss
+   PLACE: save/replace here
+   NOTES:
+   - Uses global Blue Lavender theme tokens from styles.scss
+   - Responsive, clean, and pastel consistent
+*/
+
 .order-details {
+  color: var(--text-main);
+  background: transparent;
+  font-size: var(--fs-base);
+  line-height: 1.45;
+
+  .card {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    background: var(--surface);
+    transition: box-shadow 0.25s ease;
+    &:hover {
+      box-shadow: var(--shadow-md);
+    }
+  }
+
   .card-header {
-    background-color: #f8f9fa;
+    background: linear-gradient(90deg, var(--surface), rgba(177,178,255,0.05));
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem;
   }
-  
-  .img-fluid {
+
+  .status-badges .badge {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.65rem;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+  }
+
+  /* Override badge colors using theme tokens */
+  .badge.bg-warning { background: #facc15; color: #111; }
+  .badge.bg-info { background: var(--primary); color: var(--white); }
+  .badge.bg-primary { background: var(--primary); color: var(--white); }
+  .badge.bg-success { background: #10b981; color: var(--white); }
+  .badge.bg-danger { background: #ef4444; color: var(--white); }
+
+  /* Product list */
+  .order-item {
+    transition: background-color 0.2s ease;
+    border-radius: calc(var(--radius) - 2px);
+    &:hover {
+      background-color: rgba(177, 178, 255, 0.04);
+    }
+  }
+
+  img.img-fluid {
     max-height: 80px;
+    width: 100%;
     object-fit: cover;
+    border-radius: var(--radius);
   }
-  
-  .badge {
-    font-size: 0.75rem;
+
+  h5, h6 {
+    font-weight: 700;
+  }
+
+  .text-primary {
+    color: var(--primary-darker) !important;
+  }
+
+  .card.bg-surface {
+    background: var(--surface);
+  }
+
+  /* Buttons */
+  .btn {
+    border-radius: var(--radius);
+    font-weight: 600;
+    padding: 0.45rem 1rem;
+    transition: all 0.15s ease;
+    &.btn-outline {
+      background: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      &:hover {
+        background: var(--primary);
+        color: var(--white);
+      }
+    }
+  }
+
+  /* Responsive layout */
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    .card-header {
+      text-align: center;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .status-badges {
+      text-align: center;
+    }
+
+    .order-item img {
+      max-height: 70px;
+    }
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+    .card-header {
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .text-primary {
+      color: var(--primary) !important;
+    }
   }
 }

@@ -1,182 +1,76 @@
-<!-- FILE: src/app/ui/header.component.html -->
-<header class="meesho-header" [class.scrolled]="isScrolled" [class.mobile-menu-open]="isMobileMenuOpen">
+<header class="meesho-header" [class.scrolled]="isScrolled" [class.mobile-menu-open]="isMobileMenuOpen" role="banner">
   <!-- Top Bar -->
   <div class="header-top">
-    <div class="container">
-      <div class="header-row">
-        <!-- Left: Hamburger Menu & Brand -->
-        <div class="header-left">
-          <!-- Hamburger Menu Button -->
-          <button class="hamburger-btn" (click)="toggleMobileMenu()" aria-label="Toggle menu">
-            <span></span><span></span><span></span>
-          </button>
+    <div class="container header-row">
+      <!-- Left: Hamburger Menu & Brand -->
+      <div class="header-left">
+        <button type="button" class="hamburger-btn" (click)="toggleMobileMenu()" aria-label="Toggle menu" [attr.aria-expanded]="isMobileMenuOpen">
+          <span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-hamburger" viewBox="0 0 18 16" aria-hidden="true"><path fill="currentColor" d="M1 .5a.5.5 0 1 0 0 1h15.71a.5.5 0 0 0 0-1zM.5 8a.5.5 0 0 1 .5-.5h15.71a.5.5 0 0 1 0 1H1A.5.5 0 0 1 .5 8m0 7a.5.5 0 0 1 .5-.5h15.71a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-close" viewBox="0 0 18 17" aria-hidden="true"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"></path></svg>
+          </span>
+        </button>
+        <a [routerLink]="getHomeRoute()" routerLinkActive="nav-active" [routerLinkActiveOptions]="{exact:true}" class="brand-logo" aria-label="Home"><img src="/assets/logo.png" alt="Sivanyua Trends" /></a>
+      </div>
 
-          <!-- Brand Logo -->
-          <a [routerLink]="getHomeRoute()" class="brand-logo">
-            <img src="/assets/logo.png" alt="Sivanuya Trends Tops" />
-          </a>
-        </div>
-
-        <!-- Center: Search Bar -->
-        <div class="header-center">
-          <form class="search-form" (ngSubmit)="onSearch()" role="search">
-            <input type="search" name="q" [(ngModel)]="query" [placeholder]="getSearchPlaceholder()"
-                   class="search-input" (input)="onInput($event)" autocomplete="off" />
-            <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
-          </form>
-        </div>
-
-        <!-- Right: Controls -->
-        <div class="header-right">
-          <!-- Cart Icon -->
-          <a *ngIf="role !== 'admin'" routerLink="/cart" class="nav-icon cart-icon" aria-label="Cart">
-            <i class="fas fa-shopping-cart"></i>
-            <span class="badge" *ngIf="(cartCount$ | async) as cartCount">{{ cartCount > 0 ? cartCount : '' }}</span>
-          </a>
-
-          <!-- Login Button (for guests) -->
-          <a *ngIf="!role" routerLink="/login" class="login-btn">
-            <i class="fas fa-sign-in-alt"></i>
-            <span class="login-text">Login</span>
-          </a>
-        </div>
+      <!-- Center: Search Bar -->
+      <div class="header-center" aria-hidden="false">
+        <form class="search-form" (ngSubmit)="onSearch()" role="search" novalidate>
+          <input type="search" name="q" [(ngModel)]="query" [placeholder]="getSearchPlaceholder()" class="search-input" (input)="onInput($event)" autocomplete="off" aria-label="Search" />
+          <button type="submit" class="search-btn" aria-label="Search"><i class="fas fa-search" aria-hidden="true"></i></button>
+        </form>
       </div>
     </div>
   </div>
-
-  <!-- Desktop Navigation -->
-  <nav class="desktop-nav" *ngIf="role" style = "display: none;">
-    <div class="container">
-      <div class="nav-links">
-        <a routerLink="/" class="nav-link" routerLinkActive="active">Home</a>
-        
-        <!-- Admin Navigation -->
-        <ng-container *ngIf="role === 'admin'">
-          <a routerLink="/admin" class="nav-link" routerLinkActive="active">Dashboard</a>
-          <a routerLink="/admin/orders" class="nav-link" routerLinkActive="active">Orders</a>
-          <a routerLink="/admin/products" class="nav-link" routerLinkActive="active">Products</a>
-          
-          <!-- ✅ NEW: Size Charts Menu Item -->
-          <a routerLink="/admin/size-charts" class="nav-link" routerLinkActive="active">
-            <i class="fas fa-ruler-combined" style="margin-right: 4px;"></i>
-            Size Charts
-          </a>
-          
-          <a routerLink="/admin/retailers" class="nav-link" routerLinkActive="active">Retailers</a>
-          <a routerLink="/admin/categories" class="nav-link" routerLinkActive="active">Categories</a>
-          <a routerLink="/payment-history" class="nav-link" routerLinkActive="active">Payments</a>
-        </ng-container>
-
-        <!-- Customer Navigation -->
-        <ng-container *ngIf="role === 'customer'">
-          <a routerLink="/orders" class="nav-link" routerLinkActive="active">My Orders</a>
-          <a routerLink="/payment-history" class="nav-link" routerLinkActive="active">Payments</a>
-        </ng-container>
-
-        <!-- Retailer Navigation -->
-        <ng-container *ngIf="role === 'retailer'">
-          <a routerLink="/retailer" class="nav-link" routerLinkActive="active">Dashboard</a>
-          <a routerLink="/orders" class="nav-link" routerLinkActive="active">Orders</a>
-        </ng-container>
-      </div>
-    </div>
-  </nav>
 </header>
 
 <!-- Mobile Sidebar Menu -->
-<div class="mobile-sidebar" [class.open]="isMobileMenuOpen">
-  <div class="sidebar-header">
-    <button class="close-btn" (click)="toggleMobileMenu()" aria-label="Close menu">
-      <i class="fas fa-times"></i>
-    </button>
+<aside class="mobile-sidebar" [class.open]="isMobileMenuOpen" role="dialog" aria-modal="true" [attr.aria-hidden]="!isMobileMenuOpen">
+  <div class="sidebar-header" *ngIf="currentUser">
     <div class="sidebar-user" *ngIf="currentUser">
-      <i class="fas fa-user-circle"></i>
-      <div class="sidebar-user-info">
-        <strong>{{ currentUser.name }}</strong>
-        <span>{{ getRoleDisplayName() }}</span>
-      </div>
+      <i class="fas fa-user-circle" aria-hidden="true"></i>
+      <div class="sidebar-user-info"><strong>{{ currentUser.name }}</strong></div>
     </div>
   </div>
 
-  <nav class="sidebar-nav">
-    <a routerLink="/" class="sidebar-link" (click)="toggleMobileMenu()">
-      <i class="fas fa-home"></i><span>Home</span>
-    </a>
-    
-    <!-- Admin Links -->
+  <nav class="sidebar-nav" aria-label="Mobile navigation">
+    <a routerLink="/" routerLinkActive="nav-active" [routerLinkActiveOptions]="{exact:true}" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-home" aria-hidden="true"></i><span>Home</span></a>
+
     <ng-container *ngIf="role === 'admin'">
-      <a routerLink="/admin" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-      </a>
-      <a routerLink="/admin/orders" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-shopping-bag"></i><span>Orders</span>
-      </a>
-      <a routerLink="/admin/products" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-box"></i><span>Products</span>
-      </a>
-      
-      <!-- ✅ NEW: Size Charts Menu Item (Mobile) -->
-      <a routerLink="/admin/size-charts" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-ruler-combined"></i><span>Size Charts</span>
-      </a>
-      
-      <a routerLink="/admin/retailers" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-users"></i><span>Retailers</span>
-      </a>
-      <a routerLink="/admin/categories" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-tags"></i><span>Categories</span>
-      </a>
+      <a routerLink="/admin/products" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-box" aria-hidden="true"></i><span>Products</span></a>
+      <a routerLink="/admin/categories" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-th-large" aria-hidden="true"></i><span>Categories</span></a>
+      <a routerLink="/admin/size-charts" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-ruler-combined" aria-hidden="true"></i><span>Size Charts</span></a>
+      <a routerLink="/admin/orders" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-shopping-bag" aria-hidden="true"></i><span>Orders</span></a>
+      <a routerLink="/admin/retailers" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-users" aria-hidden="true"></i><span>Retailers</span></a>
     </ng-container>
 
-    <!-- Customer Links -->
     <ng-container *ngIf="role === 'customer'">
-      <a routerLink="/dashboard" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-      </a>
-      <a routerLink="/orders" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-history"></i><span>My Orders</span>
-      </a>
+      <a routerLink="/orders" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-history" aria-hidden="true"></i><span>My Orders</span></a>
+          <a routerLink="/payment-history" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-credit-card" aria-hidden="true"></i><span>Payments</span></a>
+
     </ng-container>
 
-    <!-- Retailer Links -->
     <ng-container *ngIf="role === 'retailer'">
-      <a routerLink="/retailer" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-      </a>
-      <a routerLink="/orders" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-shopping-bag"></i><span>Orders</span>
-      </a>
+      <a routerLink="/orders" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-shopping-bag" aria-hidden="true"></i><span>Orders</span></a>
+          <a routerLink="/payment-history" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-credit-card" aria-hidden="true"></i><span>Payments</span></a>
+
     </ng-container>
 
-    <!-- Common Links -->
-    <a routerLink="/payment-history" class="sidebar-link" (click)="toggleMobileMenu()">
-      <i class="fas fa-credit-card"></i><span>Payments</span>
-    </a>
 
-    <a routerLink="/cart" class="sidebar-link" (click)="toggleMobileMenu()" *ngIf="role !== 'admin'">
-      <i class="fas fa-shopping-cart"></i><span>Cart</span>
-      <span class="sidebar-badge" *ngIf="(cartCount$ | async) as cartCount">{{ cartCount > 0 ? cartCount : '' }}</span>
-    </a>
+    <a routerLink="/cart" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()" *ngIf="role !== 'admin'"><i class="fas fa-shopping-cart" aria-hidden="true"></i><span>Cart</span><span class="sidebar-badge" *ngIf="(cartCount$ | async) as cartCount">{{ cartCount > 0 ? cartCount : '' }}</span></a>
 
-    <div class="sidebar-divider"></div>
+    <div class="sidebar-divider" role="separator"></div>
 
-    <!-- Auth Links -->
-    <ng-container *ngIf="role; else guestLinks">
-      <button class="sidebar-link logout-link" (click)="handleLogout()">
-        <i class="fas fa-sign-out-alt"></i><span>Logout</span>
-      </button>
+    <ng-container *ngIf="role; else mobileGuest">
+      <button class="sidebar-link logout-link" (click)="handleLogout()" type="button"><i class="fas fa-sign-out-alt" aria-hidden="true"></i><span>Logout</span></button>
     </ng-container>
 
-    <ng-template #guestLinks>
-      <a routerLink="/login" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-sign-in-alt"></i><span>Login</span>
-      </a>
-      <a routerLink="/register" class="sidebar-link" (click)="toggleMobileMenu()">
-        <i class="fas fa-user-plus"></i><span>Register</span>
-      </a>
+    <ng-template #mobileGuest>
+      <a routerLink="/login" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-sign-in-alt" aria-hidden="true"></i><span>Login</span></a>
+      <a routerLink="/register" routerLinkActive="nav-active" class="sidebar-link" (click)="toggleMobileMenu()"><i class="fas fa-user-plus" aria-hidden="true"></i><span>Register</span></a>
     </ng-template>
   </nav>
-</div>
+</aside>
 
 <!-- Mobile Menu Overlay -->
-<div class="mobile-overlay" [class.active]="isMobileMenuOpen" (click)="toggleMobileMenu()"></div>
+<div class="mobile-overlay" [class.active]="isMobileMenuOpen" (click)="toggleMobileMenu()" tabindex="-1" [attr.aria-hidden]="!isMobileMenuOpen"></div>

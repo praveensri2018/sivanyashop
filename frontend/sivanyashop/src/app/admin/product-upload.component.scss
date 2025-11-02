@@ -1,627 +1,457 @@
-/* PLACE FILE AT: src/app/admin/product-upload.component.scss
-   Full SCSS for Product Upload Admin UI
-   - Vibrant teal ↔ purple color palette
-   - ng-select dropdown fixes & theme overrides included
-   - Responsive + dark-mode support
-   - Copy / replace existing SCSS for this component with the content below
+/* FILE: app/admin/product-upload.component.scss
+   PLACE: save/replace at app/admin/product-upload.component.scss
+   NOTES:
+   - Uses only global tokens from styles.scss (Blue Lavender Theme).
+   - Primary CTAs use --primary-darker as requested.
+   - Mobile-first responsive fixes for neat mobile + desktop behavior.
+   - Add "max-height-card" class in template to replace inline height:80vh.
 */
 
-/* =========================
-   COLOR PALETTE & VARIABLES
-   ========================= */
-:root {
-  /* Primary Teal ↔ Purple Palette (updated per request) */
-  --primary-50: #e6f8f5;
-  --primary-100: #c3f0eb;
-  --primary-200: #8ee6db;
-  --primary-300: #3fd1bf;
-  --primary-500: #0ea5a4; /* teal */
-  --primary-600: #0b8f8e;
-  --primary-700: #086e6d;
-
-  --accent-400: #7c3aed; /* purple */
-  --accent-500: #6b21a8;
-  --accent-600: #53157f;
-
-  --success-50: #ecfdf5;
-  --success-100: #d1fae5;
-  --success-500: #10b981;
-  --success-700: #059669;
-
-  --warning-50: #fffbeb;
-  --warning-300: #fcd34d;
-  --warning-500: #f59e0b;
-
-  --error-50: #fff1f2;
-  --error-500: #ef4444;
-  --error-700: #dc2626;
-
-  --gray-50: #f8fafc;
-  --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
-  --gray-400: #94a3b8;
-  --gray-700: #334155;
-  --gray-800: #0f1724;
-  --gray-900: #071025;
-
-  /* UI tokens */
-  --bg-primary: #ffffff;
-  --bg-gradient: linear-gradient(135deg, #f2fbfa 0%, #eef6ff 100%);
-  --text-primary: #0f1724;
-  --text-muted: #55607a;
-  --text-secondary: #062635;
-  --border-light: #e6eef2;
-
-  --border-radius: 10px;
-  --border-radius-lg: 14px;
-  --shadow-sm: 0 4px 12px rgba(2,6,23,0.06);
-  --shadow-md: 0 8px 24px rgba(2,6,23,0.08);
-  --shadow-lg: 0 18px 40px rgba(2,6,23,0.12);
-  --shadow-xl: 0 30px 60px rgba(2,6,23,0.18);
-}
-
-/* Host */
+/* ---------- Host ---------- */
 :host {
   display: block;
-  background: var(--bg-gradient);
-  min-height: 100vh;
-  padding: 1rem;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  font-size: clamp(14px, 1.6vw, 16px);
+  background: transparent;
+  color: var(--text-main);
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Container */
+/* ---------- Container (page) ---------- */
 .admin-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--primary-50) 100%);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-xl);
-  border: 1px solid var(--border-light);
-  animation: fadeInUp 0.6s ease-out;
+  padding: 0.86rem;
+  padding-bottom: calc(var(--footer-height, 56px) + 28px); /* prevent footer overlap */
+  background: linear-gradient(135deg, var(--surface) 0%, var(--primary-hover) 100%);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
   max-height: calc(100vh - 2rem);
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-
-  h2 {
-    font-size: 2rem;
-    font-weight: 800;
-    margin-bottom: 1.5rem;
-    color: var(--primary-700);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    &::before { content: '🚀'; font-size: 1.5rem; }
-    &::after {
-      content: '';
-      flex: 1;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary-500) 0%, var(--accent-500) 100%);
-      border-radius: 2px;
-      margin-left: 1rem;
-    }
-  }
-}
-
-/* Card wrapper */
-.card {
-  background: var(--bg-primary);
-  border-radius: var(--border-radius-lg);
-  padding: 1.75rem;
-  margin-bottom: 1.25rem;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-light);
   position: relative;
-  overflow: hidden;
-  transition: transform 0.28s ease, box-shadow 0.28s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 6px;
-    height: 100%;
-    background: linear-gradient(180deg, var(--primary-500) 0%, var(--accent-500) 100%);
-  }
-
-  &:hover {
-    transform: translateY(-6px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  h3 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    margin: 0 0 1rem 0;
-    color: var(--primary-700);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    &::before {
-      content: '';
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 0.9rem;
-    }
-  }
+  font-size: clamp(13px, 1.2vw, 14px) !important;
 }
 
-/* Load section helpers (inputs & buttons) */
-.load-section {
+/* ---------- Title ---------- */
+.admin-container h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  color: var(--primary-darker);
   display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  flex-wrap: wrap;
-
-  input[type="text"], input[type="number"], input:not([type]) {
-    flex: 1;
-    min-width: 240px;
-    padding: 0.9rem 1rem;
-    border: 2px solid var(--border-light);
-    border-radius: var(--border-radius);
-    background: var(--bg-primary);
-    box-shadow: var(--shadow-sm);
-    font-size: 0.95rem;
-    &::placeholder { color: var(--text-muted); }
-    &:focus {
-      outline: none;
-      border-color: var(--primary-500);
-      box-shadow: 0 0 0 6px rgba(14,165,164,0.06);
-      transform: translateY(-1px);
-    }
-  }
-
-  .btn {
-    padding: 0.8rem 1.1rem;
-    border-radius: var(--border-radius);
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
-
-    &.btn-primary {
-      background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-      color: white;
-      &:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-      &::before { content: '🔍'; }
-    }
-
-    &.btn-outline {
-      background: transparent;
-      border: 2px solid var(--primary-200);
-      color: var(--primary-600);
-      &:hover { background: var(--primary-50); border-color: var(--primary-500); }
-      &::before { content: '🗑️'; }
-    }
-
-    &.btn-back {
-      background: linear-gradient(135deg, var(--gray-400), var(--gray-500));
-      color: white;
-      &:hover { transform: translateY(-2px); }
-      &::before { content: '←'; }
-    }
-  }
-}
-
-/* Product ID display */
-.product-id-display {
-  margin-top: 0.75rem;
-  padding: 0.85rem 1rem;
-  background: linear-gradient(135deg, var(--success-50), var(--success-100));
-  border: 1px solid rgba(16,185,129,0.12);
-  border-radius: var(--border-radius);
-  color: var(--success-700);
-  font-weight: 700;
-  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  &::before { content: '📝'; font-size: 1.05rem; }
 }
 
-/* Form grid */
+/* ---------- Card base ---------- */
+.card {
+  background: var(--surface);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+/* ---------- max-height helper (replace inline height:80vh) ---------- */
+.max-height-card {
+  max-height: calc(var(--vh, 1vh) * 100 - 160px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- Forms & Inputs (mobile-first) ---------- */
 .form-grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: 1fr;
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem;
-  }
-
-  label {
-    display: block;
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 0.95rem;
-
-    input, textarea, select {
-      margin-top: 0.5rem;
-      width: 100%;
-      padding: 0.9rem 1rem;
-      border-radius: var(--border-radius);
-      border: 2px solid var(--border-light);
-      background: var(--bg-primary);
-      box-shadow: var(--shadow-sm);
-      &:focus { outline: none; border-color: var(--primary-500); box-shadow: 0 0 0 6px rgba(14,165,164,0.06); transform: translateY(-1px); }
-    }
-
-    textarea { min-height: 110px; resize: vertical; }
-  }
-
-  .full-width { grid-column: 1 / -1; }
-}
-
-/* Variant inputs & table */
-.variant-input {
-  background: linear-gradient(135deg, var(--primary-50), #f6f7fb);
-  border: 2px dashed var(--primary-200);
-  border-radius: var(--border-radius);
-  padding: 0.85rem;
-  width: 100%;
-  transition: all 0.18s ease;
-  &:hover { border-color: var(--primary-500); background: linear-gradient(135deg, var(--primary-100), #f4eefb); }
-}
-
-/* Variants table (desktop) */
-.variants-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95rem;
   margin-top: 0.5rem;
-  th, td { padding: 10px 8px; border-bottom: 1px solid rgba(2,6,23,0.04); vertical-align: top; }
-  .actions-cell .variant-actions { display: flex; gap: 8px; }
-  input[type="number"], input[type="text"], input[type="tel"] { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-light); box-sizing: border-box; }
 }
 
-/* Image upload area & preview */
-.image-upload-section {
-  .upload-area {
-    border: 2px dashed var(--primary-200);
-    border-radius: var(--border-radius-lg);
-    padding: 1.6rem;
-    text-align: center;
-    background: linear-gradient(135deg, var(--primary-50), var(--accent-50));
-    cursor: pointer;
-    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-    &:hover { transform: translateY(-3px); border-color: var(--primary-500); box-shadow: var(--shadow-sm); }
-    &.dragover { border-color: var(--success-500); background: linear-gradient(135deg, var(--success-50), #ecfffa); }
-    input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  }
-
-  .image-preview {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 0.8rem;
-    margin-top: 1rem;
-
-    .preview-item {
-      border-radius: var(--border-radius);
-      overflow: hidden;
-      box-shadow: var(--shadow-sm);
-      background: white;
-      img { width: 100%; height: 110px; object-fit: cover; display: block; }
-      .preview-actions { position: absolute; top: 8px; right: 8px; opacity: 0; transition: opacity 0.18s; }
-      &:hover { transform: translateY(-3px); .preview-actions { opacity: 1; } }
-    }
-  }
+@media (min-width: 768px) {
+  .form-grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
 }
 
-/* Sizes section (assignment area) */
-.size-charts-selection {
-  display: grid;
-  gap: 0.75rem;
-  .size-chart-option {
-    padding: 0.8rem;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-light);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.6rem;
-    background: var(--bg-primary);
-  }
-
-  .checkbox-label {
-    display: flex;
-    gap: 0.6rem;
-    align-items: center;
-    input[type="checkbox"] { width: 18px; height: 18px; }
-    .checkmark { width: 18px; height: 18px; border-radius: 4px; background: transparent; border: 1px solid var(--border-light); display:inline-block; }
-  }
-
-  .primary-option { margin-left: auto; }
+.form-grid label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.95rem;
 }
 
-/* Form actions (footer) */
-.form-actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-  align-items: center;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-light);
-  margin-top: 1rem;
-
-  .btn {
-    padding: 0.9rem 1.2rem;
-    border-radius: var(--border-radius);
-    font-weight: 800;
-    min-width: 140px;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
-
-    &.btn-primary {
-      background: linear-gradient(135deg, var(--success-500), var(--success-700));
-      color: white;
-      &::before { content: '💾'; margin-right: 0.45rem; }
-      &:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-    }
-
-    &.btn-secondary {
-      background: linear-gradient(135deg, var(--gray-400), var(--gray-500));
-      color: white;
-      &::before { content: '🔄'; margin-right: 0.45rem; }
-    }
-
-    &.btn-outline {
-      background: transparent;
-      border: 2px solid var(--primary-500);
-      color: var(--primary-600);
-      &:hover { background: var(--primary-50); }
-    }
-  }
-}
-
-/* Validation */
-.ng-invalid.ng-touched { box-shadow: 0 0 0 6px rgba(239,68,68,0.06) !important; border-color: var(--error-500) !important; }
-.ng-valid.ng-touched { box-shadow: 0 0 0 6px rgba(16,185,129,0.06) !important; border-color: var(--success-500) !important; }
-
-/* Loading overlay */
-.loading-overlay {
-  position: fixed; inset: 0; display:flex; align-items:center; justify-content:center; z-index:12000;
-  background: rgba(2,6,23,0.6);
-  .loading-spinner { background: var(--bg-primary); padding: 1.25rem 1.5rem; border-radius: var(--border-radius); box-shadow: var(--shadow-xl); color: var(--text-primary); }
-}
-
-/* Success message */
-.success-message { display:flex; gap:1rem; align-items:center; padding:0.85rem; border-radius: var(--border-radius); background: linear-gradient(135deg,var(--success-50),#ecfff3); border:1px solid rgba(16,185,129,0.08); font-weight:700; }
-
-/* =========================
-   NG-SELECT: Dropdown fixes & theme overrides
-   (Recommended: use [appendTo]="'body'" on the ng-select component)
-   ========================= */
-
-/* Ensure admin container has relative position for some absolute children */
-.admin-container { position: relative; }
-
-/* Base ng-select */
-ng-select, .ng-select { display:block; width:100%; font-family: inherit; font-size: 1rem; color: var(--text-primary); }
-
-/* Container style matching other inputs */
-.ng-select .ng-select-container {
-  padding: 0.45rem 0.6rem;
-  min-height: 44px;
-  border-radius: var(--border-radius);
-  border: 2px solid var(--border-light);
-  background: var(--bg-primary);
+.form-grid input,
+.form-grid textarea,
+.form-grid select,
+.form-grid .ng-select {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: calc(var(--radius) - 2px);
+  border: 2px solid var(--border);
+  background: var(--white);
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
 }
 
-/* Focus / active */
-.ng-select .ng-select-container.ng-has-value,
-.ng-select .ng-select-container:focus,
-.ng-select.ng-select-focused .ng-select-container {
-  border-color: var(--primary-500);
-  box-shadow: 0 0 0 6px rgba(14,165,164,0.06);
+.form-grid input:focus,
+.form-grid textarea:focus,
+.form-grid select:focus,
+.form-grid .ng-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 6px rgba(177,178,255,0.12);
   transform: translateY(-1px);
 }
 
-/* Selected tags look */
-.ng-select .ng-value {
-  background: linear-gradient(135deg, var(--primary-50), var(--accent-50));
-  color: var(--primary-700);
-  border-radius: 6px;
-  padding: 0.18rem 0.45rem;
-  font-weight: 700;
-  margin-right: 0.35rem;
-}
-.ng-select .ng-placeholder { color: var(--text-muted); font-weight:600; }
+.form-grid textarea { min-height: 110px; resize: vertical; }
+.full-width { grid-column: 1 / -1; }
 
-/* Dropdown panel: high z-index, box, rounded */
-.ng-dropdown-panel {
-  position: absolute !important;
-  z-index: 11000 !important;
-  min-width: 320px;
-  max-width: min(880px, 95vw);
-  max-height: 420px;
-  overflow: auto;
-  background: var(--bg-primary);
-  border-radius: 12px;
-  border: 1px solid var(--border-light);
-  box-shadow: 0 18px 40px rgba(2,6,23,0.12);
-  padding: 0.3rem;
-}
-
-/* Option rows */
-.ng-dropdown-panel .ng-option {
-  padding: 0.55rem 0.9rem;
-  border-radius: 8px;
-  margin: 0.15rem 0;
-  cursor: pointer;
-  color: var(--text-primary);
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius);
   font-weight: 600;
-  transition: background 0.12s ease, transform 0.12s ease;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-main);
+  transition: background-color 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease;
 }
-.ng-dropdown-panel .ng-option:hover,
-.ng-dropdown-panel .ng-option.active {
-  background: linear-gradient(90deg, var(--primary-50), var(--accent-50));
-  color: var(--primary-700);
+
+/* Primary CTA uses requested darker primary */
+.btn-primary {
+  background: var(--primary-darker); /* #6E6FFF expected from :root */
+  color: var(--white);
+  border-color: var(--primary-darker);
+  box-shadow: 0 6px 16px rgba(110,111,255,0.08);
+}
+.btn-primary:hover {
+  background: var(--primary);
+  border-color: var(--primary);
   transform: translateY(-2px);
 }
 
-/* Search input */
-.ng-dropdown-panel .ng-dropdown-panel-search { padding: 0.5rem; }
-.ng-dropdown-panel .ng-dropdown-panel-search input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  background: var(--bg-primary);
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
+.btn-outline:hover {
+  background: var(--primary);
+  color: var(--white);
 }
 
-/* Scrollbar styling */
-.ng-dropdown-panel::-webkit-scrollbar { width: 8px; height: 8px; }
-.ng-dropdown-panel::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }
-.ng-dropdown-panel { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.12) transparent; }
+.btn-sm { padding: 0.32rem 0.56rem; font-size: 0.82rem; border-radius: 8px; }
 
-/* Fallback: fixed panel if appendTo not available */
+/* ---------- Load / control row ---------- */
+.load-section {
+  display:flex;
+  gap: 0.75rem;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-bottom: 0.75rem;
+}
+
+/* ---------- Images uploader ---------- */
+.images-section {
+  .uploader-root { display:flex; flex-direction:column; gap:12px; }
+
+  .btn-add {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    background: var(--primary-darker);
+    color: var(--white);
+    border: 1px solid var(--primary-darker);
+    font-weight:700;
+    width: max-content;
+  }
+
+  .btn-upload {
+    padding:8px 12px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background: var(--surface);
+    cursor:pointer;
+    color: var(--text-main);
+  }
+
+  .note { font-size: 0.9rem; color: var(--text-muted); }
+
+  .preview-grid, .uploaded-grid .thumb-row {
+    display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;
+  }
+
+  .preview-item, .thumb {
+    position:relative; display:inline-block; width:140px; background:var(--surface);
+    border-radius: calc(var(--radius) - 4px); overflow:hidden; box-shadow: var(--shadow-sm); border:1px solid var(--border);
+  }
+
+  .preview-item img, .thumb img { width:100%; height:110px; object-fit:cover; display:block; }
+  .preview-item small, .thumb small { display:block; text-align:center; margin:6px 4px; font-size:0.78rem; color:var(--text-muted); }
+
+  .remove {
+    position:absolute; top:6px; right:6px; width:28px; height:28px; border-radius:50%; border:none; background:var(--white);
+    cursor:pointer; z-index:2; box-shadow: 0 2px 6px rgba(15,23,42,0.08); font-weight:700; line-height:1;
+  }
+
+  @media (max-width: 640px) {
+    .preview-item, .thumb { width:120px; }
+    .preview-item img, .thumb img { height:90px; }
+  }
+}
+
+/* ---------- Variants (FormArray) ---------- */
+.variants-table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:0.95rem;
+  margin-top:0.5rem;
+}
+
+/* Desktop header style */
+.variants-table thead th {
+  padding:10px 8px;
+  color:var(--text-muted);
+  font-weight:700;
+  text-align:left;
+}
+
+/* Body cells */
+.variants-table tbody td {
+  padding: 0px;
+}
+
+.variant-input {
+  background: linear-gradient(135deg, var(--surface), var(--background));
+  border: 2px dashed var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  padding:0.7rem;
+  width:100%;
+  transition: all 0.18s ease;
+}
+.variant-input:hover { border-color: var(--primary); }
+
+.variant-actions { display:flex; gap:8px; align-items:center; }
+.variant-actions .btn-primary {
+  padding: 0.38rem 0.6rem; font-size:0.86rem; border-radius:8px;
+  background: var(--primary-darker); color: var(--white); border:1px solid var(--primary-darker); font-weight:700;
+}
+.variant-actions .btn-warning {
+  padding: 0.34rem 0.54rem; font-size:0.86rem; border-radius:8px;
+  background: var(--primary-dark); color:var(--white); border:1px solid var(--primary-dark); font-weight:800;
+}
+
+/* Mobile variant layout: horizontally scrollable cards that are easy to use */
+@media (max-width: 767.98px) {
+  .variants-table {
+    display:block;
+    thead { display:none; }
+    tbody {
+      display:flex;
+      gap:0.75rem;
+      overflow-x:auto;
+      padding:0.5rem;
+      scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    tbody tr {
+      display:block;
+      flex:0 0 92%;
+      min-width:92%;
+      background:var(--surface);
+      border-radius:12px;
+      padding:12px;
+      border:1px solid var(--border);
+      box-shadow:var(--shadow-sm);
+      scroll-snap-align:center;
+    }
+    td { display:block; width:100%; padding:6px 0; border:none; }
+    td[data-label]::before {
+      content: attr(data-label);
+      display:block;
+      font-weight:700;
+      margin-bottom:6px;
+      color: var(--text-main);
+    }
+    .variant-input { width:100%; padding:0.5rem; margin-bottom:2px; font-size:0.95rem; }
+    .variant-actions {
+
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    .variant-actions .btn-primary,
+    .variant-actions .btn-warning {
+      min-width:70px;
+      padding:0.23rem 0.6rem;
+      font-size:0.62rem;
+    }
+  }
+}
+
+/* ---------- Size charts ---------- */
+.size-charts-selection {
+  display:grid; gap:0.75rem;
+}
+
+.size-charts-selection .size-chart-option {
+  padding:0.8rem;
+  border-radius:calc(var(--radius) - 4px);
+  border:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:var(--surface);
+}
+.size-charts-selection .checkbox-label { display:flex; gap:0.6rem; align-items:center; }
+.size-charts-selection .primary-option { margin-left:auto; }
+
+/* ---------- Form actions ---------- */
+.form-actions {
+  display:flex;
+  gap:0.75rem;
+  justify-content:flex-end;
+  align-items:center;
+  padding-top:1rem;
+  border-top:1px solid var(--border);
+  margin-top:1rem;
+}
+
+.form-actions .btn-primary {
+  background: var(--primary-darker);
+  color: var(--white);
+  border: 1px solid var(--primary-darker);
+}
+.form-actions .btn-outline {
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+/* ---------- Loading overlay & success UI ---------- */
+.loading-overlay {
+  position: fixed; inset: 0; display:flex; align-items:center; justify-content:center; z-index:12000; background: rgba(15,23,42,0.6);
+}
+.loading-spinner { background: var(--surface); padding:1.25rem 1.5rem; border-radius:var(--radius); box-shadow: var(--shadow-md); color: var(--text-main); }
+.success-message {
+  display:flex; gap:1rem; align-items:center; padding:0.85rem; border-radius:calc(var(--radius) - 4px);
+  background: linear-gradient(135deg, rgba(110,111,255,0.06), rgba(177,178,255,0.03));
+  border: 1px solid rgba(110,111,255,0.06); font-weight:700;
+}
+
+/* ---------- ng-select tweaks ---------- */
+ng-select, .ng-select { display:block; width:100%; font-family:inherit; font-size:1rem; color:var(--text-main); }
+.ng-select .ng-select-container { padding: 0.45rem 0.6rem; min-height:44px; border-radius:calc(var(--radius) - 4px); border:2px solid var(--border); background:var(--white); }
+
+/* ---------- Focus / accessibility ---------- */
+a:focus, button:focus, input:focus, textarea:focus, select:focus {
+  outline: 2px dashed rgba(110,111,255,0.18);
+  outline-offset: 3px;
+}
+
+/* ---------- Dark mode ---------- */
+@media (prefers-color-scheme: dark) {
+  .admin-container { background: linear-gradient(135deg, rgba(110,111,255,0.02), rgba(177,178,255,0.01)); border-color: rgba(255,255,255,0.04); }
+  .card { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04); box-shadow: none; color: var(--white); }
+  .variant-input { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.03); }
+  .preview-item, .thumb { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.03); }
+  .btn-add, .btn-upload, .btn-primary { color: var(--white); }
+}
+
+/* ---------- helpers ---------- */
+.muted { color: var(--text-muted); font-weight:600; }
+.small { font-size: var(--fs-xs); color: var(--text-muted); }
+.w-100 { width: 100% !important; }
+
+
+/* PLACE: append to app/admin/product-upload.component.scss (end of file or inside mobile @media)
+   PURPOSE: fix ng-select selected-chips wrapping, limit height on mobile, prevent dropdown clipping.
+*/
+
+/* make selected chips wrap and reduce size for mobile + desktop */
+ng-select, .ng-select {
+  display: block;
+  width: 100%;
+}
+
+/* Selected tokens (chips) container */
+.ng-select .ng-value {
+  display: inline-flex;        /* allow wrapping */
+  flex-wrap: wrap;             /* wrap chips to new row */
+  gap: 0.35rem;
+  max-height: 8.2rem;          /* limit height so it doesn't push layout (desktop) */
+  overflow-y: auto;            /* allow scrolling inside if many selected */
+  padding: 0.25rem 0.35rem;
+  align-items: center;
+}
+
+/* Individual token/chip */
+.ng-select .ng-value .ng-value-label,
+.ng-select .ng-value .ng-value {
+  white-space: normal;         /* allow multiple lines */
+  font-size: 0.85rem;
+  padding: 0.18rem 0.38rem;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(177,178,255,0.08), rgba(177,178,255,0.03));
+  color: var(--text-main);
+}
+
+/* ensure the control container doesn't clip the dropdown */
+.ng-select .ng-select-container {
+  overflow: visible !important; /* allow dropdown panel to overflow */
+  padding-right: 40px;          /* room for caret */
+}
+
+/* dropdown panel fallback and z-index (important when parent is overflow:auto) */
+.ng-dropdown-panel {
+  z-index: 13000 !important;
+}
+
+/* optional: use fixed fallback when ng-select detects clipping */
 .ng-dropdown-panel--fallback-fixed {
   position: fixed !important;
-  z-index: 12000 !important;
   left: 8px !important;
   right: 8px !important;
   top: 12% !important;
   margin: 0 auto;
+  z-index: 14000 !important;
 }
 
-/* =========================
-   VARIANTS TABLE: mobile horizontal card behavior
-   (keeps earlier mobile logic intact)
-   ========================= */
-
-/* Mobile: convert variant rows into horizontally scrollable cards */
-@media (max-width: 768px) {
-  .variants-table { display: block; width: 100%; overflow: visible; }
-  .variants-table thead { display: none; }
-  .variants-table tbody { display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.5rem; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
-  .variants-table tbody tr { display: block; flex: 0 0 86%; min-width: 86%; background: var(--bg-primary); border-radius: 10px; padding: 12px; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); scroll-snap-align: center; margin: 0; }
-  .variants-table tbody tr td { display: block; width: 100%; padding: 6px 0; border: none; }
-  .variants-table tbody tr td[data-label]::before { content: attr(data-label); display:block; font-weight:700; margin-bottom:6px; color: var(--text-primary); }
-  .variants-table input, .variants-table select { width: 100%; padding: 0.6rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-light); }
-  .variants-table .actions-cell { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
-  .variants-table .variant-actions .btn-primary, .variants-table .variant-actions .btn-warning { padding: 0.5rem 0.75rem; font-size: 0.9rem; }
-}
-
-/* =========================
-   DARK MODE SUPPORT
-   ========================= */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-gradient: linear-gradient(135deg, #061028 0%, #07112e 100%);
-    --bg-primary: #071025;
-    --text-primary: #e6eef8;
-    --text-muted: #9fb4c7;
-    --border-light: rgba(255,255,255,0.04);
-    --shadow-md: 0 10px 30px rgba(0,0,0,0.6);
-    --shadow-lg: 0 18px 40px rgba(0,0,0,0.7);
+/* Mobile-specific tuning: smaller chips, smaller spacing */
+@media (max-width: 767.98px) {
+  .ng-select .ng-value {
+    max-height: 6.6rem;     /* fewer rows on small screens */
+    gap: 0.25rem;
   }
 
-  .admin-container { background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(14,165,164,0.02)); }
-  .card { background: rgba(255,255,255,0.02); border-color: var(--border-light); box-shadow: none; }
-  .variant-input { background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-color: rgba(255,255,255,0.03); }
-  .upload-area { background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-color: rgba(255,255,255,0.03); }
-  .product-id-display { background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(16,185,129,0.04)); color: #e6eef8; }
-  .ng-dropdown-panel { background: rgba(6,10,22,0.88); border-color: rgba(255,255,255,0.04); box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
-  .ng-dropdown-panel .ng-option { color: var(--text-primary); }
-  .sizes .size.selected { /* If using selected styles here, keep black text even in dark mode as requested */ color: #000 !important; }
-}
-
-/* =========================
-   ANIMATIONS & UTILITIES
-   ========================= */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-/* small helpers */
-.muted { color: var(--text-muted); font-weight:600; }
-
-
-/* PLACE/APPEND to: src/app/admin/product-upload.component.scss
-   -----------------------
-   Compact styles for Duplicate / Remove variant buttons
-   + reduce overall admin font-size slightly (smaller)
-   -----------------------
-   Paste this near the variants-table / .variant-actions rules in the file.
-*/
-
-/* make admin UI font a little smaller for compactness */
-.admin-container {
-  /* smaller base font (overrides the previous clamp if any) */
-  font-size: clamp(13px, 1.2vw, 14px) !important;
-}
-
-/* Compact button styles specifically for variant row actions
-   (Duplicate = left button, Remove = right button)
-*/
-.variants-table .actions-cell .variant-actions {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-/* Duplicate button (uses .btn-primary in template) */
-.variants-table .variant-actions .btn-primary {
-  padding: 0.38rem 0.6rem;    /* compact padding */
-  font-size: 0.62rem;        /* smaller text */
-  min-width: 0;              /* don't force large width */
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--primary-300), var(--primary-600));
-  color: rgb(0, 0, 0);
-  box-shadow: 0 6px 14px rgba(14,125,120,0.08);
-  border: none;
-  font-weight: 700;
-  transition: transform 0.14s ease, box-shadow 0.14s ease;
-}
-.variants-table .variant-actions .btn-primary:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 10px 24px rgba(14,125,120,0.12);
-}
-
-/* Remove button (uses .btn-warning in template) */
-.variants-table .variant-actions .btn-warning {
-  padding: 0.34rem 0.54rem;
-  font-size: 0.62rem;
-  min-width: 0;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #ffb4a1, #ff8a66); /* warm warning */
-  color: #3b0d0d;
-  border: none;
-  font-weight: 800;
-  box-shadow: 0 6px 12px rgba(220,38,38,0.06);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-.variants-table .variant-actions .btn-warning:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 10px 22px rgba(220,38,38,0.12);
-}
-
-/* Ensure buttons are compact on mobile as well */
-@media (max-width: 768px) {
-  .variants-table .variant-actions .btn-primary,
-  .variants-table .variant-actions .btn-warning {
-    padding: 0.36rem 0.6rem;
-    font-size: 0.68rem;
+  .ng-select .ng-value .ng-value-label,
+  .ng-select .ng-value .ng-value {
+    font-size: 0.78rem;
+    padding: 0.14rem 0.28rem;
+    border-radius: 6px;
   }
 
-  /* Keep the action buttons horizontally stacked when space is tight */
-  .variants-table tbody tr .variant-actions {
-    gap: 8px;
-    justify-content: flex-end;
+  /* ensure select control is full width and visually matches other inputs */
+  .ng-select .ng-select-container {
+    min-height: 44px;
+    padding: 0.35rem 0.5rem;
+  }
+
+  /* add safe bottom space so footer won't cover the last form field */
+  .admin-container {
+    padding-bottom: calc(var(--footer-height,56px) + 110px);
   }
 }

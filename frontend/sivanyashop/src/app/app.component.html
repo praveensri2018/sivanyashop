@@ -1,14 +1,10 @@
-<!-- src/app/app.component.html -->
-<!-- Root HTML you wanted to keep — integrated with header/footer and router outlet -->
+<app-header></app-header>
 
-<app-header></app-header>  <!-- Header component (navigation, brand, cart) -->
-
-<main class="app-main container my-4">
-  <!-- Hero / promo area -->
-  <!-- Router output (product feed, product detail, cart, etc.) -->
-  <section>
-    <router-outlet></router-outlet>  <!-- <-- where pages will load -->
+<!-- Main scrollable area -->
+<main class="app-main">
+  <section class="main-inner">
+    <router-outlet></router-outlet>
   </section>
 </main>
 
-<app-footer></app-footer>  <!-- Footer component -->
+<app-footer></app-footer>

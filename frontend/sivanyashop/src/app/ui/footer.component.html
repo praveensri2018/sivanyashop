@@ -1,24 +1,45 @@
-<!-- src/app/ui/footer.component.html -->
-<footer class="meesho-footer">
-  
-  <!-- Desktop Footer -->
-  <nav class="footer-nav desktop-footer">
-    <div class="container">
-      <div class="footer-content">
-        
-        <!-- Left Section -->
-        
-      </div>
+<!-- place this inside <div class="footer-content"> -->
+<footer class="footer-main" role="contentinfo">
+  <div class="container grid-footer">
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a routerLink="/about">About Us</a></li>
+        <li><a routerLink="/contact">Contact</a></li>
+        <li><a routerLink="/careers">Careers</a></li>
+      </ul>
     </div>
-  </nav>
 
-  <!-- Mobile Footer -->
-  <nav class="footer-nav mobile-footer">
-    <div class="container">
-      <div class="footer-content">
-        
-       
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a routerLink="/help">Help Center</a></li>
+        <li><a routerLink="/faq">FAQs</a></li>
+        <li><a routerLink="/track-order">Track Order</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a routerLink="/terms">Terms & Conditions</a></li>
+        <li><a routerLink="/privacy">Privacy Policy</a></li>
+        <li><a routerLink="/refund-policy">Refund Policy</a></li>
+        <li><a routerLink="/shipping-policy">Shipping Policy</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <div class="social-icons">
+        <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+        <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
       </div>
     </div>
-  </nav>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© {{ year }} Sivanyashop Trends. All rights reserved.</p>
+  </div>
 </footer>

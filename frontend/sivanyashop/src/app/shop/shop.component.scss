@@ -1,187 +1,153 @@
-/* Place file at: src/app/shop/shop.component.scss
-   Full SCSS for Shop page (desktop + mobile), styled like modern retail (Meesho/Amazon).
-   - Grid responsive cards
-   - Clean card shadows, image crop, title/price layout
-   - Reusable .size buttons (same look as product-detail)
-   - Mobile friendly, accessible focus states
-   - Replace color vars to match your brand if needed
+/* FILE: src/app/shop/shop.component.scss
+   Place this file at: src/app/shop/shop.component.scss
 */
-
-:root {
-  --shop-max-width: 1180px;
-  --card-radius: 12px;
-  --card-bg: #fff;
-  --surface: #f8fafc;
-  --muted: #6b7280;
-  --accent: #0d6efd;
-  --accent-600: #0b5ed7;
-  --shadow-sm: 0 4px 14px rgba(15,23,42,0.06);
-  --shadow-md: 0 18px 40px rgba(15,23,42,0.09);
-}
 
 /* Page shell */
 .shop-page {
-  max-width: var(--shop-max-width);
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 16px;
-  box-sizing: border-box;
-  color: #111827;
+  padding: var(--space-md);
+  color: var(--text-main);
 }
 
-/* Header row */
-.shop-page .d-flex {
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* Grid */
+/* Grid container: uses CSS grid. Grid items will stretch if their children are full height. */
 .products-grid {
   display: grid;
-  gap: 18px;
+  gap: 1rem;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  margin-top: 8px;
+  margin-top: var(--space-sm);
+  /* Ensure grid items stretch vertically */
+  align-items: stretch;
 }
 
-/* Card base */
-.colorful-card {
-  background: var(--card-bg);
-  border-radius: var(--card-radius);
+/* Each article is a grid item — make it a flex container so internal card can fill height */
+.products-grid > article {
+  display: flex;
+}
+
+/* Card base: full-height, flex-col so body takes remaining space */
+.prod-card {
+  background: var(--surface);
+  border-radius: var(--radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform .18s ease, box-shadow .18s ease;
-  border: 1px solid rgba(15,23,42,0.04);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  min-height: 360px; /* keeps cards even-ish */
+
+  /* ensure article fills the grid cell height */
+  width: 100%;
+  height: 100%;
 }
 
-/* card hover */
-.colorful-card:hover {
+/* Hover elevation */
+.prod-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-md);
 }
 
-/* Link inside card should cover content but not wrap interactive buttons */
-.colorful-card .stretched-link {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-}
-
-/* image area */
+/* Image area: fixed height to keep cards consistent */
 .card-img-top {
-  background: var(--surface);
-  height: 180px;
+  background: rgba(0,0,0,0.02);
+  height: 200px; /* fixed image area for consistency */
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  position: relative;
+  flex: 0 0 auto;
 }
+
 .card-img-top img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform .35s ease;
 }
 
-/* body */
+.prod-card:hover .card-img-top img { transform: scale(1.03); }
+
+/* Card body: allow to grow and push footer to bottom */
 .card-body {
-  padding: 12px 14px;
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex: 1 1 auto;
+  flex: 1 1 auto; /* this makes the body take remaining height */
+  min-height: 0; /* important for flex children overflow control */
 }
 
-/* title & desc */
+/* Title / desc */
 .card-title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--fs-lg);
   font-weight: 700;
-  color: #0f172a;
-}
-.card-body .small.text-muted {
-  color: var(--muted);
-  margin: 0;
-  font-size: 0.9rem;
+  color: var(--text-main);
+  line-height: 1.15;
 }
 
-/* price block */
+/* clamp description lines to avoid making cards uneven */
+.card-desc {
+  margin: 0.15rem 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* allow up to 3 lines and then truncate */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Price */
 .price {
-  margin-top: 6px;
+  margin-top: 0.35rem;
   font-weight: 800;
-  color: var(--accent);
-  font-size: 1.05rem;
+  color: var(--primary-darker);
+  font-size: var(--fs-lg);
 }
 
-/* when price missing */
-.no-price {
-  color: #9ca3af;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
 
-/* Sizes list within card (same style family as detail page) */
-.size-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
 
-/* size button - intentionally NOT using Bootstrap .btn to avoid overrides */
-.shop-page .size {
+.size {
   -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
-  background: linear-gradient(180deg,#fff,#fbfdff);
-  border: 1px solid #e6eef8;
-  padding: 6px 10px;
-  border-radius: 8px;
+  background: linear-gradient(180deg, var(--white), rgba(255,255,255,0.96));
+  border: 1px solid rgba(10,20,60,0.06);
+  padding: 0.45rem 0.6rem;
+  border-radius: calc(var(--radius) - 4px);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: #0f172a;
+  font-weight: 700;
+  color: var(--text-main);
   cursor: pointer;
-  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-  box-shadow: 0 4px 12px rgba(16,24,40,0.03);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+  box-shadow: 0 6px 14px rgba(15,23,42,0.03);
+  font-size: var(--fs-sm);
   line-height: 1;
 }
 
-/* price inside size */
-.shop-page .size .price-badge {
-  font-weight: 700;
-  font-size: 0.92rem;
-  background: rgba(245,247,250,0.9);
-  padding: 2px 8px;
-  border-radius: 6px;
-}
-
-/* hover and selected */
-.shop-page .size:hover:not(:disabled) {
+.size:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: 0 10px 24px rgba(15,23,42,0.06);
-  border-color: rgba(13,110,253,0.06);
-}
-.shop-page .size.selected {
-  background: linear-gradient(180deg, rgba(13,110,253,0.06), rgba(13,110,253,0.03));
-  border-color: rgba(13,110,253,0.16);
-  color: var(--accent-600);
-  box-shadow: 0 12px 30px rgba(13,110,253,0.06);
+  box-shadow: 0 12px 30px rgba(15,23,42,0.06);
 }
 
-/* disabled/out of stock */
-.shop-page .size:disabled,
-.shop-page .size.out-of-stock {
-  opacity: 0.6;
+/* selected state */
+.size.selected {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 10%, var(--white)), rgba(255,255,255,0.96));
+  border-color: var(--primary-darker);
+  color: var(--primary-darker);
+  box-shadow: 0 14px 34px rgba(34,57,190,0.06);
+}
+
+/* disable/out-of-stock */
+.size:disabled,
+.size.out-of-stock {
+  opacity: 0.55;
   cursor: not-allowed;
-  filter: grayscale(0.02);
   pointer-events: none;
+  filter: grayscale(0.02);
 }
 
-/* card footer area to keep spacing */
+/* bottom-row stays at the bottom of the card-body because of margin-top: auto */
 .card-body .bottom-row {
   margin-top: auto;
   display: flex;
@@ -189,52 +155,44 @@
   justify-content: space-between;
 }
 
-/* small helpers */
-.muted { color: var(--muted); }
-.muted-2 { color: #9ca3af; }
-
-/* responsive tweaks */
-@media (max-width: 920px) {
-  .card-img-top { height: 160px; }
-  .colorful-card { min-height: 320px; }
-}
-@media (max-width: 640px) {
-  .products-grid { gap: 12px; grid-template-columns: repeat(2, minmax(140px, 1fr)); }
-  .card-img-top { height: 140px; }
-  .card-body { padding: 10px; }
-  .shop-page .size { padding: 8px 10px; font-size: 0.95rem; border-radius: 8px; }
+/* small card actions/buttons */
+.card-actions .btn {
+  padding: 0.45rem 0.6rem;
+  font-size: var(--fs-sm);
 }
 
-/* large screens: more columns */
-@media (min-width: 1280px) {
-  .products-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-}
-
-/* accessibility / focus */
-.shop-page .size:focus,
-.colorful-card a:focus {
-  outline: 3px solid rgba(13,110,253,0.12);
-  outline-offset: 2px;
-}
-
-/* Load more button area */
-.shop-page .mt-4 {
-  margin-top: 18px;
+/* Load more area */
+.load-more-row {
+  margin-top: var(--space-md);
   display: flex;
   justify-content: center;
 }
 
-/* optional: tiny animation for images */
-.colorful-card img {
-  transition: transform .35s ease;
+/* Responsive adjustments */
+@media (max-width: 920px) {
+  .card-img-top { height: 160px; }
 }
-.colorful-card:hover img { transform: scale(1.03); }
 
-/* Utility: ensure our .size wins over bootstrap */
-body .shop-page .size,
-.app-root .shop-page .size {
-  /* re-enforce */
-  background: linear-gradient(180deg,#fff,#fbfdff) !important;
-  border: 1px solid #e6eef8 !important;
-  box-shadow: 0 6px 18px rgba(15,23,42,0.03) !important;
+@media (max-width: 640px) {
+  .products-grid { grid-template-columns: repeat(2, minmax(140px, 1fr)); gap: 0.6rem; }
+  .card-img-top { height: 80px; }
+  .card-body { padding: 0.55rem; }
+  .size { padding: 0.4rem 0.55rem; font-size: var(--fs-xs); }
+  .price { font-size: 0.98rem; }
 }
+
+@media (min-width: 1280px) {
+  .products-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+}
+
+/* Accessibility focus */
+.shop-page .size:focus,
+.prod-card:focus-within,
+.prod-card a:focus {
+  outline: 3px solid rgba(99,102,241,0.12);
+  outline-offset: 2px;
+}
+
+/* theme overrides */
+.shop-page .price { color: var(--primary-darker); }
+.shop-page .muted { color: var(--text-muted); }

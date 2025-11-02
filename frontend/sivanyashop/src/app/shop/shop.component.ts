@@ -1,5 +1,6 @@
 // ✅ FILE: src/app/shop/shop.component.ts
-// Handles search, pagination, and variant selection.
+// Handles search, pagination, variant selection.
+// UPDATED: encode id when navigating to product detail (comments show where to place)
 
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -9,6 +10,7 @@ import { finalize } from 'rxjs/operators';
 
 interface ShopCard {
   id: number | string;
+    encodedId?: string;
   name: string;
   description?: string;
   imagePath?: string;
@@ -137,9 +139,9 @@ export class ShopComponent implements OnInit {
 
       const stock = Number(v?.StockQty ?? v?.stockQty ?? v?.stock ?? 0) || 0;
       const label =
+       v?.Attributes ??
         v?.VariantName ??
         v?.Variant ??
-        v?.Attributes ??
         v?.SKU ??
         String(variantId ?? '—');
 
@@ -168,6 +170,7 @@ export class ShopComponent implements OnInit {
 
     return {
       id,
+        encodedId: this.encodeId(id),
       name,
       description,
       imagePath,
@@ -178,6 +181,59 @@ export class ShopComponent implements OnInit {
     };
   }
 
+  // -----------------------
+  // ID encoding helpers
+  // -----------------------
+  // where to place: put these helper methods inside the component class (exactly here).
+  // Encoding uses base64 of "p:<id>" to avoid ambiguous decode and to be reversible.
+  private encodeId(id: number | string): string {
+    try {
+      // ensure we encode numeric or string id reliably
+      return btoa(`p:${String(id)}`);
+    } catch {
+      // fallback: return string id (safe if already string)
+      return String(id);
+    }
+  }
+
+  private decodeId(encoded: string | null | undefined): number | string | null {
+    // where to place: put this method inside the component class (exactly here).
+    if (encoded == null) return null;
+    // numeric / plain case
+    if (/^\d+$/.test(String(encoded))) return Number(encoded);
+    try {
+      const decoded = atob(String(encoded));
+      if (decoded && decoded.startsWith('p:')) {
+        const raw = decoded.slice(2);
+        return /^\d+$/.test(raw) ? Number(raw) : raw;
+      }
+    } catch {
+      // ignore decode errors
+    }
+    // fallback: return original string
+    return String(encoded);
+  }
+
+  // -----------------------
+  // Navigation helpers (encode id before routing)
+  // -----------------------
+  // where to place: this method should replace or be referenced by any UI action that navigates
+  // to the product detail page — e.g. card click handlers or explicit "view product" buttons.
+  openProduct(product: ShopCard, event?: Event) {
+    if (event) event.stopPropagation();
+    const encoded = this.encodeId(product.id); // <-- encoded id (place comment here)
+    this.router.navigate(['/product', encoded]).catch(err => console.warn('nav failed', err));
+  }
+
+  get hasMore(): boolean {
+    // If total is known, compare lengths. If total is 0 or not provided, fall back to 'true' while loading pages.
+    if (this.total && Number(this.total) > 0) {
+      return this.products.length < Number(this.total);
+    }
+    // If total unknown, allow loading unless we're currently loading and last page returned no items.
+    // For safety, return true while we don't know total and not loading.
+    return !this.loading;
+  }
   // 🔹 Handle size selection
   selectSize(productId: number | string, variantId: number | string, event?: Event) {
     if (event) event.stopPropagation();
@@ -200,6 +256,11 @@ export class ShopComponent implements OnInit {
       prod.displayPrice =
         s.price !== undefined ? s.price : prod.priceMax ?? prod.priceMin;
     }
+
+    // where to place: encode id then navigate to product detail with variant query param
+    const encoded = this.encodeId(productId); // <-- encode here (comment shows where)
+    this.router.navigate(['/product', encoded], { queryParams: { variant: variantId } })
+      .catch(err => console.warn('navigate to product failed', err));
   }
 
   isSizeSelected(productId: number | string, variantId: number | string): boolean {

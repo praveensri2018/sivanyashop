@@ -1,16 +1,28 @@
-// Create new file: services/paymentHistoryService.js
+// FILE: services/paymentHistoryService.js
 const { query, sql } = require('../lib/db');
 
+/**
+ * 🧾 Get payment history for a specific user
+ */
 async function getUserPaymentHistory(userId, options = {}) {
   const { page = 1, limit = 10 } = options;
   const offset = (page - 1) * limit;
 
   const result = await query(`
     SELECT 
-      p.Id, p.OrderId, p.PaymentGatewayOrderId, p.PaymentGatewayPaymentId,
-      p.Amount, p.Currency, p.Status, p.PaymentMethod, p.CreatedAt,
-      o.id OrderNumber, o.TotalAmount as OrderAmount,
-      COUNT(*) OVER() as TotalCount
+      p.Id,
+      p.OrderId,
+      p.Amount,
+      p.Method,
+      p.PaymentGateway,
+      p.TransactionRef,
+      p.Status AS PaymentStatus,
+      p.CreatedAt,
+      o.Status AS OrderStatus,
+      o.TotalAmount AS OrderAmount,
+      o.PaymentGatewayOrderId,
+      o.PaymentGatewayPaymentId,
+      COUNT(*) OVER() AS TotalCount
     FROM dbo.Payments p
     INNER JOIN dbo.Orders o ON p.OrderId = o.Id
     WHERE o.UserId = @userId
@@ -25,18 +37,19 @@ async function getUserPaymentHistory(userId, options = {}) {
   const total = result.recordset[0]?.TotalCount || 0;
 
   return {
-    payments: result.recordset.map(payment => ({
-      id: payment.Id,
-      orderId: payment.OrderId,
-      orderNumber: payment.OrderNumber,
-      paymentGatewayOrderId: payment.PaymentGatewayOrderId,
-      paymentGatewayPaymentId: payment.PaymentGatewayPaymentId,
-      amount: payment.Amount,
-      currency: payment.Currency,
-      status: payment.Status,
-      paymentMethod: payment.PaymentMethod,
-      createdAt: payment.CreatedAt,
-      orderAmount: payment.OrderAmount
+    payments: result.recordset.map(p => ({
+      id: p.Id,
+      orderId: p.OrderId,
+      orderStatus: p.OrderStatus,
+      amount: parseFloat(p.Amount),
+      paymentMethod: p.Method,
+      paymentGateway: p.PaymentGateway,
+      transactionRef: p.TransactionRef,
+      status: p.PaymentStatus,
+      createdAt: p.CreatedAt,
+      orderAmount: parseFloat(p.OrderAmount),
+      paymentGatewayOrderId: p.PaymentGatewayOrderId,
+      paymentGatewayPaymentId: p.PaymentGatewayPaymentId
     })),
     pagination: {
       page: parseInt(page),
@@ -47,6 +60,9 @@ async function getUserPaymentHistory(userId, options = {}) {
   };
 }
 
+/**
+ * 🧾 Admin: get all payments (optionally filter by userId / status)
+ */
 async function getAdminPaymentHistory(options = {}) {
   const { page = 1, limit = 10, status, userId } = options;
   const offset = (page - 1) * limit;
@@ -69,11 +85,22 @@ async function getAdminPaymentHistory(options = {}) {
 
   const result = await query(`
     SELECT 
-      p.Id, p.OrderId, p.PaymentGatewayOrderId, p.PaymentGatewayPaymentId,
-      p.Amount, p.Currency, p.Status, p.PaymentMethod, p.CreatedAt,
-      o.id OrderNumber, o.TotalAmount as OrderAmount,
-      u.Id as UserId, u.Name as UserName, u.Email as UserEmail,
-      COUNT(*) OVER() as TotalCount
+      p.Id,
+      p.OrderId,
+      p.Amount,
+      p.Method,
+      p.PaymentGateway,
+      p.TransactionRef,
+      p.Status AS PaymentStatus,
+      p.CreatedAt,
+      o.Status AS OrderStatus,
+      o.TotalAmount AS OrderAmount,
+      o.PaymentGatewayOrderId,
+      o.PaymentGatewayPaymentId,
+      u.Id AS UserId,
+      u.Name AS UserName,
+      u.Email AS UserEmail,
+      COUNT(*) OVER() AS TotalCount
     FROM dbo.Payments p
     INNER JOIN dbo.Orders o ON p.OrderId = o.Id
     LEFT JOIN dbo.Users u ON o.UserId = u.Id
@@ -85,22 +112,23 @@ async function getAdminPaymentHistory(options = {}) {
   const total = result.recordset[0]?.TotalCount || 0;
 
   return {
-    payments: result.recordset.map(payment => ({
-      id: payment.Id,
-      orderId: payment.OrderId,
-      orderNumber: payment.OrderNumber,
-      paymentGatewayOrderId: payment.PaymentGatewayOrderId,
-      paymentGatewayPaymentId: payment.PaymentGatewayPaymentId,
-      amount: payment.Amount,
-      currency: payment.Currency,
-      status: payment.Status,
-      paymentMethod: payment.PaymentMethod,
-      createdAt: payment.CreatedAt,
-      orderAmount: payment.OrderAmount,
+    payments: result.recordset.map(p => ({
+      id: p.Id,
+      orderId: p.OrderId,
+      orderStatus: p.OrderStatus,
+      amount: parseFloat(p.Amount),
+      paymentMethod: p.Method,
+      paymentGateway: p.PaymentGateway,
+      transactionRef: p.TransactionRef,
+      status: p.PaymentStatus,
+      createdAt: p.CreatedAt,
+      orderAmount: parseFloat(p.OrderAmount),
+      paymentGatewayOrderId: p.PaymentGatewayOrderId,
+      paymentGatewayPaymentId: p.PaymentGatewayPaymentId,
       user: {
-        id: payment.UserId,
-        name: payment.UserName,
-        email: payment.UserEmail
+        id: p.UserId,
+        name: p.UserName,
+        email: p.UserEmail
       }
     })),
     pagination: {
@@ -112,12 +140,28 @@ async function getAdminPaymentHistory(options = {}) {
   };
 }
 
+/**
+ * 🧾 Get single payment details (User or Admin)
+ */
 async function getPaymentDetails(paymentId, userId, userRole) {
   let queryStr = `
     SELECT 
-      p.*,
-      o.id OrderNumber, o.TotalAmount as OrderAmount, o.Status as OrderStatus,
-      u.Name as UserName, u.Email as UserEmail
+      p.Id,
+      p.OrderId,
+      p.Amount,
+      p.Method,
+      p.PaymentGateway,
+      p.TransactionRef,
+      p.Status AS PaymentStatus,
+      p.CreatedAt,
+      p.CreatedAt as UpdatedAt,
+      o.Status AS OrderStatus,
+      o.TotalAmount AS OrderAmount,
+      o.PaymentGatewayOrderId,
+      o.PaymentGatewayPaymentId,
+      u.Id AS UserId,
+      u.Name AS UserName,
+      u.Email AS UserEmail
     FROM dbo.Payments p
     INNER JOIN dbo.Orders o ON p.OrderId = o.Id
     LEFT JOIN dbo.Users u ON o.UserId = u.Id
@@ -128,7 +172,7 @@ async function getPaymentDetails(paymentId, userId, userRole) {
     paymentId: { type: sql.Int, value: paymentId }
   };
 
-  // For non-admin users, restrict to their own payments
+  // Restrict non-admins to their own payments
   if (userRole !== 'ADMIN') {
     queryStr += ' AND o.UserId = @userId';
     params.userId = { type: sql.Int, value: userId };
@@ -140,27 +184,29 @@ async function getPaymentDetails(paymentId, userId, userRole) {
     throw { status: 404, message: 'Payment not found' };
   }
 
-  const payment = result.recordset[0];
+  const p = result.recordset[0];
 
   return {
-    id: payment.Id,
-    orderId: payment.OrderId,
-    orderNumber: payment.OrderNumber,
-    paymentGatewayOrderId: payment.PaymentGatewayOrderId,
-    paymentGatewayPaymentId: payment.PaymentGatewayPaymentId,
-    amount: payment.Amount,
-    currency: payment.Currency,
-    status: payment.Status,
-    paymentMethod: payment.PaymentMethod,
-    createdAt: payment.CreatedAt,
-    updatedAt: payment.UpdatedAt,
-    orderAmount: payment.OrderAmount,
-    orderStatus: payment.OrderStatus,
-    user: userRole === 'ADMIN' ? {
-      id: payment.UserId,
-      name: payment.UserName,
-      email: payment.UserEmail
-    } : undefined
+    id: p.Id,
+    orderId: p.OrderId,
+    orderStatus: p.OrderStatus,
+    amount: parseFloat(p.Amount),
+    paymentMethod: p.Method,
+    paymentGateway: p.PaymentGateway,
+    transactionRef: p.TransactionRef,
+    status: p.PaymentStatus,
+    createdAt: p.CreatedAt,
+    updatedAt: p.UpdatedAt,
+    orderAmount: parseFloat(p.OrderAmount),
+    paymentGatewayOrderId: p.PaymentGatewayOrderId,
+    paymentGatewayPaymentId: p.PaymentGatewayPaymentId,
+    user: userRole === 'ADMIN'
+      ? {
+          id: p.UserId,
+          name: p.UserName,
+          email: p.UserEmail
+        }
+      : undefined
   };
 }
 

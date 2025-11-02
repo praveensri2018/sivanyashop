@@ -1,157 +1,239 @@
-// src/app/ui/footer.component.scss
-:root {
-  --footer-bg: #ffffff;
-  --footer-text: #374151;
-  --footer-border: #e5e7eb;
-  --footer-accent: #dc2626;
-  --footer-badge: #ef4444;
-  --footer-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
-}
+/* ======================================================================
+   FILE: src/app/ui/footer.component.scss
+   PURPOSE: Full, corrected footer styles (drop-in replace).
+   - Fixed on desktop (main.app-main should reserve var(--footer-height))
+   - Static / flow on small screens (prevents overlay)
+   - Compact, accessible, no list bullets, no hover-bubble on touch
+   ====================================================================== */
 
-.meesho-footer {
-  background: var(--footer-bg);
-  border-top: 1px solid var(--footer-border);
-  position: sticky;
-  bottom: 0;
-  z-index: 100;
-  box-shadow: var(--footer-shadow);
-}
-
-.footer-nav {
-  padding: 0.75rem 0;
-}
-
-/* Desktop Footer */
-.desktop-footer {
-  @media (max-width: 768px) {
-    display: none;
-  }
-
-  .footer-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .footer-section {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-  }
-}
-
-/* Mobile Footer */
-.mobile-footer {
-  @media (min-width: 769px) {
-    display: none;
-  }
-
-  .footer-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-  }
-}
-
-/* Footer Links */
-.footer-link {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  text-decoration: none;
-  color: var(--footer-text);
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  position: relative;
-  min-width: 60px;
-
-  &:hover {
-    background: #f3f4f6;
-    color: var(--footer-accent);
-  }
-
-  &.active {
-    color: var(--footer-accent);
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: -0.75rem;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 4px;
-      height: 4px;
-      background: var(--footer-accent);
-      border-radius: 50%;
-    }
-  }
-
-  i {
-    font-size: 1.25rem;
-  }
-
-  span {
-    font-size: 0.75rem;
-    font-weight: 500;
-  }
-}
-
-/* Cart Link with Badge */
-.cart-link {
-  position: relative;
-}
-
-.footer-badge {
-  position: absolute;
-  top: 0;
+/* ---------- Host / global footprint (desktop fixed) ----------
+   Keep this in the footer component file. Ensure your global :root
+   defines --footer-height (e.g. 56px).
+*/
+:host,
+.meesho-footer,
+app-footer {
+  position: fixed;
+  left: 0;
   right: 0;
-  background: var(--footer-badge);
-  color: white;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  font-size: 0.7rem;
+  bottom: 0;
+  height: var(--footer-height, 56px);
+  background-color: var(--primary, #989afc);
+  color: var(--white, #fff);
+  z-index: 1100; /* header expected at 1200 */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  border-top: 1px solid var(--border, #AAC4FF);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(15,23,42,0.05));
+  padding: 0;
+  box-sizing: border-box;
+  overflow: visible;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Container */
-.container {
+/* ---------- Visible container inside template's .footer-content ----------
+   Place your HTML (columns / bottom) inside the template's .footer-content
+   element. This wrapper centers content and allows wrapping.
+*/
+.footer-content {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  box-sizing: border-box;
+  font-size: var(--fs-sm, 0.95rem);
+  flex-wrap: nowrap; /* default: single row on desktop */
+}
 
-  @media (max-width: 768px) {
-    padding: 0 0.5rem;
+/* ---------- Column grid for desktop (use .footer-grid in HTML) ---------- */
+.footer-grid {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* each column */
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 120px;
+  max-width: 280px;
+}
+.footer-col h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+/* reset lists: no bullets, compact spacing */
+.footer-col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.footer-col li {
+  margin: 6px 0;
+}
+
+/* anchor defaults inside footer (works even if you don't add .footer-link) */
+.footer-content a,
+.footer-col a {
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  line-height: 1.2;
+  transition: color 160ms ease;
+}
+
+/* gentler hover on desktop only */
+@media (hover: hover) {
+  .footer-content a:hover,
+  .footer-col a:hover {
+    color: var(--background, #EEF1FF);
   }
 }
 
-/* Responsive Adjustments */
-@media (max-width: 480px) {
-  .footer-nav {
-    padding: 0.5rem 0;
+/* social icons row */
+.social-icons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.social-icons a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  color: var(--white);
+  text-decoration: none;
+  font-size: 1.05rem;
+  transition: background 150ms ease, transform 120ms ease;
+}
+@media (hover: hover) {
+  .social-icons a:hover { transform: translateY(-2px); }
+}
+.social-icons a:focus {
+  outline: 3px solid rgba(110,111,255,0.14);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ---------- Footer bottom row (copyright / legal) ----------
+   This sits below the columns on mobile and stays inline on desktop.
+*/
+.footer-bottom {
+  width: 100%;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-size: var(--fs-xs, 0.85rem);
+  color: rgba(255,255,255,0.95);
+  box-sizing: border-box;
+}
+.footer-bottom p { margin: 0; }
+
+/* small legal-link group (if you include inline links) */
+.footer-bottom .legal-links {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ---------- Mobile: make footer part of normal flow (no overlay) ----------
+   On small screens the footer becomes static and compact. This prevents
+   the purple panel from covering page content.
+*/
+@media (max-width: 720px) {
+  :host,
+  .meesho-footer,
+  app-footer {
+    position: static;         /* flow in document */
+    height: auto;             /* grow as needed */
+    padding: 12px 10px 18px;
+    box-shadow: none;
+    border-top: 1px solid rgba(0,0,0,0.04);
   }
 
-  .footer-link {
-    padding: 0.375rem;
-    min-width: 50px;
-
-    i {
-      font-size: 1.125rem;
-    }
-
-    span {
-      font-size: 0.7rem;
-    }
+  /* stack content vertically but keep it compact */
+  .footer-content {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    padding: 6px 12px;
   }
 
-  .footer-badge {
-    width: 16px;
-    height: 16px;
-    font-size: 0.65rem;
+  /* stack columns vertically but keep small max height per section */
+  .footer-grid {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .footer-col {
+    max-width: 100%;
+    min-width: 0;
+    padding: 6px 0;
+  }
+  .footer-col h4 { font-size: 0.95rem; margin-bottom: 6px; }
+
+  /* make lists compact, remove excessive spacing/dots */
+  .footer-col ul { display: block; }
+  .footer-col li { margin: 6px 0; }
+
+  /* footer bottom: stack copyright under links, center align */
+  .footer-bottom {
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    padding-top: 10px;
+  }
+
+  /* disable transform/hover on touch devices to avoid floating overlap */
+  .social-icons a,
+  .footer-content a,
+  .footer-col a {
+    transition: none !important;
+  }
+
+  /* slightly darker background to distinguish from content */
+  :host,
+  .meesho-footer,
+  app-footer {
+    background-color: var(--primary, #989afc);
   }
 }
+
+/* ---------- Very small screens: slightly bigger tap targets ---------- */
+@media (max-width: 420px) {
+  .social-icons a { width: 42px; height: 42px; font-size: 1.1rem; }
+  .footer-col h4 { font-size: 1rem; }
+  .footer-content { padding: 8px 10px; }
+}
+
+/* ---------- Utility: compact variant (optional) ----------
+   Add class 'footer-compact' to host to render minimal single-row footer.
+*/
+:host(.footer-compact) .footer-grid,
+:host(.footer-compact) .footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+:host(.footer-compact) .footer-col { display: none; }
+
+/* End of footer.component.scss */

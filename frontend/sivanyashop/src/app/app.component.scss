@@ -1,41 +1,80 @@
-/* Place in: src/styles.css (or src/styles.scss) — append these rules at the end */
+/* === GLOBAL LAYOUT: FIXED HEADER + FOOTER === */
 
-/* Make root fill the viewport and use column flex layout */
+/* Ensure page uses full viewport height and no margin */
 html, body {
   height: 100%;
   margin: 0;
+  padding: 0;
+  overflow: hidden; /* prevent body scroll, only main scrolls */
 }
 
-app-root, #app-root {
-  display: block; /* ensure app-root is a block element */
-  min-height: 100vh;
-}
-
-/* Use a flex column layout for whole app so header & footer are outside the scrolling main area */
-app-root > * {
-  box-sizing: border-box;
-}
-
+/* Base root */
 app-root {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* full viewport */
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Header stays at top (non-sticky) */
+/* Header fixed at top */
 app-header {
-  flex: 0 0 auto; /* do not grow */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1200;
+  height: var(--header-height, 64px);
 }
 
-/* Main area grows and scrolls if content is tall */
-main.app-main {
-  flex: 1 1 auto; /* allow to grow/shrink */
-  /* Add safe padding so content doesn't touch footer on small screens */
-  padding-bottom: 0.75rem;
-}
-
-/* Footer stays after the main content. Because we use flex layout, footer will be pushed to bottom
-   when main doesn't fill the viewport, and will follow content when it does. */
+/* Footer fixed at bottom */
 app-footer {
-  flex: 0 0 auto; /* fixed height area at the end */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+/* Main content area scrolls between header and footer */
+main.app-main {
+  flex: 1;
+  position: absolute;
+  top: var(--header-height, 64px);
+  bottom: var(--footer-height, 56px);
+  left: 0;
+  right: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--surface, #fff);
+  padding: 1rem 1.25rem;
+  box-sizing: border-box;
+}
+
+/* Optional: smooth scroll behavior */
+main.app-main::-webkit-scrollbar {
+  width: 8px;
+}
+main.app-main::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+main.app-main::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* Optional: keep container centered */
+.main-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 1rem;
+}
+
+/* Prevent content hiding under header/footer on very small screens */
+@media (max-height: 480px) {
+  main.app-main {
+    top: calc(var(--header-height, 64px) - 4px);
+    bottom: calc(var(--footer-height, 56px) - 4px);
+  }
 }
