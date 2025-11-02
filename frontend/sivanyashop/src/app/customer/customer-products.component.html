@@ -35,7 +35,6 @@
             (click)="selectSize(p.id, s.variantId); $event.stopPropagation();"
             [class.selected]="isSizeSelected(p.id, s.variantId)">
             {{ s.label }}
-            <span *ngIf="s.price !== undefined" class="price-badge">₹{{ s.price }}</span>
           </button>
         </div>
       </div>

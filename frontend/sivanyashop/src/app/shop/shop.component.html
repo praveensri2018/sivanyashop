@@ -1,15 +1,17 @@
-<!-- Place file at: src/app/shop/shop.component.html -->
+<!-- FILE: src/app/shop/shop.component.html -->
 <div class="shop-page container py-3">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Products</h3>
     <div *ngIf="loading" class="text-muted small">Loading…</div>
   </div>
 
+  <!-- products grid: each <article> is a grid item that will stretch to equal height -->
   <div class="products-grid">
     <ng-container *ngIf="products.length > 0; else empty">
-      <article *ngFor="let p of products; trackBy: trackById" class="colorful-card card">
+      <!-- article should be a flex item so grid will stretch it; use prod-card for consistent card layout -->
+      <article *ngFor="let p of products; trackBy: trackById" class="prod-card card">
         <!-- keep router navigation via link — clicking card navigates -->
-        <a [routerLink]="['/product', p.id]" class="stretched-link text-decoration-none text-dark">
+        <a [routerLink]="['/product', p.encodedId]" class="stretched-link text-decoration-none text-dark">
           <div class="card-img-top img-placeholder">
             <img
               [src]="p.imagePath || 'assets/placeholder.png'"
@@ -19,9 +21,9 @@
 
           <div class="card-body">
             <h5 class="card-title mb-1">{{ p.name }}</h5>
-            <p class="small text-muted mb-2" *ngIf="p.description">{{ p.description }}</p>
+            <p class="small text-muted mb-2 card-desc" *ngIf="p.description">{{ p.description }}</p>
 
-            <!-- Price: show currently selected/display price -->
+            <!-- Price (keeps shown as before) -->
             <div class="price">
               <ng-container *ngIf="p.displayPrice !== undefined && p.displayPrice !== null; else noPrice">
                 ₹ {{ p.displayPrice }}
@@ -29,7 +31,8 @@
               <ng-template #noPrice>Price unavailable</ng-template>
             </div>
 
-            <!-- Sizes: show variant buttons, click selects size (stopPropagation to avoid link) -->
+            <!-- Sizes: show variant buttons, click selects size (stopPropagation to avoid link).
+                 Only show the size label (no price badge). -->
             <div class="sizes mt-2" *ngIf="p.sizes && p.sizes.length">
               <small class="muted">Sizes:</small>
               <div class="size-list">
@@ -37,14 +40,16 @@
                   type="button"
                   class="size"
                   *ngFor="let s of p.sizes"
-                  (click)="selectSize(p.id, s.variantId, $event)"
+                  (click)="selectSize(p.id, s.variantId, $event); $event.stopPropagation()"
                   [class.selected]="isSizeSelected(p.id, s.variantId)">
                   {{ s.label }}
-                  <span *ngIf="s.price !== undefined" class="price-badge">₹{{ s.price }}</span>
+                  <!-- intentionally removed price badge to show only size label -->
                 </button>
               </div>
             </div>
 
+            <!-- bottom-row is pushed to bottom via CSS (margin-top: auto) -->
+          
           </div>
         </a>
       </article>
@@ -56,10 +61,19 @@
   </div>
 
   <div class="mt-4 d-flex justify-content-center">
-    <button class="btn btn-outline-primary"
-            (click)="loadMore()"
-            [disabled]="loading || (total && products.length >= total)">
-      Load more
-    </button>
+    <!-- show button only when there *are* more items to load -->
+    <ng-container *ngIf="hasMore; else allLoaded">
+      <button class="btn btn-outline-primary"
+              (click)="loadMore()"
+              [disabled]="loading">
+        Load more
+      </button>
+    </ng-container>
+
+    <!-- shown when we've loaded everything (products.length >= total) -->
+    <ng-template #allLoaded>
+      <!-- place a small neutral message here when no more items remain -->
+      <div class="text-muted small py-2">No more products to load.</div>
+    </ng-template>
   </div>
 </div>

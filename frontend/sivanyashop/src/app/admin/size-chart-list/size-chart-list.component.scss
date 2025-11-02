@@ -1,127 +1,223 @@
-.size-charts-list {
-  display: grid;
-  gap: 16px;
-  margin-top: 20px;
+/* app/admin/size-chart-list.component.scss
+   Blue Lavender themed list page — mobile-first, accessible, uses --primary-darker for CTAs
+*/
+
+/* Container */
+.admin-container {
+  max-width: 1200px;
+  margin: var(--space-lg) auto;
+  padding: 1rem;
+  padding-bottom: calc(var(--footer-height, 56px) + 28px);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--primary-hover) 100%);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  -webkit-overflow-scrolling: touch;
+  font-size: clamp(13px, 1.2vw, 14px);
 }
 
-.size-chart-card {
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-  .chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-
-    h4 {
-      margin: 0;
-      color: #333;
-    }
-  }
-
-  .chart-type-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-
-    &.dress { background: #e3f2fd; color: #1976d2; }
-    &.shoes { background: #f3e5f5; color: #7b1fa2; }
-    &.general { background: #e8f5e8; color: #388e3c; }
-  }
-
-  .chart-description {
-    color: #666;
-    margin-bottom: 12px;
-    font-size: 14px;
-  }
-
-  .chart-meta {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
-
-    small {
-      color: #888;
-    }
-  }
-
-  .chart-actions {
-    display: flex;
-    gap: 8px;
-
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 12px;
-    }
-  }
+/* Header / list actions row */
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
 }
 
+.list-header h2 {
+  font-size: 1.6rem;
+  margin: 0;
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+.list-header .actions { display:flex; gap: var(--space-sm); align-items:center; }
+
+/* Filters card */
 .filters {
-  margin-bottom: 20px;
-  padding: 16px;
+  padding: 1rem;
+  margin-bottom: var(--space-md);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 
   .filter-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    display:flex;
+    align-items:center;
+    gap: 0.75rem;
+    flex-wrap:wrap;
 
-    label {
-      font-weight: 500;
-      margin-bottom: 0;
-    }
-
+    label { font-weight:600; color:var(--text-main); margin-bottom:0; }
     select {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background: white;
+      padding: 0.6rem 0.9rem;
+      border-radius: calc(var(--radius) - 4px);
+      border: 2px solid var(--border);
+      background: var(--white);
+      color: var(--text-main);
     }
   }
 }
 
+/* Empty state */
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
-  color: #666;
+  padding: 2rem;
+  background: linear-gradient(180deg, var(--surface), var(--background));
+  border-radius: calc(var(--radius) - 4px);
+  border: 1px dashed rgba(0,0,0,0.03);
+  color: var(--text-muted);
 
-  p {
-    margin-bottom: 20px;
-    font-size: 16px;
-  }
+  p { margin-bottom: 1rem; font-size: 1rem; }
 }
 
+/* Size charts grid */
+.size-charts-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+/* Card — each chart */
+.size-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  display:flex;
+  flex-direction:column;
+  gap: 0.75rem;
+}
+
+/* header area inside card */
+.size-chart-card .chart-header {
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.size-chart-card .chart-header h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+/* badge */
+.chart-type-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+/* use theme-friendly badges (tint with primary variations) */
+.chart-type-badge.dress { background: linear-gradient(90deg, rgba(17,78,128,0.08), var(--primary)); color: var(--white); }
+.chart-type-badge.shoes { background: linear-gradient(90deg, rgba(123,31,162,0.08), var(--primary-dark)); color: var(--white); }
+.chart-type-badge.general { background: linear-gradient(90deg, rgba(56,142,60,0.08), var(--primary-darker)); color: var(--white); }
+
+/* description and meta */
+.chart-description { color: var(--text-muted); font-size: 0.95rem; margin: 0; }
+.chart-meta { display:flex; gap: 1rem; color: var(--text-muted); font-size: 0.9rem; }
+
+/* actions: align right on desktop, stacked on small screens */
+.chart-actions { display:flex; gap:0.5rem; align-items:center; }
+
+/* buttons in card */
+.chart-actions .btn {
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+
+/* outline button */
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+.btn-primary {
+  background: var(--primary-darker);
+  border: 1px solid var(--primary-darker);
+  color: var(--white);
+  box-shadow: 0 8px 22px rgba(110,111,255,0.06);
+}
+.btn-danger {
+  background: transparent;
+  color: #b00020;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* pagination */
 .pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 20px;
-  padding: 20px;
+  display:flex;
+  gap: 1rem;
+  justify-content:center;
+  align-items:center;
+  margin-top: 1rem;
+  padding: 1rem 0;
+}
+.pagination .page-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+}
+.pagination .page-info { color: var(--text-muted); font-weight:600; }
 
-  .page-btn {
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    background: white;
-    border-radius: 4px;
-    cursor: pointer;
+/* loading */
+.loading { text-align:center; padding: 1rem; color: var(--text-muted); }
 
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+/* focus accessibility */
+a:focus, button:focus, input:focus, select:focus {
+  outline: 3px dashed rgba(110,111,255,0.18);
+  outline-offset: 3px;
+}
 
-    &:not(:disabled):hover {
-      background: #f5f5f5;
-    }
+/* Responsive: mobile-first tweaks */
+@media (max-width: 767.98px) {
+  .admin-container { padding: 0.75rem; padding-bottom: calc(var(--footer-height,56px) + 110px); }
+
+  .list-header { align-items:flex-start; gap:0.5rem; }
+  .list-header h2 { font-size: 1.35rem; }
+
+  .filters { padding: 0.75rem; }
+
+  .size-charts-list { gap: 0.75rem; }
+
+  .size-chart-card {
+    padding: 0.85rem;
   }
 
-  .page-info {
-    color: #666;
-    font-weight: 500;
-  }
+  .chart-header { flex-direction: column; align-items:flex-start; gap: 0.5rem; }
+  .chart-meta { flex-direction: column; gap: 6px; font-size: 0.88rem; }
+
+  .chart-actions { width:100%; justify-content:flex-start; flex-wrap:wrap; gap:8px; }
+  .chart-actions .btn { min-width: 44%; font-size: 0.9rem; }
+
+  /* make primary CTA full width on small screens if needed */
+  .list-header .actions .btn-primary { width: 100%; display:block; padding:0.65rem; font-weight:700; }
+
+  .pagination { padding: 12px 0; gap: 8px; }
+  .pagination .page-btn { padding: 8px 12px; }
+}
+
+/* Larger screens: nice grid columns */
+@media (min-width: 992px) {
+  .size-charts-list { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+}
+@media (min-width: 1200px) {
+  .size-charts-list { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+}
+
+/* Dark mode tuning */
+@media (prefers-color-scheme: dark) {
+  .admin-container { background: linear-gradient(135deg, rgba(110,111,255,0.02), rgba(177,178,255,0.01)); border-color: rgba(255,255,255,0.04); }
+  .size-chart-card { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04); box-shadow:none; color: var(--white); }
+  .chart-type-badge { opacity: 0.95; }
 }

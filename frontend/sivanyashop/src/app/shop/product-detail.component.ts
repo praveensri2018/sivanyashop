@@ -1,3 +1,4 @@
+// Replace your existing ProductDetailComponent with this file content
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
@@ -40,11 +41,44 @@ export class ProductDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.productId = +id; // Set the productId
-      this.loadProduct(id);
+    // where to place: decode route param here, before calling loadProduct
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const decoded = this.decodeId(idParam); // <-- decode the encoded id (method below)
+    if (decoded !== null) {
+      this.productId = decoded;
+      // loadProduct expects a string id for the service; pass numeric as string
+      this.loadProduct(String(decoded));
+    } else if (idParam) {
+      // fallback: try to load using raw param
+      this.productId = Number(idParam) || 0;
+      this.loadProduct(idParam);
+    } else {
+      // no id - keep product null
+      this.productId = 0;
     }
+  }
+
+  // -----------------------
+  // ID decode helper
+  // -----------------------
+  // Place this helper inside the component class (exactly here).
+  // Mirrors the encoding used when navigating: base64 of "p:<id>"
+  private decodeId(encoded: string | null | undefined): number | null {
+    if (encoded == null) return null;
+    // numeric case (not encoded)
+    if (/^\d+$/.test(encoded)) return Number(encoded);
+    try {
+      const decoded = atob(encoded);
+      if (decoded && decoded.startsWith('p:')) {
+        const num = decoded.slice(2);
+        if (/^\d+$/.test(num)) return Number(num);
+      }
+    } catch {
+      // ignore if not base64
+    }
+    // final fallback
+    const parsed = parseInt(encoded as string, 10);
+    return Number.isFinite(parsed) ? parsed : null;
   }
 
   private getIdFromProduct(p: any): number | null {

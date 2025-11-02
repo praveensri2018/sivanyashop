@@ -114,12 +114,6 @@
           <i class="fas fa-eye me-1"></i>Details
         </a>
         
-        <button *ngIf="getPaymentStatus(order) === 'FAILED'"
-                class="btn btn-warning btn-sm me-2"
-                (click)="retryPayment(order)">
-          <i class="fas fa-redo me-1"></i>Retry Payment
-        </button>
-
         <button *ngIf="getStatus(order) === 'DELIVERED'"
                 class="btn btn-outline-info btn-sm"
                 [routerLink]="['/refund', getOrderId(order)]">

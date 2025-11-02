@@ -1,0 +1,125 @@
+<div class="order-details container mt-4">
+  <div class="row">
+    <div class="col-12">
+
+      <!-- Header -->
+      <div class="d-flex align-items-center mb-4">
+        <button class="btn btn-outline me-3" routerLink="/orders">
+          ← Back to Orders
+        </button>
+        <h2 class="mb-0">Order Details</h2>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading order details...</p>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+
+      <!-- Order Card -->
+      <div *ngIf="order && !loading" class="card shadow-sm">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+          <div>
+            <strong>Order #{{ order.OrderNumber || order.orderNumber }}</strong>
+            <div class="text-muted small">
+              Placed on {{ (order.CreatedAt || order.createdAt) | date:'medium' }}
+            </div>
+          </div>
+          <div class="status-badges text-end mt-2 mt-md-0">
+            <span class="badge" [ngClass]="getStatusBadgeClass(order.Status || order.status)">
+              {{ order.Status || order.status }}
+            </span>
+            <span class="badge ms-2" [ngClass]="getPaymentStatusBadgeClass(order.PaymentStatus || order.paymentStatus)">
+              {{ order.PaymentStatus || order.paymentStatus }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-body">
+
+          <!-- Order Items -->
+          <h5 class="mb-3 text-primary">Order Items</h5>
+          <div *ngFor="let item of order.Items || order.items" class="order-item border-bottom pb-3 mb-3">
+            <div class="row align-items-center g-3">
+              <div class="col-3 col-md-2">
+                <img
+                  [src]="item.Image || item.image || '/assets/no-image.jpg'"
+                  [alt]="item.ProductName || item.productName"
+                  class="img-fluid rounded shadow-sm"
+                />
+              </div>
+              <div class="col-9 col-md-6">
+                <strong>{{ item.ProductName || item.productName }}</strong>
+                <div *ngIf="item.VariantName || item.variantName" class="text-muted small">
+                  {{ item.VariantName || item.variantName }}
+                </div>
+              </div>
+              <div class="col-6 col-md-2 text-md-center text-muted">
+                Qty: {{ item.Qty || item.qty }}
+              </div>
+              <div class="col-6 col-md-2 text-md-end fw-semibold">
+                ₹{{ item.Price || item.price }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="row mt-4">
+            <!-- Shipping -->
+            <div class="col-md-6 mb-4 mb-md-0">
+              <h6 class="mb-2 text-primary">Shipping Address</h6>
+              <ng-container *ngIf="order.ShippingAddress || order.shippingAddress; else noAddress">
+                <p class="mb-1">{{ (order.ShippingAddress || order.shippingAddress).addressLine1 }}</p>
+                <p *ngIf="(order.ShippingAddress || order.shippingAddress).addressLine2" class="mb-1">
+                  {{ (order.ShippingAddress || order.shippingAddress).addressLine2 }}
+                </p>
+                <p class="mb-1">
+                  {{ (order.ShippingAddress || order.shippingAddress).city }},
+                  {{ (order.ShippingAddress || order.shippingAddress).state }} -
+                  {{ (order.ShippingAddress || order.shippingAddress).postalCode }}
+                </p>
+                <p class="mb-0">
+                  {{ (order.ShippingAddress || order.shippingAddress).country }}
+                </p>
+              </ng-container>
+              <ng-template #noAddress>
+                <p class="text-muted small mb-0">No shipping address available.</p>
+              </ng-template>
+            </div>
+
+            <!-- Totals -->
+            <div class="col-md-6">
+              <div class="card bg-surface border shadow-sm">
+                <div class="card-body">
+                  <h6 class="text-primary mb-3">Order Summary</h6>
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <span>₹{{ order.TotalAmount || order.totalAmount }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Shipping:</span>
+                    <span>Free</span>
+                  </div>
+                  <hr>
+                  <div class="d-flex justify-content-between fw-bold text-primary">
+                    <span>Total:</span>
+                    <span>₹{{ order.TotalAmount || order.totalAmount }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

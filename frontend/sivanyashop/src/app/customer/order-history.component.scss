@@ -1,61 +1,235 @@
+/* FILE: app/orders/orders.component.scss
+   PLACE: save/replace at app/orders/orders.component.scss
+   NOTES:
+   - Uses Blue-Lavender tokens from styles.scss.
+   - Primary / active accents use --primary and --primary-darker.
+   - Mobile-first responsive rules; desktop tweaks at larger breakpoints.
+   - Accessible focus outlines, hover states, and smooth transitions.
+*/
+
+/* ---------- Base / container helpers ---------- */
+:host {
+  display: block;
+  box-sizing: border-box;
+  color: var(--text-main);
+}
+
+/* If you wrap the template in a `.container` from Bootstrap, these rules target inner layout */
+.container.mt-4 {
+  padding-top: 0.5rem;
+  padding-bottom: calc(var(--footer-height, 56px) + 2rem);
+}
+
+/* ---------- Order card ---------- */
 .order-card {
-  transition: all 0.3s ease;
-  border: 1px solid #e9ecef;
-  
+  transition: all 0.28s cubic-bezier(.2,.9,.3,1);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  background: linear-gradient(180deg, var(--surface), var(--background));
+  box-shadow: 0 1px 4px rgba(2,6,23,0.03);
+
+  .card-body {
+    padding: 0.9rem 0.85rem;
+  }
+
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: #007bff;
+    box-shadow: 0 8px 28px rgba(15,23,42,0.08);
+    border-color: var(--primary);
+    transform: translateY(-2px);
   }
 }
 
+/* ---------- Order icon (left) ---------- */
 .order-icon {
-  width: 40px;
-  height: 40px;
-  background: #f8f9fa;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(180deg, rgba(177,178,255,0.06), rgba(177,178,255,0.02));
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border: 1px solid rgba(110,111,255,0.06);
+
   i {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
+    color: var(--primary-darker);
   }
 }
 
+/* ---------- Badges ---------- */
 .badge {
-  font-size: 0.75rem;
-  padding: 0.5em 0.75em;
+  display: inline-block;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--primary-darker);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(110,111,255,0.06);
+}
+
+/* allow custom status/payload classes via functions in TS to override visuals */
+.badge.pending { background: rgba(255,193,7,0.95); color: #111; }
+.badge.confirmed { background: linear-gradient(90deg, var(--primary), var(--primary-darker)); }
+.badge.shipped { background: linear-gradient(90deg, rgba(6,95,70,0.9), var(--primary-dark)); }
+.badge.delivered { background: #10b981; }
+.badge.cancelled { background: #ef4444; }
+
+/* Payment status badge (lighter style) */
+.payment-badge {
+  display:inline-block;
+  font-size: 0.78rem;
+  padding: 0.28rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.04);
+  color: var(--text-main);
+  font-weight:700;
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+/* ---------- Price / meta ---------- */
+.text-success {
+  color: #059669 !important;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+/* ---------- Action buttons ---------- */
+.btn {
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  border-radius: 8px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+}
+
+.btn:hover { transform: translateY(-2px); }
+
+/* Outline primary (Details) */
+.btn-outline-primary {
+  background: transparent;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.btn-outline-primary:hover {
+  background: var(--primary);
+  color: var(--white);
+}
+
+/* Retry button */
+.btn-warning {
+  background: linear-gradient(90deg, #ffdca3, #ffb86b);
+  color: #222;
+  border: none;
+}
+
+/* Refund / info */
+.btn-outline-info {
+  background: transparent;
+  border-color: rgba(14,165,164,0.15);
+  color: var(--primary-dark);
+}
+
+/* Small buttons */
+.btn-sm {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* ---------- Pagination ---------- */
+.pagination {
+  display:flex;
+  gap: 0.5rem;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top: 0.75rem;
+  padding: 0.75rem 0;
+}
+
+.page-item .page-link {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.65rem;
+  color: var(--text-main);
+  background: var(--surface);
 }
 
 .page-item.active .page-link {
-  background-color: #007bff;
-  border-color: #007bff;
+  background: var(--primary-darker);
+  border-color: var(--primary-darker);
+  color: var(--white);
+  box-shadow: 0 8px 22px rgba(110,111,255,0.06);
 }
 
-.btn {
-  transition: all 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-1px);
-  }
+/* disabled */
+.page-item.disabled .page-link,
+.page-link[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-// Responsive design
+/* ---------- Layout tweaks (responsive) ---------- */
+/* Mobile-first: stack and make action buttons full width on very small screens */
 @media (max-width: 768px) {
   .order-card .card-body {
-    padding: 1rem;
+    padding: 0.9rem;
   }
-  
+
   .order-card .row > div {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
   }
-  
+
+  /* move the right actions under the content */
   .order-card .text-end {
     text-align: left !important;
-    margin-top: 1rem;
+    margin-top: 0.6rem;
   }
-  
-  .pagination {
-    flex-wrap: wrap;
+
+  /* make action buttons easier to tap on mobile */
+  .order-card .text-end .btn {
+    display: inline-block;
+    margin-right: 0.5rem;
+    margin-bottom: 0.35rem;
+    min-width: 34%;
   }
+
+  .order-icon { width: 40px; height: 40px; }
+
+  .badge, .payment-badge { font-size: 0.72rem; padding: 0.28rem 0.48rem; }
+
+  .pagination { gap: 8px; padding: 0.5rem 0; }
+}
+
+/* Desktop adjustments: tighter grid and aligned actions to right */
+@media (min-width: 769px) {
+  .order-card .card-body { padding: 1rem 1.1rem; }
+
+  .order-card .text-end { text-align: right; }
+  .order-card .row .col-md-3 { min-width: 170px; }
+}
+
+/* Large screens — increased spacing */
+@media (min-width: 1200px) {
+  .order-card { margin-bottom: 1.25rem; }
+}
+
+/* ---------- Accessibility: focus styles ---------- */
+a:focus, button:focus, .page-link:focus {
+  outline: 3px dashed rgba(110,111,255,0.18);
+  outline-offset: 3px;
+}
+
+/* ---------- Dark mode ---------- */
+@media (prefers-color-scheme: dark) {
+  .order-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-color: rgba(255,255,255,0.04);
+    box-shadow: none;
+    color: var(--white);
+  }
+  .order-icon { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04); }
+  .badge { opacity: 0.95; }
+  .page-item .page-link { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04); color: var(--white); }
 }

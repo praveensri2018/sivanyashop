@@ -1,19 +1,20 @@
-// only show the changed/added parts and full class for clarity
+// Replace your existing CustomerProductsComponent with this file content
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ProductService } from '../services/product.service';
 import { finalize } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router'; 
 
 interface ProductRow {
   id: number;
   name: string;
   image: string;
-  price?: number;       // displayed price (max by default or variant price)
-  priceMax?: number;    // maximum price across variants
-  priceMin?: number;    // minimum price
-  stock?: number;       // total stock
+  price?: number;
+  priceMax?: number;
+  priceMin?: number;
+  stock?: number;
   sizes?: Array<{ label: string; variantId: number; price?: number; stock?: number }>;
   raw?: any;
 }
@@ -41,11 +42,16 @@ export class CustomerProductsComponent implements OnInit {
   // store selected variant per product (productId -> variantId)
   selectedVariantByProduct: Record<number, number | null> = {};
 
-  constructor(private productSvc: ProductService, private router: Router) {}
+  constructor(private productSvc: ProductService, private router: Router,
+  private route: ActivatedRoute) {}
 
-  ngOnInit(): void {
+ngOnInit(): void {
+  // Listen for search query parameters
+  this.route.queryParams.subscribe(params => {
+    this.searchQuery = params['search'] || '';
     this.loadProducts(true);
-  }
+  });
+}
 
   loadProducts(reset = false) {
     if (this.loading) return;
@@ -102,8 +108,49 @@ export class CustomerProductsComponent implements OnInit {
     return arr;
   }
 
+  // -----------------------
+  // ID encoding helpers
+  // -----------------------
+  // Place these helper methods inside this component (they are used when navigating).
+  // Encoding: base64 of "p:<id>" to avoid ambiguous decode (keeps it reversible).
+  private encodeId(id: number): string {
+    // where to place: put this method inside the component class (exactly here)
+    try {
+      return btoa(`p:${id}`);
+    } catch {
+      // fallback: simple numeric string if btoa unavailable or fails
+      return String(id);
+    }
+  }
+
+  private decodeId(encoded: string | null | undefined): number | null {
+    // where to place: put this method inside the component class (exactly here)
+    if (encoded == null) return null;
+    // if it's numeric already, return numeric
+    if (/^\d+$/.test(encoded)) return Number(encoded);
+    try {
+      const decoded = atob(encoded);
+      if (decoded && decoded.startsWith('p:')) {
+        const num = decoded.slice(2);
+        if (/^\d+$/.test(num)) return Number(num);
+      }
+    } catch {
+      // ignore decode error
+    }
+    // final fallback: try parse int
+    const parsed = parseInt(encoded as string, 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  // -----------------------
+  // Navigation (encode id before navigating)
+  // -----------------------
+
   openProduct(p: ProductRow) {
-    this.router.navigate(['/product', p.id]).catch(err => console.warn('nav failed', err));
+    // where to place: this replaces the original openProduct implementation
+    // encode numeric id before routing so route contains encoded id
+    const encoded = this.encodeId(p.id); // <-- encoded id (place comment here)
+    this.router.navigate(['/product', encoded]).catch(err => console.warn('nav failed', err));
   }
 
   onSearchSubmit() {
@@ -112,28 +159,14 @@ export class CustomerProductsComponent implements OnInit {
 
   // ---- NEW: select size (variant) handler ----
   selectSize(productId: number, variantId: number) {
+    // where to place: this replaces original selectSize navigation call
+    // We still track selectedVariantByProduct locally (so isSizeSelected works), but for full product page
+    // we navigate to the product route using encoded id + variant query param.
+    this.selectedVariantByProduct[productId] = variantId; // keep UI selection locally
 
-    this.router.navigate(['/product', productId], { queryParams: { variant: variantId } })
-    .catch(err => console.warn('navigate to product failed', err));
-    // toggle selection: if already selected, deselect
-   /* const current = this.selectedVariantByProduct[productId] ?? null;
-    if (current === variantId) {
-      this.selectedVariantByProduct[productId] = null;
-      // update displayed price back to max for that product
-      const prod = this.products.find(x => x.id === productId);
-      if (prod) prod.price = prod.priceMax;
-      return;
-    }
-    this.selectedVariantByProduct[productId] = variantId;
-
-    const prod = this.products.find(x => x.id === productId);
-    if (!prod || !prod.sizes) return;
-
-    const s = prod.sizes.find(sz => sz.variantId === variantId);
-    if (s) {
-      prod.price = s.price ?? prod.priceMax;
-      prod.stock = s.stock ?? prod.stock;
-    }*/
+    const encoded = this.encodeId(productId); // <-- encode here
+    this.router.navigate(['/product', encoded], { queryParams: { variant: variantId } })
+      .catch(err => console.warn('navigate to product failed', err));
   }
 
   // helper to check selected state in template
@@ -156,7 +189,6 @@ export class CustomerProductsComponent implements OnInit {
     if (Array.isArray(variants)) {
       for (const v of variants) {
         const variantId = v?.Id ?? v?.id ?? null;
-        // read price -- support multiple possible fields
         let price = v?.price ?? v?.Price ?? v?.customerPrice ?? v?.CustomerPrice ?? null;
         if (price == null) {
           const prices = v?.prices ?? v?.Prices ?? [];
@@ -174,10 +206,9 @@ export class CustomerProductsComponent implements OnInit {
         const st = Number(v?.StockQty ?? v?.stockQty ?? v?.stock ?? 0) || 0;
         totalStock += st;
 
-        // label for size: prefer VariantName then Attributes or SKU
-        let label = v?.VariantName ?? v?.variantName ?? '';
+        let label = v?.Attributes ?? v?.variantName ?? '';
         if (!label) {
-          const attrs = v?.Attributes ?? v?.attributes ?? '';
+          const attrs = v?.VariantName ?? v?.attributes ?? '';
           label = attrs || (v?.SKU ?? v?.sku ?? '');
         }
         label = String(label).trim() || '—';
@@ -188,17 +219,14 @@ export class CustomerProductsComponent implements OnInit {
       }
     }
 
-    // default displayed price: maximum price if present, else min or undefined
     const displayPrice = maxPrice ?? minPrice ?? undefined;
 
-    // ensure sizes sorted: put those with price first, descending price (optional)
     sizesArr.sort((a,b) => {
       const pa = a.price ?? -1;
       const pb = b.price ?? -1;
       return pb - pa;
     });
 
-    // initialize selectedVariant as null
     this.selectedVariantByProduct[id] = this.selectedVariantByProduct[id] ?? null;
 
     return {

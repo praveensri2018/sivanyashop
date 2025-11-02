@@ -1,24 +1,34 @@
-<!-- src/app/ui/footer.component.html -->
-<footer class="meesho-footer">
+  <!-- place this inside <div class="footer-content"> -->
+  <footer class="footer-main" role="contentinfo">
+    <div class="container grid-footer">
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a routerLink="/about">About Us</a></li>
+          <li><a routerLink="/contact">Contact</a></li>
+          <li><a routerLink="/help">Help Center</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a routerLink="/terms">Terms & Conditions</a></li>
+          <li><a routerLink="/privacy">Privacy Policy</a></li>
+          <li><a routerLink="/refund-policy">Refund Policy</a></li>
+          <li><a routerLink="/shipping-policy">Shipping Policy</a></li>
+        </ul>
+      </div>
   
-  <!-- Desktop Footer -->
-  <nav class="footer-nav desktop-footer">
-    <div class="container">
-      <div class="footer-content">
-        
-        <!-- Left Section -->
-        
-      </div>
+    <div class="footer-col">
+      <h4>Follow Us</h4>
+      <ul class="social-links">
+        <li><a href="https://facebook.com" target="_blank" rel="noopener">Facebook</a></li>
+        <li><a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a></li>
+        <li><a href="https://twitter.com" target="_blank" rel="noopener">Twitter</a></li>
+      </ul>
     </div>
-  </nav>
-
-  <!-- Mobile Footer -->
-  <nav class="footer-nav mobile-footer">
-    <div class="container">
-      <div class="footer-content">
-        
-       
       </div>
+    <div class="footer-bottom">
+      <p>© {{ year }} Sivanyashop Trends. All rights reserved.</p>
     </div>
-  </nav>
-</footer>
+  </footer>

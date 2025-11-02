@@ -186,7 +186,7 @@ handleLogout(): void {
   onInput(ev: Event) {
     this.query = (ev.target as HTMLInputElement).value;
   }
-
+/*
   onSearch() {
   const q = this.query?.trim() || null;
 
@@ -207,6 +207,18 @@ handleLogout(): void {
 
   // Close dropdown
   this.closeUserMenu();
+}
+*/
+// In header.component.ts
+onSearch() {
+  const query = this.query?.trim();
+  if (query) {
+    this.router.navigate(['/product'], { 
+      queryParams: { search: query } 
+    });
+  }
+  this.closeUserMenu();
+  this.isMobileMenuOpen = false;
 }
   // --------------------------
   // 🔹 MOBILE CATEGORIES
@@ -239,11 +251,33 @@ isMobileMenuOpen = false;
 
 toggleMobileMenu(): void {
   this.isMobileMenuOpen = !this.isMobileMenuOpen;
-  // Close user menu when mobile menu opens
+
+  // close user menu when mobile menu opens
   if (this.isMobileMenuOpen) {
     this.isUserMenuOpen = false;
   }
+
+  // prevent background scroll when sidebar open
+  if (this.isMobileMenuOpen) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+
+  // set focus for accessibility: focus first link in sidebar when opening
+  setTimeout(() => {
+    if (this.isMobileMenuOpen) {
+      const sidebar = this.host.nativeElement.querySelector('.mobile-sidebar') as HTMLElement | null;
+      const firstLink = sidebar?.querySelector('.sidebar-link, button') as HTMLElement | null;
+      firstLink?.focus();
+    } else {
+      // restore focus to hamburger button
+      const btn = this.host.nativeElement.querySelector('.hamburger-btn') as HTMLElement | null;
+      btn?.focus();
+    }
+  }, 180); // wait for animation start
 }
+
 
 
 getHomeRoute(): string {
